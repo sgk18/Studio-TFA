@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { CartDrawer } from "@/components/CartDrawer";
 import PillNav from "./PillNav";
 import StaggeredMenu from "./StaggeredMenu";
@@ -8,21 +9,26 @@ import { CartButton } from "./CartButton";
 
 const navItems = [
   { label: 'Collections', href: '/collections', link: '/collections', ariaLabel: 'View all collections' },
-  { label: 'Books', href: '/c/books', link: '/c/books', ariaLabel: 'View books' },
-  { label: 'Journals', href: '/c/journals', link: '/c/journals', ariaLabel: 'View journals' },
-  { label: 'About', href: '/about', link: '/about', ariaLabel: 'Learn about us' }
+  { label: 'Books',        href: '/c/books',     link: '/c/books',     ariaLabel: 'Browse books' },
+  { label: 'Journals',     href: '/c/journals',  link: '/c/journals',  ariaLabel: 'Browse journals' },
+  { label: 'About',        href: '/about',       link: '/about',       ariaLabel: 'About Studio TFA' },
 ];
 
 const socialItems = [
   { label: 'Instagram', link: 'https://instagram.com/studiotfa' },
-  { label: 'Email', link: 'mailto:fearlesslypursuing@gmail.com' },
-  { label: 'WhatsApp', link: 'https://wa.me/919986995622' }
+  { label: 'Email',     link: 'mailto:fearlesslypursuing@gmail.com' },
+  { label: 'WhatsApp',  link: 'https://wa.me/919986995622' },
 ];
 
 export function Navbar() {
+  const pathname = usePathname();
+  
+  // Hide the public navbar on admin pages
+  if (pathname?.startsWith('/admin')) return null;
+
   return (
     <>
-      {/* Desktop Navbar - Uses PillNav */}
+      {/* Desktop Navbar - PillNav */}
       <nav className="hidden md:flex fixed w-full z-50 top-0 px-6 py-4 pointer-events-none mix-blend-difference text-white">
         <div className="container mx-auto flex items-center justify-between pointer-events-auto h-12">
           
@@ -47,7 +53,7 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Navbar - Uses StaggeredMenu */}
+      {/* Mobile Navbar - StaggeredMenu */}
       <div className="flex md:hidden">
         <StaggeredMenu
           logoText="Studio TFA"
