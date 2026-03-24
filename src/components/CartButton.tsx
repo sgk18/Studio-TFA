@@ -1,0 +1,27 @@
+"use client";
+
+import { ShoppingBag } from "lucide-react";
+import { useCart } from "@/store/useCart";
+import { useEffect, useState } from "react";
+
+export function CartButton({ className = "" }: { className?: string }) {
+  const { openCart, getCount } = useCart();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const count = mounted ? getCount() : 0;
+
+  return (
+    <button
+      onClick={openCart}
+      className={`flex items-center gap-2 text-xs tracking-[0.2em] font-bold uppercase hover:opacity-70 transition-opacity relative ${className}`}
+      aria-label="Open cart"
+    >
+      <ShoppingBag className="w-5 h-5 flex-shrink-0" />
+      {count > 0 && (
+        <span className="absolute -top-1 -right-2 bg-white text-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold mix-blend-normal">
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
