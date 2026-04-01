@@ -1,9 +1,10 @@
-import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 import {
   AdminAnalyticsDashboard,
   type ProductAnalyticsRow,
   type ReviewAnalyticsRow,
 } from "@/components/admin/AdminAnalyticsDashboard";
+import { verifyMasterAdminAccess } from "@/lib/security/masterAdminServer";
 
 export const metadata = {
   title: "Dashboard | Studio TFA Admin",
@@ -12,7 +13,12 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const supabase = await createClient();
+  const access = await verifyMasterAdminAccess();
+  if (!access.decision.allowed) {
+    redirect(`/login?error=${encodeURIComponent(access.message)}&redirectedFrom=/admin`);
+  }
+
+  const supabase = access.supabase;
 
   const [{ data: productsRaw, error: productsError }, { data: reviewsRaw, error: reviewsError }] =
     await Promise.all([

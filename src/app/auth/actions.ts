@@ -3,19 +3,76 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
+function getSafeNextPath(value: FormDataEntryValue | null | undefined): string {
+  if (typeof value !== "string") return "/";
+
+  const nextPath = value.trim();
+  if (!nextPath.startsWith("/") || nextPath.startsWith("//")) {
+    return "/";
+  }
+
+  return nextPath;
+}
+
+function getSiteUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+  try {
+    return new URL(configured).toString().replace(/\/$/, "");
+  } catch {
+    return "http://localhost:3000";
+  }
+}
+
+async function startGoogleOAuth(
+  formData: FormData,
+  fallbackRoute: "/login" | "/register"
+) {
+  const supabase = await createClient();
+  const nextPath = getSafeNextPath(formData.get("next"));
+
+  const callbackUrl = new URL("/auth/callback", `${getSiteUrl()}/`);
+  callbackUrl.searchParams.set("next", nextPath);
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: callbackUrl.toString(),
+      queryParams: {
+        prompt: "select_account",
+      },
+    },
+  });
+
+  if (error || !data?.url) {
+    redirect(
+      `${fallbackRoute}?error=${encodeURIComponent(
+        error?.message || "Unable to start Google OAuth flow."
+      )}`
+    );
+  }
+
+  redirect(data.url);
+}
+
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
   
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const nextPath = getSafeNextPath(formData.get("next"));
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
+    redirect(
+      `/login?error=${encodeURIComponent(error.message)}&redirectedFrom=${encodeURIComponent(
+        nextPath
+      )}`
+    );
   }
 
-  redirect("/");
+  redirect(nextPath);
 }
 
 export async function signUp(formData: FormData) {
@@ -45,4 +102,12 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/");
+}
+
+export async function signInWithGoogle(formData: FormData) {
+  await startGoogleOAuth(formData, "/login");
+}
+
+export async function signUpWithGoogle(formData: FormData) {
+  await startGoogleOAuth(formData, "/register");
 }

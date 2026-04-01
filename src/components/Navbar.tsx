@@ -29,23 +29,23 @@ export function Navbar() {
   return (
     <>
       {/* Desktop Navbar - PillNav */}
-      <nav className="hidden md:flex fixed w-full z-50 top-0 px-6 py-4 pointer-events-none mix-blend-difference text-white">
-        <div className="container mx-auto flex items-center justify-between pointer-events-auto h-12">
+      <nav className="hidden md:flex fixed w-full z-50 top-0 px-4 sm:px-6 py-4 pointer-events-none">
+        <div className="container mx-auto flex items-center justify-between pointer-events-auto h-14 rounded-2xl border border-white/45 bg-white/34 backdrop-blur-2xl px-4 shadow-[0_14px_36px_rgba(15,23,42,0.18)]">
           
           <div className="flex-1 flex items-center">
             <PillNav
               logoText="Studio TFA"
               items={navItems}
-              baseColor="black"
-              pillColor="white"
+              baseColor="rgba(17,24,39,0.72)"
+              pillColor="rgba(255,255,255,0.82)"
               hoveredPillTextColor="white"
-              pillTextColor="black"
+              pillTextColor="#111827"
               initialLoadAnimation={true}
             />
           </div>
 
           <div className="flex items-center gap-6 z-50">
-            <Link href="/login" className="text-xs tracking-[0.2em] font-bold uppercase hover:opacity-70 transition-opacity">
+            <Link href="/login" className="text-xs tracking-[0.2em] font-bold uppercase text-foreground/85 hover:text-foreground transition-colors">
               Account
             </Link>
             <CartButton />
@@ -62,7 +62,7 @@ export function Navbar() {
           isFixed={true}
           rightSlot={
             <div className="flex items-center gap-5 sm:gap-6">
-              <Link href="/login" className="text-xs tracking-[0.2em] font-bold uppercase hover:opacity-70 transition-opacity">
+              <Link href="/login" className="text-xs tracking-[0.2em] font-bold uppercase text-foreground/85 hover:text-foreground transition-colors">
                 Account
               </Link>
               <CartButton />

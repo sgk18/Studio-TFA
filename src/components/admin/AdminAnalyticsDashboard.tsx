@@ -421,7 +421,7 @@ export function AdminAnalyticsDashboard({
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] pt-28 pb-20 px-6">
+    <div className="min-h-screen pt-28 pb-20 px-6">
       <div className="container mx-auto max-w-7xl space-y-8">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
           <div>
@@ -449,7 +449,7 @@ export function AdminAnalyticsDashboard({
           </div>
         </div>
 
-        <Card className="bg-white border-0 shadow-sm">
+        <Card className="border-white/45">
           <CardHeader>
             <CardTitle className="font-heading text-2xl tracking-tight">Analysis Options</CardTitle>
             <CardDescription>
@@ -516,7 +516,7 @@ export function AdminAnalyticsDashboard({
         </Card>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="border-white/45">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -530,7 +530,7 @@ export function AdminAnalyticsDashboard({
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="border-white/45">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -544,7 +544,7 @@ export function AdminAnalyticsDashboard({
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="border-white/45">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -558,7 +558,7 @@ export function AdminAnalyticsDashboard({
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="border-white/45">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -576,7 +576,7 @@ export function AdminAnalyticsDashboard({
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <Card className="xl:col-span-2 bg-white border-0 shadow-sm">
+          <Card className="xl:col-span-2 border-white/45">
             <CardHeader>
               <CardTitle className="font-heading text-2xl tracking-tight">Category Performance</CardTitle>
               <CardDescription>
@@ -621,7 +621,7 @@ export function AdminAnalyticsDashboard({
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="border-white/45">
             <CardHeader>
               <CardTitle className="font-heading text-2xl tracking-tight">Ratings Mix</CardTitle>
               <CardDescription>Distribution of ratings for filtered products.</CardDescription>
@@ -647,7 +647,7 @@ export function AdminAnalyticsDashboard({
             </CardContent>
           </Card>
 
-          <Card className="xl:col-span-3 bg-white border-0 shadow-sm">
+          <Card className="xl:col-span-3 border-white/45">
             <CardHeader>
               <CardTitle className="font-heading text-2xl tracking-tight">Monthly Activity</CardTitle>
               <CardDescription>Products created vs reviews submitted by month.</CardDescription>
@@ -682,7 +682,7 @@ export function AdminAnalyticsDashboard({
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <Card className="bg-white border-0 shadow-sm">
+          <Card className="border-white/45">
             <CardHeader>
               <CardTitle className="font-heading text-2xl tracking-tight">Extra Insights</CardTitle>
               <CardDescription>Useful quick numbers for planning and restocking.</CardDescription>
@@ -715,7 +715,7 @@ export function AdminAnalyticsDashboard({
             </CardContent>
           </Card>
 
-          <Card className="xl:col-span-2 bg-white border-0 shadow-sm">
+          <Card className="xl:col-span-2 border-white/45">
             <CardHeader>
               <CardTitle className="font-heading text-2xl tracking-tight">Most Reviewed Products</CardTitle>
               <CardDescription>High-engagement products based on review volume.</CardDescription>
@@ -746,7 +746,7 @@ export function AdminAnalyticsDashboard({
           </Card>
         </div>
 
-        <Card className="bg-white border-0 shadow-sm">
+        <Card className="border-white/45">
           <CardHeader>
             <CardTitle className="font-heading text-2xl tracking-tight">Recent Reviews</CardTitle>
             <CardDescription>Latest feedback in the filtered scope.</CardDescription>

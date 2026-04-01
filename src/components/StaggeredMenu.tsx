@@ -363,7 +363,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         </div>
 
         <header
-          className="staggered-menu-header absolute top-0 left-0 w-full flex items-center justify-between px-6 py-4 bg-transparent pointer-events-none z-20 mix-blend-difference text-white"
+          className="staggered-menu-header absolute top-0 left-0 w-full flex items-center justify-between px-6 py-4 bg-white/32 backdrop-blur-xl border-b border-white/30 pointer-events-none z-20 text-foreground"
           aria-label="Main navigation header"
         >
           <div className="sm-logo flex items-center select-none pointer-events-auto" aria-label="Logo">
@@ -479,8 +479,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
 .sm-scope .sm-icon { position: relative; width: 14px; height: 14px; flex: 0 0 14px; display: inline-flex; align-items: center; justify-content: center; will-change: transform; }
 .sm-scope .sm-panel-itemWrap { position: relative; overflow: hidden; line-height: 1; }
 .sm-scope .sm-icon-line { position: absolute; left: 50%; top: 50%; background: currentColor; transform: translate(-50%, -50%); will-change: transform; transition: background 0.3s; }
-.sm-scope .staggered-menu-panel { background: #050505; width: clamp(260px, 45vw, 520px); }
-.sm-scope [data-position='left'] .staggered-menu-panel { right: auto; left: 0; }
+.sm-scope .staggered-menu-panel { background: rgba(12, 18, 31, 0.74); backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); border-left: 1px solid rgba(255,255,255,0.22); width: clamp(260px, 45vw, 520px); }
+.sm-scope [data-position='left'] .staggered-menu-panel { right: auto; left: 0; border-left: none; border-right: 1px solid rgba(255,255,255,0.22); }
 .sm-scope .sm-prelayers { position: absolute; top: 0; right: 0; bottom: 0; width: clamp(260px, 45vw, 520px); pointer-events: none; z-index: 5; }
 .sm-scope [data-position='left'] .sm-prelayers { right: auto; left: 0; }
 .sm-scope .sm-prelayer { position: absolute; top: 0; right: 0; height: 100%; width: 100%; transform: translateX(0); }

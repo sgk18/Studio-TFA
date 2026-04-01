@@ -135,7 +135,7 @@ export function ProductTable({ initialData }: { initialData: any[] }) {
             placeholder="Search products by title or category..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-white"
+            className="pl-9 bg-white/45"
           />
         </div>
         <Button className="w-full sm:w-auto tracking-widest uppercase font-bold text-xs" onClick={handleOpenAdd}>
@@ -144,9 +144,9 @@ export function ProductTable({ initialData }: { initialData: any[] }) {
         </Button>
       </div>
 
-      <div className="border rounded-md bg-white overflow-hidden shadow-sm">
+      <div className="border border-white/45 rounded-2xl bg-white/35 backdrop-blur-xl overflow-hidden shadow-[0_14px_34px_rgba(15,23,42,0.15)]">
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader className="bg-white/35">
             <TableRow>
               <TableHead className="w-[80px]">Image</TableHead>
               <TableHead>

@@ -1,12 +1,18 @@
-import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
 import { ProductTable } from "@/components/admin/ProductTable";
+import { verifyMasterAdminAccess } from "@/lib/security/masterAdminServer";
 
 export const metadata = {
   title: "Inventory | Studio TFA Admin",
 };
 
 export default async function AdminProductsPage() {
-  const supabase = await createClient();
+  const access = await verifyMasterAdminAccess();
+  if (!access.decision.allowed) {
+    redirect(`/login?error=${encodeURIComponent(access.message)}&redirectedFrom=/admin/products`);
+  }
+
+  const supabase = access.supabase;
   const { data: products } = await supabase
     .from('products')
     .select('*')
