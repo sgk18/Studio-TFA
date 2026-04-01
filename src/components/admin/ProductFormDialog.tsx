@@ -40,11 +40,11 @@ import { createProduct, updateProduct } from "@/app/admin/actions";
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   category: z.string().min(1, "Please select a category."),
-  price: z.coerce.number().min(0, "Price must be at least 0."),
-  stock_count: z.coerce.number().min(0, "Stock cannot be negative."),
+  price: z.coerce.number<number>().min(0, "Price must be at least 0."),
+  stock_count: z.coerce.number<number>().min(0, "Stock cannot be negative."),
   story: z.string().min(10, "Story/Description is required for our narrative style."),
   image_url: z.string().url("Must be a valid URL."),
-  is_custom_order: z.boolean().default(false),
+  is_custom_order: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
