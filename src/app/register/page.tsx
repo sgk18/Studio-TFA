@@ -1,12 +1,36 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { signUp } from "@/app/auth/actions";
 
 export const metadata: Metadata = {
   title: "Create Account | Studio TFA",
   description: "Create a Studio TFA account to save your cart and track your orders.",
 };
 
-export default function RegisterPage() {
+export default async function RegisterPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; success?: string }>;
+}) {
+  const { error, success } = await searchParams;
+
+  if (success === "check_email") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background px-6 pt-20">
+        <div className="w-full max-w-md text-center">
+          <Link href="/" className="font-heading text-3xl tracking-tight text-foreground">Studio TFA</Link>
+          <h1 className="font-heading text-5xl mt-10 mb-6 tracking-tight">Check your inbox.</h1>
+          <p className="text-foreground/60 leading-relaxed mb-10">
+            We've sent a confirmation link to your email address. Click it to activate your account.
+          </p>
+          <Link href="/" className="text-xs font-bold uppercase tracking-widest underline underline-offset-4 hover:text-primary transition-colors">
+            Return to home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-6 pt-20">
       <div className="w-full max-w-md">
@@ -18,7 +42,13 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <form className="space-y-6">
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded">
+            {decodeURIComponent(error)}
+          </div>
+        )}
+
+        <form action={signUp} className="space-y-6">
           <div>
             <label className="block text-xs tracking-widest uppercase font-bold text-foreground/50 mb-3">
               Full Name

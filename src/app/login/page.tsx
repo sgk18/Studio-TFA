@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { signIn } from "@/app/auth/actions";
 
 export const metadata: Metadata = {
   title: "Sign In | Studio TFA",
   description: "Sign in to your Studio TFA account to track orders and save favourites.",
 };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; redirectedFrom?: string }>;
+}) {
+  const { error } = await searchParams;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-6 pt-20">
       <div className="w-full max-w-md">
@@ -16,7 +23,13 @@ export default function LoginPage() {
           <p className="text-foreground/60 leading-relaxed">Sign in to your account to continue.</p>
         </div>
 
-        <form className="space-y-6">
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded">
+            {decodeURIComponent(error)}
+          </div>
+        )}
+
+        <form action={signIn} className="space-y-6">
           <div>
             <label className="block text-xs tracking-widest uppercase font-bold text-foreground/50 mb-3">
               Email Address
@@ -54,11 +67,12 @@ export default function LoginPage() {
 
         <div className="mt-8 space-y-4 text-center">
           <div className="h-px bg-border" />
-          <button
-            className="w-full border border-border py-4 text-xs tracking-widest uppercase font-bold text-foreground/70 hover:border-foreground hover:text-foreground transition-colors"
+          <Link
+            href="/collections"
+            className="block w-full border border-border py-4 text-xs tracking-widest uppercase font-bold text-foreground/70 hover:border-foreground hover:text-foreground transition-colors"
           >
             Continue as Guest →
-          </button>
+          </Link>
           <p className="text-sm text-foreground/50">
             Don&apos;t have an account?{" "}
             <Link href="/register" className="text-foreground underline underline-offset-4 hover:text-primary transition-colors">
