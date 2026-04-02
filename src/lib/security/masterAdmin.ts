@@ -28,10 +28,6 @@ const IP_HEADER_CANDIDATES = [
   "forwarded",
 ] as const;
 
-function normalizeEmail(email?: string | null): string {
-  return (email || "").trim().toLowerCase();
-}
-
 function normalizeIp(rawIp?: string | null): string {
   if (!rawIp) return "";
 
@@ -135,15 +131,9 @@ export function isIpAllowed(clientIpRaw: string, allowedRules: string[]): boolea
 export function evaluateMasterAdminAccess(
   options: MasterAdminEvaluationOptions
 ): MasterAdminAccessDecision {
-  const isProduction = options.environment === "production";
-
   const allowedIps = parseAllowedIps(options.allowedIpsRaw);
   if (allowedIps.length === 0) {
-    if (isProduction) {
-      return { allowed: false, reason: "admin-ip-list-missing" };
-    }
-
-    return { allowed: true, reason: "development-bypass" };
+    return { allowed: false, reason: "admin-ip-list-missing" };
   }
 
   const clientIp = normalizeIp(options.clientIp);

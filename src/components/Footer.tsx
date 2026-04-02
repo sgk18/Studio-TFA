@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { StaggeredText } from "@/components/StaggeredText";
 
@@ -24,6 +27,42 @@ const connectLinks = [
 ];
 
 export function Footer() {
+  const [hasAdminAccess, setHasAdminAccess] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchAccessStatus = async () => {
+      try {
+        const response = await fetch("/api/admin/access-status", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          if (isMounted) {
+            setHasAdminAccess(false);
+          }
+          return;
+        }
+
+        const payload = (await response.json()) as { allowed?: boolean };
+        if (isMounted) {
+          setHasAdminAccess(Boolean(payload.allowed));
+        }
+      } catch {
+        if (isMounted) {
+          setHasAdminAccess(false);
+        }
+      }
+    };
+
+    fetchAccessStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <footer className="px-6 md:px-12 mt-32 pb-10">
       <div className="container mx-auto max-w-7xl rounded-[2rem] border border-white/30 bg-[rgba(17,24,39,0.74)] text-white backdrop-blur-2xl px-6 md:px-10 py-20 shadow-[0_30px_90px_rgba(2,6,23,0.38)]">
@@ -95,7 +134,9 @@ export function Footer() {
           <div className="flex gap-8">
             <Link href="/privacy" className="hover:text-white/70 transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-white/70 transition-colors">Terms</Link>
-            <Link href="/admin" className="hover:text-white/70 transition-colors">Admin</Link>
+            {hasAdminAccess && (
+              <Link href="/admin" className="hover:text-white/70 transition-colors">Admin</Link>
+            )}
           </div>
         </div>
       </div>
