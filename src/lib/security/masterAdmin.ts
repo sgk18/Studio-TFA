@@ -135,25 +135,7 @@ export function isIpAllowed(clientIpRaw: string, allowedRules: string[]): boolea
 export function evaluateMasterAdminAccess(
   options: MasterAdminEvaluationOptions
 ): MasterAdminAccessDecision {
-  const userEmail = normalizeEmail(options.userEmail);
-  if (!userEmail) {
-    return { allowed: false, reason: "not-authenticated" };
-  }
-
   const isProduction = options.environment === "production";
-
-  const masterAdminEmail = normalizeEmail(options.masterAdminEmail);
-  if (!masterAdminEmail) {
-    if (isProduction) {
-      return { allowed: false, reason: "master-admin-email-missing" };
-    }
-
-    return { allowed: true, reason: "development-bypass" };
-  }
-
-  if (userEmail !== masterAdminEmail) {
-    return { allowed: false, reason: "not-master-admin" };
-  }
 
   const allowedIps = parseAllowedIps(options.allowedIpsRaw);
   if (allowedIps.length === 0) {

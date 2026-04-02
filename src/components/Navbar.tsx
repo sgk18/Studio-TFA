@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CartDrawer } from "@/components/CartDrawer";
@@ -22,6 +23,41 @@ const socialItems = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const [hasAdminAccess, setHasAdminAccess] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchAccessStatus = async () => {
+      try {
+        const response = await fetch("/api/admin/access-status", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          if (isMounted) {
+            setHasAdminAccess(false);
+          }
+          return;
+        }
+
+        const payload = (await response.json()) as { allowed?: boolean };
+        if (isMounted) {
+          setHasAdminAccess(Boolean(payload.allowed));
+        }
+      } catch {
+        if (isMounted) {
+          setHasAdminAccess(false);
+        }
+      }
+    };
+
+    fetchAccessStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   
   // Hide the public navbar on admin pages
   if (pathname?.startsWith('/admin')) return null;
@@ -45,6 +81,14 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-6 z-50">
+            {hasAdminAccess && (
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-2 text-xs tracking-[0.2em] font-bold uppercase border border-black/80 px-3 py-1.5 rounded-full hover:bg-black hover:text-white transition-all"
+              >
+                Admin
+              </Link>
+            )}
             <Link href="/login" className="text-xs tracking-[0.2em] font-bold uppercase text-foreground/85 hover:text-foreground transition-colors">
               Account
             </Link>
@@ -62,6 +106,14 @@ export function Navbar() {
           isFixed={true}
           rightSlot={
             <div className="flex items-center gap-5 sm:gap-6">
+              {hasAdminAccess && (
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center gap-2 text-[10px] tracking-[0.2em] font-bold uppercase border border-black/80 px-2.5 py-1 rounded-full hover:bg-black hover:text-white transition-all"
+                >
+                  Admin
+                </Link>
+              )}
               <Link href="/login" className="text-xs tracking-[0.2em] font-bold uppercase text-foreground/85 hover:text-foreground transition-colors">
                 Account
               </Link>

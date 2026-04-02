@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   BarChart3,
   Download,
+  Lock,
   MessageSquareText,
   Package,
   Star,
@@ -441,6 +442,13 @@ export function AdminAnalyticsDashboard({
             >
               <Package className="w-4 h-4" />
               Manage Inventory
+            </Link>
+            <Link
+              href="/admin/access"
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] border border-black px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all"
+            >
+              <Lock className="w-4 h-4" />
+              Access Control
             </Link>
             <Button variant="outline" onClick={handleExportCsv}>
               <Download className="w-4 h-4 mr-2" />

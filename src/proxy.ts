@@ -5,6 +5,14 @@ import {
   getClientIpFromHeaderGetter,
   getMasterAdminErrorMessage,
 } from "@/lib/security/masterAdmin";
+import {
+  readAdminAccessSettings,
+  recordDeniedAdminAccess,
+} from "@/lib/security/adminAccessStore";
+
+function normalizeEmail(email?: string | null): string {
+  return (email || "").trim().toLowerCase();
+}
 
 function redirectToLogin(request: NextRequest, errorMessage?: string) {
   const redirectUrl = request.nextUrl.clone();
@@ -54,23 +62,39 @@ export async function proxy(request: NextRequest) {
     return supabaseResponse;
   }
 
-  if (!user) {
-    return redirectToLogin(request);
-  }
-
   const clientIp = getClientIpFromHeaderGetter((headerName) =>
     request.headers.get(headerName)
   );
 
+  let effectiveAllowedIpsRaw = process.env.MASTER_ADMIN_ALLOWED_IPS ?? null;
+  const normalizedUserEmail = normalizeEmail(user?.email);
+  const normalizedMasterEmail = normalizeEmail(process.env.MASTER_ADMIN_EMAIL);
+
+  if (normalizedUserEmail && normalizedMasterEmail && normalizedUserEmail === normalizedMasterEmail) {
+    const settings = await readAdminAccessSettings(
+      supabase,
+      process.env.MASTER_ADMIN_ALLOWED_IPS ?? null
+    );
+    effectiveAllowedIpsRaw = settings.allowedIpsRaw;
+  }
+
   const decision = evaluateMasterAdminAccess({
-    userEmail: user.email,
+    userEmail: user?.email,
     clientIp,
     masterAdminEmail: process.env.MASTER_ADMIN_EMAIL,
-    allowedIpsRaw: process.env.MASTER_ADMIN_ALLOWED_IPS,
+    allowedIpsRaw: effectiveAllowedIpsRaw,
     environment: process.env.NODE_ENV,
   });
 
   if (!decision.allowed) {
+    await recordDeniedAdminAccess(supabase, {
+      attemptedEmail: user?.email ?? null,
+      ipAddress: clientIp || null,
+      path: request.nextUrl.pathname,
+      reason: decision.reason,
+      userAgent: request.headers.get("user-agent"),
+    });
+
     return redirectToLogin(request, getMasterAdminErrorMessage(decision.reason));
   }
 

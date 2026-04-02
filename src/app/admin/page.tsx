@@ -13,7 +13,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const access = await verifyMasterAdminAccess();
+  const access = await verifyMasterAdminAccess({ path: "/admin" });
   if (!access.decision.allowed) {
     redirect(`/login?error=${encodeURIComponent(access.message)}&redirectedFrom=/admin`);
   }

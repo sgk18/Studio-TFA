@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireMasterAdminAccess } from "@/lib/security/masterAdminServer";
 
 export async function createProduct(data: any) {
-  const supabase = await requireMasterAdminAccess();
+  const supabase = await requireMasterAdminAccess({ path: "/admin/products" });
   
   const { error } = await supabase
     .from('products')
@@ -30,7 +30,7 @@ export async function createProduct(data: any) {
 }
 
 export async function updateProduct(id: string, data: any) {
-  const supabase = await requireMasterAdminAccess();
+  const supabase = await requireMasterAdminAccess({ path: "/admin/products" });
   
   const { error } = await supabase
     .from('products')
@@ -56,7 +56,7 @@ export async function updateProduct(id: string, data: any) {
 }
 
 export async function deleteProduct(id: string) {
-  const supabase = await requireMasterAdminAccess();
+  const supabase = await requireMasterAdminAccess({ path: "/admin/products" });
   
   const { error } = await supabase
     .from('products')
