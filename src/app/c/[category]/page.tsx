@@ -6,15 +6,15 @@ import { ParallaxImage } from "@/components/ParallaxImage";
 import { sanitizeProductCards } from "@/lib/pageValidation";
 
 // Thematic map matching the requested brand palette
-const categoryThemes: Record<string, { bg: string, text: string, name: string, description: string }> = {
-  "books": { bg: "bg-[#786825]", text: "text-[#FAFAFA]", name: "Books", description: "Narratives of faith, deeply bound." },
-  "journals": { bg: "bg-[#8B263E]", text: "text-[#FAFAFA]", name: "Journals", description: "Pages for reflection and revelation." },
-  "apparels": { bg: "bg-[#292800]", text: "text-[#FAFAFA]", name: "Apparels", description: "Wearable declarations of truth." },
-  "home-decor": { bg: "bg-[#E0AEBA]", text: "text-[#292800]", name: "Home Decor", description: "Objects that architect peace." },
-  "stationeries-and-accessories": { bg: "bg-[#D17484]", text: "text-[#FAFAFA]", name: "Stationeries & Accessories", description: "Intentional tools for everyday grace." },
-  "gift-hampers": { bg: "bg-background", text: "text-foreground", name: "Gift Hampers", description: "Curated collections of purpose." },
-  "custom-orders": { bg: "bg-[#786825]/10", text: "text-[#292800]", name: "Custom Orders", description: "Commissioned pieces for your unique story." },
-  "artists-corner": { bg: "bg-foreground", text: "text-background", name: "Artists Corner", description: "Behind the veil of creation." }
+const categoryThemes: Record<string, { accentClass: string, name: string, description: string }> = {
+  "books": { accentClass: "text-[#786825]", name: "Books", description: "Narratives of faith, deeply bound." },
+  "journals": { accentClass: "text-[#8B263E]", name: "Journals", description: "Pages for reflection and revelation." },
+  "apparels": { accentClass: "text-[#292800]", name: "Apparels", description: "Wearable declarations of truth." },
+  "home-decor": { accentClass: "text-[#D17484]", name: "Home Decor", description: "Objects that architect peace." },
+  "stationeries-and-accessories": { accentClass: "text-[#D17484]", name: "Stationeries & Accessories", description: "Intentional tools for everyday grace." },
+  "gift-hampers": { accentClass: "text-[#8B263E]", name: "Gift Hampers", description: "Curated collections of purpose." },
+  "custom-orders": { accentClass: "text-[#786825]", name: "Custom Orders", description: "Commissioned pieces for your unique story." },
+  "artists-corner": { accentClass: "text-[#8B263E]", name: "Artists Corner", description: "Behind the veil of creation." }
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }) {
@@ -44,20 +44,22 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
 
   return (
-    <div className={`min-h-screen pt-32 pb-24 px-6 md:px-12 ${theme.bg} ${theme.text} transition-colors duration-700`}>
+    <div className="min-h-screen pt-32 pb-24 px-6 md:px-12 transition-colors duration-700">
       <div className="container mx-auto max-w-7xl flex-1">
         <ScrollReveal>
-          <header className="mb-24 text-center mt-12">
-            <h1 className="font-heading text-5xl md:text-8xl mb-6 tracking-tight">{theme.name}</h1>
-            <p className="max-w-2xl mx-auto text-lg md:text-xl opacity-80 leading-relaxed font-light">
+          <header className="mb-16 text-center mt-12 glass-shell rounded-[2rem] p-8 md:p-12">
+            <h1 className={`font-heading text-5xl md:text-8xl mb-6 tracking-tight ${theme.accentClass}`}>
+              {theme.name}
+            </h1>
+            <p className="max-w-2xl mx-auto text-lg md:text-xl text-foreground/78 leading-relaxed font-light">
               {theme.description}
             </p>
           </header>
         </ScrollReveal>
 
         {validatedProducts.length === 0 ? (
-          <div className="rounded-2xl border border-current/30 bg-foreground/6 p-10 text-center max-w-2xl mx-auto">
-            <p className="opacity-80 mb-4">No products available in this category yet.</p>
+          <div className="glass-shell rounded-2xl p-10 text-center max-w-2xl mx-auto">
+            <p className="text-foreground/80 mb-4">No products available in this category yet.</p>
             <Link
               href="/collections"
               className="inline-flex items-center text-xs tracking-widest uppercase font-bold underline underline-offset-4 hover:opacity-70 transition-opacity"
@@ -69,8 +71,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
             {validatedProducts.map((product, idx) => (
               <ScrollReveal key={product.id} direction="up" delay={idx * 0.1}>
-                <Link href={`/product/${product.id}`} className="block group">
-                  <div className="relative aspect-[3/4] bg-foreground/10 mb-6 overflow-hidden">
+                <Link href={`/product/${product.id}`} className="block group glass-shell rounded-[1.5rem] p-4 md:p-5 hover:-translate-y-1 transition-transform">
+                  <div className="relative aspect-[3/4] bg-card/55 rounded-xl mb-6 overflow-hidden">
                     <ParallaxImage
                       src={product.image_url}
                       alt={product.title}
@@ -78,14 +80,14 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                   </div>
                   <div className="flex justify-between items-start">
                     <div>
-                      <h2 className="font-heading text-2xl mb-2 group-hover:opacity-70 transition-opacity">
+                      <h2 className={`font-heading text-2xl mb-2 group-hover:opacity-80 transition-opacity ${theme.accentClass}`}>
                         {product.title}
                       </h2>
-                      <p className="text-xs tracking-[0.2em] opacity-60 uppercase font-bold">
+                      <p className="text-xs tracking-[0.2em] text-foreground/60 uppercase font-bold">
                         {product.category}
                       </p>
                     </div>
-                    <p className="font-light text-lg opacity-90">${product.price}</p>
+                    <p className="font-light text-lg text-foreground/92">${product.price}</p>
                   </div>
                 </Link>
               </ScrollReveal>

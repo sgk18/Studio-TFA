@@ -24,7 +24,7 @@ export function AddToCartButton({ product }: { product: Product }) {
           category: product.category,
         })
       }
-      className="bg-foreground text-background px-14 py-4 text-sm font-bold tracking-widest uppercase hover:bg-primary transition-colors duration-300 active:scale-95"
+      className="glass-subpanel border border-primary/70 text-foreground px-14 py-4 rounded-xl text-sm font-bold tracking-widest uppercase hover:bg-primary hover:text-primary-foreground transition-colors duration-300 active:scale-95"
     >
       Add to Cart
     </button>

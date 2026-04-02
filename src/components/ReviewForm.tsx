@@ -36,7 +36,7 @@ export function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border border-border p-6 space-y-5">
+    <form onSubmit={handleSubmit} className="glass-shell rounded-2xl p-6 space-y-5">
       <p className="text-xs font-bold uppercase tracking-[0.2em] text-foreground/50">Your Rating</p>
       <StarRating rating={rating} onRate={setRating} size={24} />
 
@@ -49,14 +49,14 @@ export function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
           onChange={(e) => setComment(e.target.value)}
           rows={4}
           placeholder="Share your experience with this product..."
-          className="w-full border border-border bg-transparent px-4 py-3 text-foreground placeholder:text-foreground/30 focus:outline-none focus:border-foreground transition-colors resize-none text-sm"
+          className="glass-input w-full rounded-xl px-4 py-3 focus:outline-none focus:border-primary/60 transition-colors resize-none text-sm"
         />
       </div>
 
       <button
         type="submit"
         disabled={isPending}
-        className="bg-foreground text-background px-8 py-3 text-xs tracking-widest uppercase font-bold hover:bg-primary transition-colors duration-300 disabled:opacity-50"
+        className="rounded-lg border border-primary/80 bg-primary text-primary-foreground px-8 py-3 text-xs tracking-widest uppercase font-bold hover:bg-primary/90 transition-colors duration-300 disabled:opacity-50"
       >
         {isPending ? "Submitting…" : "Submit Review"}
       </button>

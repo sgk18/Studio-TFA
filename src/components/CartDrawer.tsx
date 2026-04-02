@@ -60,6 +60,8 @@ export function CartDrawer() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      aria-label={`Decrease quantity for ${item.title}`}
+                      title="Decrease quantity"
                       className="w-6 h-6 flex items-center justify-center rounded-sm border border-border/70 bg-card/50 hover:bg-card/80 transition-colors"
                     >
                       <Minus className="w-3 h-3" />
@@ -67,6 +69,8 @@ export function CartDrawer() {
                     <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      aria-label={`Increase quantity for ${item.title}`}
+                      title="Increase quantity"
                       className="w-6 h-6 flex items-center justify-center rounded-sm border border-border/70 bg-card/50 hover:bg-card/80 transition-colors"
                     >
                       <Plus className="w-3 h-3" />
@@ -77,6 +81,8 @@ export function CartDrawer() {
                   <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
                   <button
                     onClick={() => removeItem(item.id)}
+                    aria-label={`Remove ${item.title} from cart`}
+                    title="Remove item"
                     className="text-foreground/30 hover:text-foreground transition-colors"
                   >
                     <X className="w-4 h-4" />

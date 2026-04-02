@@ -271,7 +271,7 @@ body::after {
 
   .glass-subpanel {
     background: var(--glass-panel);
-    border: 1px solid color-mix(in srgb, var(--glass-border) 92%, transparent);
+    border: 1px solid var(--glass-border);
     -webkit-backdrop-filter: blur(18px) saturate(155%);
     backdrop-filter: blur(18px) saturate(155%);
   }
@@ -283,14 +283,18 @@ body::after {
   }
 
   .glass-input {
-    background: color-mix(in srgb, var(--card) 74%, transparent);
-    border: 1px solid color-mix(in srgb, var(--glass-border) 90%, transparent);
+    background: rgba(255, 255, 255, 0.52);
+    border: 1px solid var(--glass-border);
     color: var(--foreground);
     -webkit-backdrop-filter: blur(14px) saturate(145%);
     backdrop-filter: blur(14px) saturate(145%);
   }
 
+  .dark .glass-input {
+    background: rgba(17, 24, 38, 0.62);
+  }
+
   .glass-input::placeholder {
-    color: color-mix(in srgb, var(--muted-foreground) 84%, transparent);
+    color: var(--muted-foreground);
   }
 }

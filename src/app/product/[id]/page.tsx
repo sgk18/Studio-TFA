@@ -55,26 +55,28 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     : 0;
 
   return (
-    <article className="min-h-screen pt-32 pb-24 px-6 md:px-12 bg-background">
+    <article className="min-h-screen pt-32 pb-24 px-6 md:px-12">
       <div className="container mx-auto max-w-7xl">
-        <Link href="/collections" className="inline-flex items-center text-xs tracking-widest uppercase font-bold text-foreground/50 hover:text-foreground transition-colors mb-16">
+        <Link href="/collections" className="action-pill-link mb-16">
           ← Back to Gallery
         </Link>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
           <ScrollReveal direction="right">
-            <div className="relative aspect-[3/4] w-full bg-muted">
-              <Image
-                src={product.image_url}
-                alt={product.title}
-                fill
-                priority
-                className="object-cover"
-              />
+            <div className="glass-shell rounded-[1.75rem] p-4">
+              <div className="relative aspect-[3/4] w-full bg-card/55 rounded-xl overflow-hidden">
+                <Image
+                  src={product.image_url}
+                  alt={product.title}
+                  fill
+                  priority
+                  className="object-cover"
+                />
+              </div>
             </div>
           </ScrollReveal>
 
-          <div className="flex flex-col justify-center lg:py-12">
+          <div className="glass-shell rounded-[1.75rem] p-7 md:p-10 flex flex-col justify-center lg:py-12">
             <ScrollReveal direction="left" delay={0.2}>
               <h1 className="font-heading text-5xl md:text-6xl tracking-tight mb-4">{product.title}</h1>
               <p className="text-xs tracking-[0.2em] text-foreground/50 uppercase font-bold mb-4">{product.category}</p>
@@ -125,7 +127,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* ── Customer Reviews Section ──────────────────── */}
-        <div className="mt-32 border-t border-border pt-20">
+        <div className="mt-20 glass-shell rounded-[1.75rem] p-8 md:p-10">
           <ScrollReveal>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
               <div>
@@ -150,7 +152,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                 <ReviewForm productId={id} />
               </div>
             ) : (
-              <div className="mb-12 p-6 border border-dashed border-border text-center">
+              <div className="mb-12 p-6 glass-subpanel border-dashed text-center rounded-xl">
                 <p className="text-sm text-foreground/60 mb-3">Sign in to share your experience with this piece.</p>
                 <Link href="/login" className="text-xs font-bold uppercase tracking-widest underline underline-offset-4 hover:text-primary transition-colors">
                   Sign in to review
@@ -162,7 +164,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {reviews && reviews.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {reviews.map((review: any) => (
-                  <div key={review.id} className="border border-border p-6 space-y-3">
+                  <div key={review.id} className="glass-subpanel rounded-xl p-6 space-y-3">
                     <div className="flex items-center justify-between">
                       <p className="font-bold text-sm">
                         {(review.profiles as any)?.full_name ?? "Anonymous"}
