@@ -10,10 +10,6 @@ import {
   recordDeniedAdminAccess,
 } from "@/lib/security/adminAccessStore";
 
-function normalizeEmail(email?: string | null): string {
-  return (email || "").trim().toLowerCase();
-}
-
 function redirectToLogin(request: NextRequest, errorMessage?: string) {
   const redirectUrl = request.nextUrl.clone();
   redirectUrl.pathname = "/login";
@@ -66,17 +62,11 @@ export async function proxy(request: NextRequest) {
     request.headers.get(headerName)
   );
 
-  let effectiveAllowedIpsRaw = process.env.MASTER_ADMIN_ALLOWED_IPS ?? null;
-  const normalizedUserEmail = normalizeEmail(user?.email);
-  const normalizedMasterEmail = normalizeEmail(process.env.MASTER_ADMIN_EMAIL);
-
-  if (normalizedUserEmail && normalizedMasterEmail && normalizedUserEmail === normalizedMasterEmail) {
-    const settings = await readAdminAccessSettings(
-      supabase,
-      process.env.MASTER_ADMIN_ALLOWED_IPS ?? null
-    );
-    effectiveAllowedIpsRaw = settings.allowedIpsRaw;
-  }
+  const settings = await readAdminAccessSettings(
+    supabase,
+    process.env.MASTER_ADMIN_ALLOWED_IPS ?? null
+  );
+  const effectiveAllowedIpsRaw = settings.allowedIpsRaw;
 
   const decision = evaluateMasterAdminAccess({
     userEmail: user?.email,
