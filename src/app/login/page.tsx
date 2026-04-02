@@ -19,7 +19,7 @@ export default async function LoginPage({
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6 pt-24 pb-12">
-      <div className="w-full max-w-md glass-panel rounded-[1.75rem] border border-white/45 p-8 sm:p-10 shadow-[0_25px_80px_rgba(18,26,45,0.2)]">
+      <div className="w-full max-w-md glass-panel rounded-[1.75rem] border border-border/70 p-8 sm:p-10 shadow-[0_25px_80px_rgba(18,26,45,0.2)]">
         <div className="mb-16 text-center">
           <Link href="/" className="font-heading text-3xl tracking-tight text-foreground">Studio TFA</Link>
           <h1 className="font-heading text-5xl mt-8 mb-4 tracking-tight">Welcome back.</h1>
@@ -36,7 +36,7 @@ export default async function LoginPage({
           <input type="hidden" name="next" value={nextPath} />
           <button
             type="submit"
-            className="w-full inline-flex items-center justify-center gap-3 border border-white/55 bg-white/55 hover:bg-white/75 backdrop-blur-xl text-foreground py-3.5 text-xs tracking-widest uppercase font-bold transition-colors"
+            className="w-full inline-flex items-center justify-center gap-3 border border-border/80 bg-card/70 hover:bg-card/90 backdrop-blur-xl text-foreground py-3.5 text-xs tracking-widest uppercase font-bold transition-colors"
           >
             <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
               <path fill="#FFC107" d="M43.61 20.08H42V20H24v8h11.3C33.65 32.66 29.28 36 24 36c-6.63 0-12-5.37-12-12s5.37-12 12-12c3.06 0 5.84 1.15 7.96 3.04l5.66-5.66C34.06 6.05 29.27 4 24 4 12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20c0-1.34-.14-2.65-.39-3.92z" />
@@ -49,8 +49,8 @@ export default async function LoginPage({
         </form>
 
         <div className="relative my-6">
-          <div className="h-px bg-white/50" />
-          <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 px-3 bg-white/70 text-[10px] font-bold tracking-[0.25em] text-foreground/60">
+          <div className="h-px bg-border/70" />
+          <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 px-3 bg-card/85 text-[10px] font-bold tracking-[0.25em] text-muted-foreground">
             OR
           </span>
         </div>
@@ -58,7 +58,7 @@ export default async function LoginPage({
         <form action={signIn} className="space-y-6">
           <input type="hidden" name="next" value={nextPath} />
           <div>
-            <label className="block text-xs tracking-widest uppercase font-bold text-foreground/50 mb-3">
+            <label className="block text-xs tracking-widest uppercase font-bold text-muted-foreground mb-3">
               Email Address
             </label>
             <input
@@ -66,12 +66,12 @@ export default async function LoginPage({
               name="email"
               required
               autoComplete="email"
-              className="w-full border border-white/50 bg-white/45 backdrop-blur-lg px-4 py-3 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-foreground/70 transition-colors"
+              className="w-full border border-border/70 bg-card/65 backdrop-blur-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 transition-colors"
               placeholder="your@email.com"
             />
           </div>
           <div>
-            <label className="block text-xs tracking-widest uppercase font-bold text-foreground/50 mb-3">
+            <label className="block text-xs tracking-widest uppercase font-bold text-muted-foreground mb-3">
               Password
             </label>
             <input
@@ -79,14 +79,14 @@ export default async function LoginPage({
               name="password"
               required
               autoComplete="current-password"
-              className="w-full border border-white/50 bg-white/45 backdrop-blur-lg px-4 py-3 text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-foreground/70 transition-colors"
+              className="w-full border border-border/70 bg-card/65 backdrop-blur-lg px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 transition-colors"
               placeholder="••••••••"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full border border-white/55 bg-foreground/90 text-background py-4 text-xs tracking-widest uppercase font-bold hover:bg-primary transition-colors duration-300 mt-2 backdrop-blur-lg"
+            className="w-full border border-primary/80 bg-primary text-primary-foreground py-4 text-xs tracking-widest uppercase font-bold hover:bg-primary/90 transition-colors duration-300 mt-2 backdrop-blur-lg"
           >
             Sign In
           </button>
@@ -96,7 +96,7 @@ export default async function LoginPage({
           <div className="h-px bg-border" />
           <Link
             href="/collections"
-            className="block w-full border border-white/50 bg-white/40 py-4 text-xs tracking-widest uppercase font-bold text-foreground/70 hover:border-foreground/40 hover:text-foreground transition-colors backdrop-blur-lg"
+            className="block w-full border border-border/70 bg-card/55 py-4 text-xs tracking-widest uppercase font-bold text-foreground/80 hover:border-primary/50 hover:bg-card/80 hover:text-foreground transition-colors backdrop-blur-lg"
           >
             Continue as Guest →
           </Link>

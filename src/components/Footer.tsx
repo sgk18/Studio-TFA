@@ -65,16 +65,16 @@ export function Footer() {
 
   return (
     <footer className="px-6 md:px-12 mt-32 pb-10">
-      <div className="container mx-auto max-w-7xl rounded-[2rem] border border-white/30 bg-[rgba(17,24,39,0.74)] text-white backdrop-blur-2xl px-6 md:px-10 py-20 shadow-[0_30px_90px_rgba(2,6,23,0.38)]">
+      <div className="container mx-auto max-w-7xl glass-shell rounded-[2rem] px-6 md:px-10 py-20 text-foreground">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-8">
           
           {/* Brand column */}
           <div className="md:col-span-4 flex flex-col">
-            <h2 className="font-heading text-4xl md:text-5xl tracking-tight mb-8 text-white">Studio TFA</h2>
-            <div className="max-w-md text-white/72 text-base leading-relaxed mb-10">
+            <h2 className="font-heading text-4xl md:text-5xl tracking-tight mb-8">Studio TFA</h2>
+            <div className="max-w-md text-foreground/78 text-base leading-relaxed mb-10">
               <StaggeredText text="A Christian Creative Studio. Intentional, narrative-driven art and home decor. Let the truth of our products speak louder than trends." />
             </div>
-            <div className="text-sm text-white/55 space-y-1">
+            <div className="text-sm text-muted-foreground space-y-1">
               <p>Kothanur, Bangalore</p>
               <p>Mon–Fri 9am–5pm · Sat 10am–5pm</p>
             </div>
@@ -82,9 +82,9 @@ export function Footer() {
 
           {/* Shop Links */}
           <div className="md:col-span-2 flex flex-col space-y-3">
-            <h4 className="text-white/45 mb-2 text-xs font-bold uppercase tracking-widest">Shop</h4>
+            <h4 className="text-muted-foreground mb-2 text-xs font-bold uppercase tracking-widest">Shop</h4>
             {shopLinks.map(l => (
-              <Link key={l.href} href={l.href} className="text-sm text-white/74 hover:text-white transition-colors">
+              <Link key={l.href} href={l.href} className="text-sm text-foreground/80 hover:text-primary transition-colors">
                 {l.label}
               </Link>
             ))}
@@ -92,9 +92,9 @@ export function Footer() {
 
           {/* Studio Links */}
           <div className="md:col-span-2 flex flex-col space-y-3">
-            <h4 className="text-white/45 mb-2 text-xs font-bold uppercase tracking-widest">Studio</h4>
+            <h4 className="text-muted-foreground mb-2 text-xs font-bold uppercase tracking-widest">Studio</h4>
             {studioLinks.map(l => (
-              <Link key={l.href} href={l.href} className="text-sm text-white/74 hover:text-white transition-colors">
+              <Link key={l.href} href={l.href} className="text-sm text-foreground/80 hover:text-primary transition-colors">
                 {l.label}
               </Link>
             ))}
@@ -102,25 +102,25 @@ export function Footer() {
 
           {/* Connect + Newsletter */}
           <div className="md:col-span-4 flex flex-col">
-            <h4 className="text-white/45 mb-4 text-xs font-bold uppercase tracking-widest">Connect</h4>
+            <h4 className="text-muted-foreground mb-4 text-xs font-bold uppercase tracking-widest">Connect</h4>
             <div className="flex flex-col space-y-2 mb-10">
               {connectLinks.map(l => (
                 <a key={l.href} href={l.href} target={l.href.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer"
-                  className="text-sm text-white/74 hover:text-white transition-colors">
+                  className="text-sm text-foreground/80 hover:text-primary transition-colors">
                   {l.label}
                 </a>
               ))}
             </div>
 
-            <h4 className="text-white/45 mb-3 text-xs font-bold uppercase tracking-widest">Newsletter</h4>
-            <p className="text-white/64 text-sm mb-4 leading-relaxed">Occasional letters on inner healing and new collections.</p>
-            <form className="flex border-b border-white/25 pb-2">
+            <h4 className="text-muted-foreground mb-3 text-xs font-bold uppercase tracking-widest">Newsletter</h4>
+            <p className="text-foreground/72 text-sm mb-4 leading-relaxed">Occasional letters on inner healing and new collections.</p>
+            <form className="glass-subpanel rounded-xl p-2 flex items-center gap-2">
               <input
                 type="email"
                 placeholder="Email address"
-                className="bg-transparent border-none outline-none w-full text-white placeholder:text-white/35 text-sm"
+                className="glass-input w-full rounded-lg px-3 py-2 text-sm outline-none"
               />
-              <button type="submit" className="text-xs font-bold tracking-widest uppercase hover:text-secondary transition-colors ml-3 shrink-0">
+              <button type="submit" className="action-pill-link px-3 py-2 text-[10px] shrink-0">
                 Subscribe
               </button>
             </form>
@@ -129,13 +129,13 @@ export function Footer() {
         </div>
         
         {/* Bottom bar */}
-        <div className="mt-20 pt-8 border-t border-white/12 flex flex-col md:flex-row justify-between items-center text-xs text-white/35 tracking-widest uppercase gap-4">
+        <div className="mt-20 pt-8 border-t border-border/60 flex flex-col md:flex-row justify-between items-center text-xs text-muted-foreground tracking-widest uppercase gap-4">
           <p>&copy; {new Date().getFullYear()} Studio TFA. All rights reserved.</p>
           <div className="flex gap-8">
-            <Link href="/privacy" className="hover:text-white/70 transition-colors">Privacy</Link>
-            <Link href="/terms" className="hover:text-white/70 transition-colors">Terms</Link>
+            <Link href="/privacy" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-primary transition-colors">Terms</Link>
             {hasAdminAccess && (
-              <Link href="/admin" className="hover:text-white/70 transition-colors">Admin</Link>
+              <Link href="/admin" className="hover:text-primary transition-colors">Admin</Link>
             )}
           </div>
         </div>

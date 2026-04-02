@@ -87,14 +87,14 @@ export default async function AdminAccessPage({
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/admin"
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] border border-black px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all"
+              className="action-pill-link"
             >
               <RefreshCw className="w-4 h-4" />
               Back To Analytics
             </Link>
             <Link
               href="/admin/products"
-              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] border border-black px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all"
+              className="action-pill-link"
             >
               <Lock className="w-4 h-4" />
               Inventory
@@ -205,7 +205,7 @@ export default async function AdminAccessPage({
               <div className="flex items-center gap-2">
                 <Link
                   href="/admin/access/export"
-                  className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] border border-black px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all"
+                  className="action-pill-link"
                 >
                   <Download className="w-4 h-4" />
                   Export CSV

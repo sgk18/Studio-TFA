@@ -150,18 +150,18 @@ export function ProductTable({ initialData }: { initialData: any[] }) {
             <TableRow>
               <TableHead className="w-[80px]">Image</TableHead>
               <TableHead>
-                <button className="flex items-center gap-1 font-bold uppercase text-xs tracking-widest hover:text-black transition-colors" onClick={() => handleSort('title')}>
+                <button className="flex items-center gap-1 font-bold uppercase text-xs tracking-widest hover:text-foreground transition-colors" onClick={() => handleSort('title')}>
                   Title <ArrowUpDown className="w-3 h-3" />
                 </button>
               </TableHead>
               <TableHead className="font-bold uppercase text-xs tracking-widest">Category</TableHead>
               <TableHead>
-                 <button className="flex items-center gap-1 font-bold uppercase text-xs tracking-widest hover:text-black transition-colors" onClick={() => handleSort('price')}>
+                 <button className="flex items-center gap-1 font-bold uppercase text-xs tracking-widest hover:text-foreground transition-colors" onClick={() => handleSort('price')}>
                   Price <ArrowUpDown className="w-3 h-3" />
                 </button>
               </TableHead>
               <TableHead>
-                <button className="flex items-center gap-1 font-bold uppercase text-xs tracking-widest hover:text-black transition-colors" onClick={() => handleSort('stock_count')}>
+                <button className="flex items-center gap-1 font-bold uppercase text-xs tracking-widest hover:text-foreground transition-colors" onClick={() => handleSort('stock_count')}>
                   Stock <ArrowUpDown className="w-3 h-3" />
                 </button>
               </TableHead>

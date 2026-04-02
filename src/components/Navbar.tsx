@@ -68,7 +68,7 @@ export function Navbar() {
     <>
       {/* Desktop Navbar - PillNav */}
       <nav className="hidden md:flex fixed w-full z-50 top-0 px-4 sm:px-6 py-4 pointer-events-none">
-        <div className="container mx-auto flex items-center justify-between pointer-events-auto h-14 rounded-2xl border border-white/45 bg-white/34 backdrop-blur-2xl px-4 shadow-[0_14px_36px_rgba(15,23,42,0.18)]">
+        <div className="container mx-auto flex items-center justify-between pointer-events-auto h-14 rounded-2xl border border-border/70 bg-card/60 backdrop-blur-2xl px-4 shadow-[0_14px_36px_rgba(15,23,42,0.18)]">
           
           <div className="flex-1 flex items-center">
             <PillNav
@@ -87,7 +87,7 @@ export function Navbar() {
             {hasAdminAccess && (
               <Link
                 href="/admin"
-                className="inline-flex items-center gap-2 text-xs tracking-[0.2em] font-bold uppercase border border-black/80 px-3 py-1.5 rounded-full hover:bg-black hover:text-white transition-all"
+                className="action-pill-link"
               >
                 Admin
               </Link>
@@ -112,7 +112,7 @@ export function Navbar() {
               {hasAdminAccess && (
                 <Link
                   href="/admin"
-                  className="inline-flex items-center gap-2 text-[10px] tracking-[0.2em] font-bold uppercase border border-black/80 px-2.5 py-1 rounded-full hover:bg-black hover:text-white transition-all"
+                  className="action-pill-link px-2.5 py-1 text-[10px]"
                 >
                   Admin
                 </Link>

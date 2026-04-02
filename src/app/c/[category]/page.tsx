@@ -56,7 +56,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
         </ScrollReveal>
 
         {validatedProducts.length === 0 ? (
-          <div className="rounded-2xl border border-current/30 bg-black/5 p-10 text-center max-w-2xl mx-auto">
+          <div className="rounded-2xl border border-current/30 bg-foreground/6 p-10 text-center max-w-2xl mx-auto">
             <p className="opacity-80 mb-4">No products available in this category yet.</p>
             <Link
               href="/collections"
@@ -70,7 +70,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             {validatedProducts.map((product, idx) => (
               <ScrollReveal key={product.id} direction="up" delay={idx * 0.1}>
                 <Link href={`/product/${product.id}`} className="block group">
-                  <div className="relative aspect-[3/4] bg-black/10 mb-6 overflow-hidden">
+                  <div className="relative aspect-[3/4] bg-foreground/10 mb-6 overflow-hidden">
                     <ParallaxImage
                       src={product.image_url}
                       alt={product.title}

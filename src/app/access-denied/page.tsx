@@ -27,7 +27,7 @@ export default async function AccessDeniedPage({
 
   return (
     <div className="min-h-screen pt-32 pb-24 px-6 md:px-12 flex items-center justify-center">
-      <div className="w-full max-w-2xl glass-panel rounded-[1.75rem] border border-white/45 p-10 text-center shadow-[0_25px_80px_rgba(18,26,45,0.2)]">
+      <div className="w-full max-w-2xl glass-panel rounded-[1.75rem] border border-border/70 p-10 text-center shadow-[0_25px_80px_rgba(18,26,45,0.2)]">
         <p className="text-xs font-bold uppercase tracking-[0.25em] text-muted-foreground mb-3">
           403
         </p>
@@ -40,19 +40,19 @@ export default async function AccessDeniedPage({
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] border border-black px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all"
+            className="action-pill-link"
           >
             Home
           </Link>
           <Link
             href="/collections"
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] border border-black px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all"
+            className="action-pill-link"
           >
             Collections
           </Link>
           <Link
             href="/about"
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] border border-black px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all"
+            className="action-pill-link"
           >
             About
           </Link>

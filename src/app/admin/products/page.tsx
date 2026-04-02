@@ -29,13 +29,13 @@ export default async function AdminProductsPage() {
         <div className="flex items-center gap-2">
           <Link
             href="/admin"
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] border border-black px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all"
+            className="action-pill-link"
           >
             Analytics
           </Link>
           <Link
             href="/admin/access"
-            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] border border-black px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all"
+            className="action-pill-link"
           >
             Access Control
           </Link>

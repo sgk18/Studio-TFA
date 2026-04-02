@@ -23,8 +23,8 @@ export function CartDrawer() {
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
-      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col bg-background border-l border-border p-0">
-        <SheetHeader className="px-6 pt-8 pb-4 border-b border-border">
+      <SheetContent side="right" className="w-full sm:max-w-md flex flex-col glass-shell border-l border-border/70 p-0">
+        <SheetHeader className="px-6 pt-8 pb-4 border-b border-border/60">
           <SheetTitle className="font-heading text-2xl font-normal tracking-tight">
             Your Cart
             {mounted && count > 0 && (
@@ -36,8 +36,8 @@ export function CartDrawer() {
         {/* Items */}
         {!mounted || items.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-            <p className="font-heading text-3xl text-foreground/30 mb-4">Empty</p>
-            <p className="text-foreground/50 text-sm leading-relaxed">
+            <p className="font-heading text-3xl text-muted-foreground mb-4">Empty</p>
+            <p className="text-foreground/70 text-sm leading-relaxed">
               Your cart is waiting to be filled with intentional objects.
             </p>
             <button
@@ -50,8 +50,8 @@ export function CartDrawer() {
         ) : (
           <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
             {items.map((item) => (
-              <div key={item.id} className="flex gap-4 items-start">
-                <div className="relative w-20 h-20 bg-muted flex-shrink-0 overflow-hidden">
+              <div key={item.id} className="glass-subpanel rounded-xl p-3 flex gap-4 items-start">
+                <div className="relative w-20 h-20 bg-card/50 rounded-md flex-shrink-0 overflow-hidden">
                   <Image src={item.image_url} alt={item.title} fill className="object-cover" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -60,14 +60,14 @@ export function CartDrawer() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="w-6 h-6 flex items-center justify-center border border-border hover:bg-muted transition-colors"
+                      className="w-6 h-6 flex items-center justify-center rounded-sm border border-border/70 bg-card/50 hover:bg-card/80 transition-colors"
                     >
                       <Minus className="w-3 h-3" />
                     </button>
                     <span className="text-sm font-medium w-4 text-center">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="w-6 h-6 flex items-center justify-center border border-border hover:bg-muted transition-colors"
+                      className="w-6 h-6 flex items-center justify-center rounded-sm border border-border/70 bg-card/50 hover:bg-card/80 transition-colors"
                     >
                       <Plus className="w-3 h-3" />
                     </button>
@@ -89,7 +89,7 @@ export function CartDrawer() {
 
         {/* Footer */}
         {mounted && items.length > 0 && (
-          <div className="px-6 pb-8 pt-4 border-t border-border space-y-4">
+          <div className="px-6 pb-8 pt-4 border-t border-border/60 space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-sm text-foreground/60 tracking-widest uppercase font-bold">Subtotal</span>
               <span className="font-heading text-2xl">${total.toFixed(2)}</span>
@@ -100,7 +100,7 @@ export function CartDrawer() {
             <Link
               href="/checkout"
               onClick={closeCart}
-              className="block w-full bg-foreground text-background text-center py-4 text-xs tracking-widest uppercase font-bold hover:bg-primary transition-colors duration-300"
+              className="block w-full rounded-lg border border-primary/80 bg-primary text-primary-foreground text-center py-4 text-xs tracking-widest uppercase font-bold hover:bg-primary/90 transition-colors duration-300"
             >
               Proceed to Checkout
             </Link>
