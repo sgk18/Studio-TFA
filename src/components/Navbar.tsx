@@ -7,6 +7,7 @@ import { CartDrawer } from "@/components/CartDrawer";
 import PillNav from "./PillNav";
 import StaggeredMenu from "./StaggeredMenu";
 import { CartButton } from "./CartButton";
+import { resolvePrimaryNavHref } from "@/lib/pageValidation";
 
 const navItems = [
   { label: 'Collections', href: '/collections', link: '/collections', ariaLabel: 'View all collections' },
@@ -23,6 +24,7 @@ const socialItems = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const activeHref = resolvePrimaryNavHref(pathname);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
 
   useEffect(() => {
@@ -72,6 +74,7 @@ export function Navbar() {
             <PillNav
               logoText="Studio TFA"
               items={navItems}
+              activeHref={activeHref}
               baseColor="rgba(17,24,39,0.72)"
               pillColor="rgba(255,255,255,0.82)"
               hoveredPillTextColor="white"

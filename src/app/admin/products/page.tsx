@@ -10,7 +10,7 @@ export const metadata = {
 export default async function AdminProductsPage() {
   const access = await verifyMasterAdminAccess({ path: "/admin/products" });
   if (!access.decision.allowed) {
-    redirect(`/login?error=${encodeURIComponent(access.message)}&redirectedFrom=/admin/products`);
+    redirect(`/access-denied?error=${encodeURIComponent(access.message)}&from=/admin/products`);
   }
 
   const supabase = access.supabase;

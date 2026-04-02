@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { ScrollReveal } from "@/components/ScrollReveal";
-import Image from "next/image";
 import Link from "next/link";
 import { ParallaxImage } from "@/components/ParallaxImage";
+import { sanitizeProductCards } from "@/lib/pageValidation";
 
 // Thematic map matching the requested brand palette
 const categoryThemes: Record<string, { bg: string, text: string, name: string, description: string }> = {
@@ -40,6 +40,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
     .from('products')
     .select('*')
     .eq('category', theme.name);
+  const validatedProducts = sanitizeProductCards(products);
 
 
   return (
@@ -54,31 +55,43 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
           </header>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
-          {products?.map((product, idx) => (
-            <ScrollReveal key={product.id} direction="up" delay={idx * 0.1}>
-              <Link href={`/product/${product.id}`} className="block group">
-                <div className="relative aspect-[3/4] bg-black/10 mb-6 overflow-hidden">
-                   <ParallaxImage 
-                     src={product.image_url} 
-                     alt={product.title} 
-                   />
-                </div>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="font-heading text-2xl mb-2 group-hover:opacity-70 transition-opacity">
-                      {product.title}
-                    </h2>
-                    <p className="text-xs tracking-[0.2em] opacity-60 uppercase font-bold">
-                      {product.category}
-                    </p>
+        {validatedProducts.length === 0 ? (
+          <div className="rounded-2xl border border-current/30 bg-black/5 p-10 text-center max-w-2xl mx-auto">
+            <p className="opacity-80 mb-4">No products available in this category yet.</p>
+            <Link
+              href="/collections"
+              className="inline-flex items-center text-xs tracking-widest uppercase font-bold underline underline-offset-4 hover:opacity-70 transition-opacity"
+            >
+              View all collections
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
+            {validatedProducts.map((product, idx) => (
+              <ScrollReveal key={product.id} direction="up" delay={idx * 0.1}>
+                <Link href={`/product/${product.id}`} className="block group">
+                  <div className="relative aspect-[3/4] bg-black/10 mb-6 overflow-hidden">
+                    <ParallaxImage
+                      src={product.image_url}
+                      alt={product.title}
+                    />
                   </div>
-                  <p className="font-light text-lg opacity-90">${product.price}</p>
-                </div>
-              </Link>
-            </ScrollReveal>
-          ))}
-        </div>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="font-heading text-2xl mb-2 group-hover:opacity-70 transition-opacity">
+                        {product.title}
+                      </h2>
+                      <p className="text-xs tracking-[0.2em] opacity-60 uppercase font-bold">
+                        {product.category}
+                      </p>
+                    </div>
+                    <p className="font-light text-lg opacity-90">${product.price}</p>
+                  </div>
+                </Link>
+              </ScrollReveal>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -12,11 +12,19 @@ import {
 } from "@/components/ui/accordion";
 import { StarRating } from "@/components/StarRating";
 import { ReviewForm } from "@/components/ReviewForm";
+import { isValidPageIdParam } from "@/lib/pageValidation";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (!isValidPageIdParam(id)) {
+    return {
+      title: "Product | Studio TFA",
+      description: "",
+    };
+  }
+
   const supabase = await createClient();
   const { data: product } = await supabase.from('products').select('title, category').eq('id', id).single();
   return {
@@ -27,6 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (!isValidPageIdParam(id)) notFound();
   
   const supabase = await createClient();
   const [{ data: product }, { data: { user } }, { data: reviews }] = await Promise.all([

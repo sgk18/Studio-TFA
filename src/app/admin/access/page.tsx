@@ -25,6 +25,7 @@ import {
 } from "@/lib/security/adminAccessStore";
 import { parseAllowedIps } from "@/lib/security/masterAdmin";
 import { verifyMasterAdminAccess } from "@/lib/security/masterAdminServer";
+import { pickAllowedStatus, safeDecodeQueryParam } from "@/lib/pageValidation";
 import { clearAccessAuditLogs, saveAdminAllowlist } from "./actions";
 
 export const metadata = {
@@ -52,11 +53,13 @@ export default async function AdminAccessPage({
   searchParams: Promise<{ status?: string; error?: string }>;
 }) {
   const { status, error } = await searchParams;
+  const statusState = pickAllowedStatus(status, ["saved", "cleared"] as const);
+  const errorMessage = safeDecodeQueryParam(error);
 
   const access = await verifyMasterAdminAccess({ path: "/admin/access" });
   if (!access.decision.allowed) {
     redirect(
-      `/login?error=${encodeURIComponent(access.message)}&redirectedFrom=/admin/access`
+      `/access-denied?error=${encodeURIComponent(access.message)}&from=/admin/access`
     );
   }
 
@@ -99,21 +102,21 @@ export default async function AdminAccessPage({
           </div>
         </div>
 
-        {status === "saved" && (
+        {statusState === "saved" && (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-800">
             Allowlist saved successfully.
           </div>
         )}
 
-        {status === "cleared" && (
+        {statusState === "cleared" && (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-800">
             Access audit logs cleared.
           </div>
         )}
 
-        {error && (
+        {errorMessage && (
           <div className="rounded-xl border border-red-200 bg-red-50/85 px-4 py-3 text-sm text-red-700">
-            {decodeURIComponent(error)}
+            {errorMessage}
           </div>
         )}
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { signIn, signInWithGoogle } from "@/app/auth/actions";
+import { safeDecodeQueryParam } from "@/lib/pageValidation";
 
 export const metadata: Metadata = {
   title: "Sign In | Studio TFA",
@@ -14,6 +15,7 @@ export default async function LoginPage({
 }) {
   const { error, redirectedFrom } = await searchParams;
   const nextPath = redirectedFrom?.startsWith("/") ? redirectedFrom : "/";
+  const errorMessage = safeDecodeQueryParam(error);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-6 pt-24 pb-12">
@@ -24,9 +26,9 @@ export default async function LoginPage({
           <p className="text-foreground/60 leading-relaxed">Sign in to your account to continue.</p>
         </div>
 
-        {error && (
+        {errorMessage && (
           <div className="mb-6 p-4 bg-red-50/80 border border-red-200/70 text-red-700 text-sm rounded-xl backdrop-blur-md">
-            {decodeURIComponent(error)}
+            {errorMessage}
           </div>
         )}
 

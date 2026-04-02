@@ -6,6 +6,7 @@ import { ParallaxImage } from "@/components/ParallaxImage";
 import { HorizontalScroll } from "@/components/HorizontalScroll";
 import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 import { NewsletterPopup } from "@/components/NewsletterPopup";
+import { sanitizeProductCards } from "@/lib/pageValidation";
 
 export const metadata = {
   title: "Studio TFA | Narrative Christian Art",
@@ -15,7 +16,7 @@ export const metadata = {
 export default async function Home() {
   const supabase = await createClient();
   const { data: products } = await supabase.from('products').select('*').limit(3);
-  const featuredProducts = products || [];
+  const featuredProducts = sanitizeProductCards(products).slice(0, 3);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -150,25 +151,39 @@ export default async function Home() {
 
             {/* Scrolling Images with Parallax */}
             <div className="md:col-span-8 space-y-32 mt-16 md:mt-0">
-              {featuredProducts.map((product) => (
-                <ScrollReveal key={product.id} direction="up" delay={0.1}>
-                  <Link href={`/product/${product.id}`} className="block group">
-                    <div className="aspect-[4/5] md:aspect-[3/4] mb-6">
-                      <ParallaxImage 
-                        src={product.image_url} 
-                        alt={product.title} 
-                      />
-                    </div>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h4 className="font-heading text-2xl mb-2 group-hover:text-primary transition-colors">{product.title}</h4>
-                        <p className="text-sm text-foreground/60 tracking-wider uppercase">{product.category}</p>
-                      </div>
-                      <p className="font-medium">${product.price}</p>
-                    </div>
+              {featuredProducts.length === 0 ? (
+                <div className="rounded-2xl border border-border/60 bg-card/50 p-8 text-center">
+                  <p className="text-sm text-foreground/70 mb-4">
+                    Featured works are being curated right now.
+                  </p>
+                  <Link
+                    href="/collections"
+                    className="inline-flex items-center text-xs tracking-widest uppercase font-bold text-primary hover:text-foreground transition-colors"
+                  >
+                    Browse full collection
                   </Link>
-                </ScrollReveal>
-              ))}
+                </div>
+              ) : (
+                featuredProducts.map((product) => (
+                  <ScrollReveal key={product.id} direction="up" delay={0.1}>
+                    <Link href={`/product/${product.id}`} className="block group">
+                      <div className="aspect-[4/5] md:aspect-[3/4] mb-6">
+                        <ParallaxImage
+                          src={product.image_url}
+                          alt={product.title}
+                        />
+                      </div>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-heading text-2xl mb-2 group-hover:text-primary transition-colors">{product.title}</h4>
+                          <p className="text-sm text-foreground/60 tracking-wider uppercase">{product.category}</p>
+                        </div>
+                        <p className="font-medium">${product.price}</p>
+                      </div>
+                    </Link>
+                  </ScrollReveal>
+                ))
+              )}
             </div>
           </div>
         </div>

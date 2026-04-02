@@ -10,10 +10,10 @@ import {
   recordDeniedAdminAccess,
 } from "@/lib/security/adminAccessStore";
 
-function redirectToLogin(request: NextRequest, errorMessage?: string) {
+function redirectToAccessDenied(request: NextRequest, errorMessage?: string) {
   const redirectUrl = request.nextUrl.clone();
-  redirectUrl.pathname = "/login";
-  redirectUrl.searchParams.set("redirectedFrom", request.nextUrl.pathname);
+  redirectUrl.pathname = "/access-denied";
+  redirectUrl.searchParams.set("from", request.nextUrl.pathname);
 
   if (errorMessage) {
     redirectUrl.searchParams.set("error", errorMessage);
@@ -85,7 +85,7 @@ export async function proxy(request: NextRequest) {
       userAgent: request.headers.get("user-agent"),
     });
 
-    return redirectToLogin(request, getMasterAdminErrorMessage(decision.reason));
+    return redirectToAccessDenied(request, getMasterAdminErrorMessage(decision.reason));
   }
 
   return supabaseResponse;

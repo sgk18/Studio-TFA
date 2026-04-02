@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { signUp, signUpWithGoogle } from "@/app/auth/actions";
+import { safeDecodeQueryParam } from "@/lib/pageValidation";
 
 export const metadata: Metadata = {
   title: "Create Account | Studio TFA",
@@ -13,6 +14,7 @@ export default async function RegisterPage({
   searchParams: Promise<{ error?: string; success?: string }>;
 }) {
   const { error, success } = await searchParams;
+  const errorMessage = safeDecodeQueryParam(error);
 
   if (success === "check_email") {
     return (
@@ -42,9 +44,9 @@ export default async function RegisterPage({
           </p>
         </div>
 
-        {error && (
+        {errorMessage && (
           <div className="mb-6 p-4 bg-red-50/80 border border-red-200/70 text-red-700 text-sm rounded-xl backdrop-blur-md">
-            {decodeURIComponent(error)}
+            {errorMessage}
           </div>
         )}
 
