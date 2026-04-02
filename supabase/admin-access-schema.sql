@@ -1,8 +1,8 @@
 -- Admin access control schema for Studio TFA
 --
 -- IMPORTANT:
--- 1) Replace the email placeholder below with your real master admin email.
--- 2) Run this script in Supabase SQL editor.
+-- This schema supports IP-only admin mode (no login required).
+-- Access is enforced by your Next.js proxy layer and server checks.
 
 -- ==============================
 -- 1) Settings table (singleton)
@@ -36,8 +36,9 @@ execute function public.touch_admin_access_settings_updated_at();
 
 alter table public.admin_access_settings enable row level security;
 
--- Replace this email before running in production.
--- Example: 'admin@yourdomain.com'
+drop policy if exists master_admin_select_settings on public.admin_access_settings;
+drop policy if exists master_admin_upsert_settings on public.admin_access_settings;
+
 do $$
 begin
   if not exists (
@@ -45,13 +46,13 @@ begin
     from pg_policies
     where schemaname = 'public'
       and tablename = 'admin_access_settings'
-      and policyname = 'master_admin_select_settings'
+      and policyname = 'admin_access_settings_read'
   ) then
-    create policy master_admin_select_settings
+    create policy admin_access_settings_read
       on public.admin_access_settings
       for select
-      to authenticated
-      using (lower(auth.jwt() ->> 'email') = lower('replace-with-master-admin@example.com'));
+      to anon, authenticated
+      using (id = 'singleton');
   end if;
 
   if not exists (
@@ -59,14 +60,14 @@ begin
     from pg_policies
     where schemaname = 'public'
       and tablename = 'admin_access_settings'
-      and policyname = 'master_admin_upsert_settings'
+      and policyname = 'admin_access_settings_write'
   ) then
-    create policy master_admin_upsert_settings
+    create policy admin_access_settings_write
       on public.admin_access_settings
       for all
-      to authenticated
-      using (lower(auth.jwt() ->> 'email') = lower('replace-with-master-admin@example.com'))
-      with check (lower(auth.jwt() ->> 'email') = lower('replace-with-master-admin@example.com'));
+      to anon, authenticated
+      using (id = 'singleton')
+      with check (id = 'singleton');
   end if;
 end $$;
 
@@ -88,7 +89,10 @@ create index if not exists idx_admin_access_audit_created_at
 
 alter table public.admin_access_audit enable row level security;
 
--- Allow any authenticated user to insert audit events.
+drop policy if exists authenticated_insert_audit on public.admin_access_audit;
+drop policy if exists master_admin_read_audit on public.admin_access_audit;
+drop policy if exists master_admin_delete_audit on public.admin_access_audit;
+
 do $$
 begin
   if not exists (
@@ -96,12 +100,12 @@ begin
     from pg_policies
     where schemaname = 'public'
       and tablename = 'admin_access_audit'
-      and policyname = 'authenticated_insert_audit'
+      and policyname = 'admin_access_audit_insert'
   ) then
-    create policy authenticated_insert_audit
+    create policy admin_access_audit_insert
       on public.admin_access_audit
       for insert
-      to authenticated
+      to anon, authenticated
       with check (true);
   end if;
 
@@ -110,13 +114,13 @@ begin
     from pg_policies
     where schemaname = 'public'
       and tablename = 'admin_access_audit'
-      and policyname = 'master_admin_read_audit'
+      and policyname = 'admin_access_audit_read'
   ) then
-    create policy master_admin_read_audit
+    create policy admin_access_audit_read
       on public.admin_access_audit
       for select
-      to authenticated
-      using (lower(auth.jwt() ->> 'email') = lower('replace-with-master-admin@example.com'));
+      to anon, authenticated
+      using (true);
   end if;
 
   if not exists (
@@ -124,12 +128,12 @@ begin
     from pg_policies
     where schemaname = 'public'
       and tablename = 'admin_access_audit'
-      and policyname = 'master_admin_delete_audit'
+      and policyname = 'admin_access_audit_delete'
   ) then
-    create policy master_admin_delete_audit
+    create policy admin_access_audit_delete
       on public.admin_access_audit
       for delete
-      to authenticated
-      using (lower(auth.jwt() ->> 'email') = lower('replace-with-master-admin@example.com'));
+      to anon, authenticated
+      using (true);
   end if;
 end $$;
