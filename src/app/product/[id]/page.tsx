@@ -13,6 +13,7 @@ import {
 import { StarRating } from "@/components/StarRating";
 import { ReviewForm } from "@/components/ReviewForm";
 import { isValidPageIdParam } from "@/lib/pageValidation";
+import { formatINR } from "@/lib/currency";
 
 export const dynamic = "force-dynamic";
 
@@ -102,7 +103,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pt-10 border-t border-border mt-auto">
-                <p className="text-3xl font-light mb-8 sm:mb-0">₹{product.price}</p>
+                <p className="text-3xl font-light mb-8 sm:mb-0">{formatINR(product.price)}</p>
                 <AddToCartButton product={product} />
               </div>
 

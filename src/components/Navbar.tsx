@@ -2,12 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { CartDrawer } from "@/components/CartDrawer";
 import PillNav from "./PillNav";
 import StaggeredMenu from "./StaggeredMenu";
 import { CartButton } from "./CartButton";
 import { resolvePrimaryNavHref } from "@/lib/pageValidation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const navItems = [
   { label: 'Collections', href: '/collections', link: '/collections', ariaLabel: 'View all collections' },
@@ -24,6 +34,7 @@ const socialItems = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const activeHref = resolvePrimaryNavHref(pathname);
   const [hasAdminAccess, setHasAdminAccess] = useState(false);
 
@@ -92,9 +103,39 @@ export function Navbar() {
                 Admin
               </Link>
             )}
-            <Link href="/login" className="text-xs tracking-[0.2em] font-bold uppercase text-foreground/85 hover:text-foreground transition-colors">
-              Account
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="action-pill-link gap-1.5">
+                Account
+                <ChevronDown className="h-4 w-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>Sign-In Options</DropdownMenuLabel>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/login") }>
+                  Sign In
+                  <DropdownMenuShortcut>Email / Google</DropdownMenuShortcut>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/register") }>
+                  Create Account
+                  <DropdownMenuShortcut>New User</DropdownMenuShortcut>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>Store Access</DropdownMenuLabel>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/collections") }>
+                  Continue As Guest
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onClick={() => { window.location.href = "mailto:fearlesslypursuing@gmail.com"; }}>
+                  Contact Support
+                </DropdownMenuItem>
+                {hasAdminAccess && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/admin") }>
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <CartButton />
           </div>
         </div>
@@ -112,14 +153,30 @@ export function Navbar() {
               {hasAdminAccess && (
                 <Link
                   href="/admin"
-                  className="action-pill-link px-2.5 py-1 text-[10px]"
+                  className="action-pill-link px-3 py-1.5 text-xs"
                 >
                   Admin
                 </Link>
               )}
-              <Link href="/login" className="text-xs tracking-[0.2em] font-bold uppercase text-foreground/85 hover:text-foreground transition-colors">
-                Account
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="action-pill-link px-3 py-1.5 text-xs gap-1.5">
+                  Account
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-60">
+                  <DropdownMenuLabel>Sign-In Options</DropdownMenuLabel>
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/login") }>
+                    Sign In
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/register") }>
+                    Create Account
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer" onClick={() => router.push("/collections") }>
+                    Continue As Guest
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <CartButton />
             </div>
           }

@@ -3,6 +3,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import Image from "next/image";
 import Link from "next/link";
 import { sanitizeProductCards } from "@/lib/pageValidation";
+import { formatINR } from "@/lib/currency";
 
 export const metadata = {
   title: "The Gallery | Studio TFA",
@@ -57,7 +58,7 @@ export default async function CollectionsPage() {
                         {product.category}
                       </p>
                     </div>
-                    <p className="font-light text-lg">${product.price}</p>
+                    <p className="font-light text-lg">{formatINR(product.price)}</p>
                   </div>
                 </Link>
               </ScrollReveal>

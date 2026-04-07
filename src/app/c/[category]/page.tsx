@@ -4,6 +4,7 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import Link from "next/link";
 import { ParallaxImage } from "@/components/ParallaxImage";
 import { sanitizeProductCards } from "@/lib/pageValidation";
+import { formatINR } from "@/lib/currency";
 
 // Thematic map matching the requested brand palette
 const categoryThemes: Record<string, { accentClass: string, name: string, description: string }> = {
@@ -87,7 +88,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                         {product.category}
                       </p>
                     </div>
-                    <p className="font-light text-lg text-foreground/92">${product.price}</p>
+                    <p className="font-light text-lg text-foreground/92">{formatINR(product.price)}</p>
                   </div>
                 </Link>
               </ScrollReveal>

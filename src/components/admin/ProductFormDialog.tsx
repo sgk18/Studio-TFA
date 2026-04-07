@@ -185,7 +185,7 @@ export function ProductFormDialog({
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs font-bold uppercase tracking-widest">Price ($)</FormLabel>
+                    <FormLabel className="text-xs font-bold uppercase tracking-widest">Price (₹ INR)</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 

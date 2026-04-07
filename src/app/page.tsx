@@ -7,6 +7,7 @@ import { HorizontalScroll } from "@/components/HorizontalScroll";
 import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 import { NewsletterPopup } from "@/components/NewsletterPopup";
 import { sanitizeProductCards } from "@/lib/pageValidation";
+import { formatINR } from "@/lib/currency";
 
 export const metadata = {
   title: "Studio TFA | Narrative Christian Art",
@@ -17,6 +18,12 @@ export default async function Home() {
   const supabase = await createClient();
   const { data: products } = await supabase.from('products').select('*').limit(3);
   const featuredProducts = sanitizeProductCards(products).slice(0, 3);
+  const shopCategories = [
+    { label: "Books", href: "/c/books" },
+    { label: "Journals", href: "/c/journals" },
+    { label: "Home Decor", href: "/c/home-decor" },
+    { label: "Gift Hampers", href: "/c/gift-hampers" },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -36,6 +43,14 @@ export default async function Home() {
             text="To create elegant, boldly minimalist, Christ-centred art and lifestyle products that nurture identity, spark conversations, and infuse homes with beauty and purpose."
             className="font-heading text-4xl md:text-6xl lg:text-7xl tracking-tight leading-[1.15] text-foreground"
           />
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <Link href="/collections" className="action-pill-link">
+              Shop All Products
+            </Link>
+            <Link href="/c/books" className="action-pill-link">
+              Shop Books
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -49,6 +64,36 @@ export default async function Home() {
                 text="To serve creatives through powerful, intentional designs and meaningful products that carry the message of Christ into everyday life."
                 className="font-heading text-3xl md:text-5xl lg:text-6xl leading-snug md:leading-tight text-foreground"
               />
+            </div>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      <section className="py-8 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <ScrollReveal>
+            <div className="glass-shell rounded-[2rem] p-8 md:p-10">
+              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+                <div>
+                  <p className="text-xs tracking-[0.22em] uppercase font-bold text-primary mb-3">Shop By Category</p>
+                  <h2 className="font-heading text-4xl md:text-5xl tracking-tight">Start your order journey</h2>
+                </div>
+                <Link href="/collections" className="action-pill-link">
+                  View Full Catalog
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {shopCategories.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="glass-subpanel rounded-xl p-5 min-h-28 flex items-end font-heading text-2xl hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           </ScrollReveal>
         </div>
@@ -184,7 +229,7 @@ export default async function Home() {
                           <h4 className="font-heading text-2xl mb-2 group-hover:text-primary transition-colors">{product.title}</h4>
                           <p className="text-sm text-foreground/60 tracking-wider uppercase">{product.category}</p>
                         </div>
-                        <p className="font-medium">${product.price}</p>
+                        <p className="font-medium">{formatINR(product.price)}</p>
                       </div>
                     </Link>
                   </ScrollReveal>

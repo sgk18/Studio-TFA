@@ -120,7 +120,7 @@ export function Footer() {
                 placeholder="Email address"
                 className="glass-input w-full rounded-lg px-3 py-2 text-sm outline-none"
               />
-              <button type="submit" className="action-pill-link px-3 py-2 text-[10px] shrink-0">
+              <button type="submit" className="action-pill-link px-3.5 py-2 text-xs shrink-0">
                 Subscribe
               </button>
             </form>

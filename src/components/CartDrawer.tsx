@@ -11,6 +11,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Minus, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { formatINR } from "@/lib/currency";
 
 export function CartDrawer() {
   const { items, isOpen, closeCart, removeItem, updateQuantity, getTotal, clearCart } = useCart();
@@ -78,7 +79,7 @@ export function CartDrawer() {
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                  <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                  <span className="font-medium">{formatINR(item.price * item.quantity)}</span>
                   <button
                     onClick={() => removeItem(item.id)}
                     aria-label={`Remove ${item.title} from cart`}
@@ -98,7 +99,7 @@ export function CartDrawer() {
           <div className="px-6 pb-8 pt-4 border-t border-border/60 space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-sm text-foreground/60 tracking-widest uppercase font-bold">Subtotal</span>
-              <span className="font-heading text-2xl">${total.toFixed(2)}</span>
+              <span className="font-heading text-2xl">{formatINR(total)}</span>
             </div>
             <p className="text-xs text-foreground/40 leading-relaxed">
               Shipping and taxes calculated at checkout.

@@ -32,7 +32,27 @@ export default async function LoginPage({
           </div>
         )}
 
-        <form action={signInWithGoogle} className="space-y-3">
+        <div className="glass-subpanel rounded-2xl p-4 mb-6">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground mb-3">
+            Sign-In Options
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <a href="#google-signin" className="action-pill-link justify-center">
+              Google Sign-In
+            </a>
+            <a href="#email-signin" className="action-pill-link justify-center">
+              Email + Password
+            </a>
+            <Link href="/collections" className="action-pill-link justify-center">
+              Guest Checkout
+            </Link>
+            <Link href="/register" className="action-pill-link justify-center">
+              Create Account
+            </Link>
+          </div>
+        </div>
+
+        <form id="google-signin" action={signInWithGoogle} className="space-y-3">
           <input type="hidden" name="next" value={nextPath} />
           <button
             type="submit"
@@ -50,12 +70,12 @@ export default async function LoginPage({
 
         <div className="relative my-6">
           <div className="h-px bg-border/70" />
-          <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 px-3 bg-card/85 text-[10px] font-bold tracking-[0.25em] text-muted-foreground">
+          <span className="absolute left-1/2 -translate-x-1/2 -top-2.5 px-3 bg-card/85 text-xs font-bold tracking-[0.2em] text-muted-foreground">
             OR
           </span>
         </div>
 
-        <form action={signIn} className="space-y-6">
+        <form id="email-signin" action={signIn} className="space-y-6">
           <input type="hidden" name="next" value={nextPath} />
           <div>
             <label className="block text-xs tracking-widest uppercase font-bold text-muted-foreground mb-3">

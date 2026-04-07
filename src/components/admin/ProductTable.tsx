@@ -37,6 +37,7 @@ import {
 
 import { ProductFormDialog } from "./ProductFormDialog";
 import { deleteProduct } from "@/app/admin/actions";
+import { formatINR } from "@/lib/currency";
 
 export function ProductTable({ initialData }: { initialData: any[] }) {
   const router = useRouter();
@@ -192,7 +193,7 @@ export function ProductTable({ initialData }: { initialData: any[] }) {
                   </TableCell>
                   <TableCell className="font-medium font-heading text-lg">{product.title}</TableCell>
                   <TableCell className="text-xs uppercase tracking-widest font-bold text-muted-foreground">{product.category}</TableCell>
-                  <TableCell>${product.price || 0}</TableCell>
+                  <TableCell>{formatINR(product.price || 0)}</TableCell>
                   <TableCell>{product.stock_count || 0}</TableCell>
                   <TableCell>{getStatusBadge(product.stock_count, product.is_custom_order)}</TableCell>
                   <TableCell className="text-right">
