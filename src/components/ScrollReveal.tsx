@@ -1,28 +1,52 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ReactNode } from "react";
 
 interface ScrollRevealProps {
   children: ReactNode;
   delay?: number;
   direction?: "up" | "down" | "left" | "right";
+  distance?: number;
+  className?: string;
 }
 
-export function ScrollReveal({ children, delay = 0, direction = "up" }: ScrollRevealProps) {
+export function ScrollReveal({
+  children,
+  delay = 0,
+  direction = "up",
+  distance = 36,
+  className,
+}: ScrollRevealProps) {
+  const shouldReduceMotion = useReducedMotion();
+
   const directionOffset = {
-    up: { y: 40, x: 0 },
-    down: { y: -40, x: 0 },
-    left: { x: 40, y: 0 },
-    right: { x: -40, y: 0 }
+    up: { y: distance, x: 0 },
+    down: { y: -distance, x: 0 },
+    left: { x: distance, y: 0 },
+    right: { x: -distance, y: 0 }
   };
+
+  const initial = shouldReduceMotion
+    ? { opacity: 0 }
+    : { opacity: 0, scale: 0.985, filter: "blur(8px)", ...directionOffset[direction] };
+
+  const whileInView = shouldReduceMotion
+    ? { opacity: 1 }
+    : { opacity: 1, y: 0, x: 0, scale: 1, filter: "blur(0px)" };
+
+  const transition = shouldReduceMotion
+    ? { duration: 0.32, delay, ease: "easeOut" }
+    : { duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] };
 
   return (
     <motion.div
-      initial={{ opacity: 0, ...directionOffset[direction] }}
-      whileInView={{ opacity: 1, y: 0, x: 0 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ duration: 0.8, delay, ease: [0.16, 1, 0.3, 1] }}
+      initial={initial}
+      whileInView={whileInView}
+      viewport={{ once: true, margin: "-12% 0px" }}
+      transition={transition}
+      className={className}
+      style={{ willChange: shouldReduceMotion ? "opacity" : "opacity, transform, filter" }}
     >
       {children}
     </motion.div>

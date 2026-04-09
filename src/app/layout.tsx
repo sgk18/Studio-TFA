@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { Toaster } from "@/components/ui/sonner";
+import { LenisProvider } from "@/components/LenisProvider";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -60,6 +61,7 @@ export default function RootLayout({
       className={`${inter.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans transition-colors duration-300">
+        <LenisProvider />
         <Navbar />
         <WhatsAppFloat />
         <main className="flex-1 w-full flex flex-col">

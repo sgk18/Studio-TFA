@@ -219,15 +219,14 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
   const setupLenis = useCallback(() => {
     if (useWindowScroll) {
       const lenis = new Lenis({
-        duration: 1.2,
-        easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
-        touchMultiplier: 2,
+        touchMultiplier: 1,
         infinite: false,
-        wheelMultiplier: 1,
-        lerp: 0.1,
+        wheelMultiplier: 0.85,
+        lerp: 0.09,
         syncTouch: true,
-        syncTouchLerp: 0.075
+        syncTouchLerp: 0.065,
+        touchInertiaExponent: 1.65
       });
 
       lenis.on("scroll", handleScroll);
@@ -247,16 +246,15 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
       const lenis = new Lenis({
         wrapper: scroller,
         content: scroller.querySelector(".scroll-stack-inner") as HTMLElement,
-        duration: 1.2,
-        easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
-        touchMultiplier: 2,
+        touchMultiplier: 1,
         infinite: false,
         gestureOrientation: "vertical",
-        wheelMultiplier: 1,
-        lerp: 0.1,
+        wheelMultiplier: 0.85,
+        lerp: 0.09,
         syncTouch: true,
-        syncTouchLerp: 0.075
+        syncTouchLerp: 0.065,
+        touchInertiaExponent: 1.65
       });
 
       lenis.on("scroll", handleScroll);
@@ -334,6 +332,7 @@ const ScrollStack: React.FC<ScrollStackProps> = ({
 
   return (
     <div
+      data-lenis-prevent
       className={`relative w-full h-full overflow-y-auto overflow-x-visible [overscroll-behavior:contain] [-webkit-overflow-scrolling:touch] [scroll-behavior:smooth] [transform:translateZ(0)] [will-change:scroll-position] ${className}`.trim()}
       ref={scrollerRef}
     >
