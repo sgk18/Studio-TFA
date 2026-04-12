@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { sanitizeProductCards } from "@/lib/pageValidation";
 import { formatINR } from "@/lib/currency";
+import { toSlug } from "@/lib/catalogFilters";
 
 export const metadata = {
   title: "The Gallery | Studio TFA",
@@ -13,6 +14,13 @@ export default async function CollectionsPage() {
   const supabase = await createClient();
   const { data: products } = await supabase.from('products').select('*');
   const validatedProducts = sanitizeProductCards(products);
+  const categoryList = Array.from(
+    new Set(
+      validatedProducts
+        .map((product) => product.category)
+        .filter((category): category is string => category.trim().length > 0)
+    )
+  ).sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="min-h-screen pt-32 pb-24 px-6 md:px-12 flex flex-col">
@@ -23,6 +31,19 @@ export default async function CollectionsPage() {
             <p className="max-w-2xl mx-auto text-lg text-foreground/70 leading-relaxed">
               Browse our complete collection of intentional, narrative-driven pieces. Every object has a story to tell.
             </p>
+            {categoryList.length > 0 ? (
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5">
+                {categoryList.map((category) => (
+                  <Link
+                    key={category}
+                    href={`/collections/${toSlug(category)}`}
+                    className="rounded-full border border-border/75 bg-card/55 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/75 transition-colors hover:border-primary hover:text-primary"
+                  >
+                    {category}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </header>
         </ScrollReveal>
 

@@ -1,0 +1,219 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
+
+export interface Database {
+  public: {
+    Tables: {
+      products: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string | null;
+          description: string | null;
+          category: string;
+          image_url: string | null;
+          price: number;
+          stock: number;
+          is_active: boolean;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          slug?: string | null;
+          description?: string | null;
+          category?: string;
+          image_url?: string | null;
+          price: number;
+          stock?: number;
+          is_active?: boolean;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          slug?: string | null;
+          description?: string | null;
+          category?: string;
+          image_url?: string | null;
+          price?: number;
+          stock?: number;
+          is_active?: boolean;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      profiles: {
+        Row: {
+          id: string;
+          email: string | null;
+          full_name: string | null;
+          phone: string | null;
+          role: "customer" | "staff" | "admin";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email?: string | null;
+          full_name?: string | null;
+          phone?: string | null;
+          role?: "customer" | "staff" | "admin";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string | null;
+          full_name?: string | null;
+          phone?: string | null;
+          role?: "customer" | "staff" | "admin";
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      orders: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          guest_email: string | null;
+          status: string;
+          currency: string;
+          subtotal: number;
+          discount: number;
+          shipping_amount: number;
+          premium_gifting_fee: number;
+          total_amount: number;
+          promo_code: string | null;
+          payment_provider: string;
+          payment_status: string;
+          payment_reference: string | null;
+          shipping_address: Json;
+          line_items: Json;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          guest_email?: string | null;
+          status?: string;
+          currency?: string;
+          subtotal: number;
+          discount?: number;
+          shipping_amount?: number;
+          premium_gifting_fee?: number;
+          total_amount: number;
+          promo_code?: string | null;
+          payment_provider?: string;
+          payment_status?: string;
+          payment_reference?: string | null;
+          shipping_address: Json;
+          line_items: Json;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          guest_email?: string | null;
+          status?: string;
+          currency?: string;
+          subtotal?: number;
+          discount?: number;
+          shipping_amount?: number;
+          premium_gifting_fee?: number;
+          total_amount?: number;
+          promo_code?: string | null;
+          payment_provider?: string;
+          payment_status?: string;
+          payment_reference?: string | null;
+          shipping_address?: Json;
+          line_items?: Json;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      reviews: {
+        Row: {
+          id: string;
+          product_id: string;
+          user_id: string;
+          rating: number;
+          comment: string | null;
+          is_verified_purchase: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          user_id: string;
+          rating: number;
+          comment?: string | null;
+          is_verified_purchase?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          product_id?: string;
+          user_id?: string;
+          rating?: number;
+          comment?: string | null;
+          is_verified_purchase?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      returns: {
+        Row: {
+          id: string;
+          order_id: string;
+          user_id: string | null;
+          reason: string;
+          status: string;
+          refund_amount: number | null;
+          details: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          user_id?: string | null;
+          reason: string;
+          status?: string;
+          refund_amount?: number | null;
+          details?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          user_id?: string | null;
+          reason?: string;
+          status?: string;
+          refund_amount?: number | null;
+          details?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+    };
+  };
+}
