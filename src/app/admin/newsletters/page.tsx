@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { fetchSubscribedNewsletterEmails } from "@/lib/newsletterSubscribers";
 import { safeDecodeQueryParam } from "@/lib/pageValidation";
 import { requireAdminAccess } from "@/lib/security/adminRole";
 
@@ -20,22 +21,10 @@ export default async function AdminNewslettersPage({
     requireAdminAccess({ from: "/admin/newsletters" }),
   ]);
 
-  const [profileEmailsResult, guestEmailsResult] = await Promise.all([
-    (supabase as any).from("profiles").select("email").not("email", "is", null),
-    (supabase as any).from("orders").select("guest_email").not("guest_email", "is", null),
-  ]);
+  const { emails: subscriberEmails, error: subscribersError } =
+    await fetchSubscribedNewsletterEmails(supabase);
 
-  const profileEmails = ((profileEmailsResult.data ?? []) as Array<{ email: string | null }>)
-    .map((row) => row.email)
-    .filter((value): value is string => Boolean(value));
-
-  const guestEmails = ((guestEmailsResult.data ?? []) as Array<{ guest_email: string | null }>)
-    .map((row) => row.guest_email)
-    .filter((value): value is string => Boolean(value));
-
-  const audienceCount = new Set(
-    [...profileEmails, ...guestEmails].map((value) => value.trim().toLowerCase())
-  ).size;
+  const audienceCount = new Set(subscriberEmails.map((value) => value.trim().toLowerCase())).size;
 
   const errorMessage = safeDecodeQueryParam(error);
   const wasSent = status === "sent";
@@ -57,6 +46,12 @@ export default async function AdminNewslettersPage({
       {errorMessage ? (
         <div className="rounded-2xl border border-destructive/35 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {errorMessage}
+        </div>
+      ) : null}
+
+      {subscribersError?.code === "42P01" ? (
+        <div className="rounded-2xl border border-amber-500/35 bg-amber-500/10 px-4 py-3 text-sm text-amber-700">
+          Newsletter subscribers table is missing. Run the newsletter SQL upgrade to enable audience sends.
         </div>
       ) : null}
 
@@ -94,7 +89,7 @@ export default async function AdminNewslettersPage({
                 <span>
                   <span className="font-semibold">Audience</span>
                   <span className="block text-xs text-muted-foreground">
-                    Sends to all profile emails plus guest checkout emails.
+                    Sends to addresses stored in newsletter_subscribers with status subscribed.
                   </span>
                 </span>
               </label>

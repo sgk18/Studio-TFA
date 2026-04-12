@@ -272,6 +272,13 @@ for insert
 to authenticated
 with check (id = auth.uid() or public.has_role(array['admin', 'staff']));
 
+drop policy if exists profiles_insert_trigger on public.profiles;
+create policy profiles_insert_trigger
+on public.profiles
+for insert
+to service_role
+with check (true);
+
 -- orders policies
 drop policy if exists orders_insert_guest on public.orders;
 create policy orders_insert_guest

@@ -1,11 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
+import {
+  initialNewsletterSubscribeState,
+  subscribeNewsletterAction,
+} from "@/actions/newsletter";
+
 export function NewsletterPopup() {
   const [isOpen, setIsOpen] = useState(false);
+  const [state, formAction, isPending] = useActionState(
+    subscribeNewsletterAction,
+    initialNewsletterSubscribeState
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -14,6 +23,18 @@ export function NewsletterPopup() {
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (state.status !== "success") {
+      return;
+    }
+
+    const closeTimer = setTimeout(() => {
+      setIsOpen(false);
+    }, 1800);
+
+    return () => clearTimeout(closeTimer);
+  }, [state.status]);
 
   return (
     <AnimatePresence>
@@ -45,20 +66,31 @@ export function NewsletterPopup() {
               Subscribe to receive occasional reflections on intentional living, early access to new collections, and a 10% welcome gift.
             </p>
             
-            <form className="flex flex-col gap-4" onSubmit={(e) => { e.preventDefault(); setIsOpen(false); }}>
+            <form className="flex flex-col gap-4" action={formAction}>
               <input 
                 type="email" 
+                name="email"
                 required
                 placeholder="Enter your email" 
                 className="glass-input rounded-xl px-4 py-3 focus:outline-none focus:border-primary/60 transition-colors"
               />
               <button 
                 type="submit"
-                className="rounded-lg border border-primary/80 bg-primary text-primary-foreground font-bold tracking-widest uppercase text-sm py-4 hover:bg-primary/90 transition-colors"
+                disabled={isPending}
+                className="rounded-lg border border-primary/80 bg-primary text-primary-foreground font-bold tracking-widest uppercase text-sm py-4 hover:bg-primary/90 transition-colors disabled:cursor-not-allowed disabled:opacity-65"
               >
-                Join the Journal
+                {isPending ? "Joining..." : "Join the Journal"}
               </button>
             </form>
+            {state.message ? (
+              <p
+                className={`mt-4 text-center text-xs ${
+                  state.status === "error" ? "text-destructive" : "text-foreground/70"
+                }`}
+              >
+                {state.message}
+              </p>
+            ) : null}
             <p className="text-xs text-muted-foreground mt-6 text-center">We respect your space. No spam, ever.</p>
           </motion.div>
         </motion.div>

@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { fetchSubscribedNewsletterEmails } from "@/lib/newsletterSubscribers";
 import { resend } from "@/lib/resend";
 import { requireAdminAccess } from "@/lib/security/adminRole";
 import type { Database } from "@/lib/supabase/types";
@@ -131,35 +132,19 @@ export async function sendNewsletterAction(formData: FormData) {
 }
 
 async function resolveAudienceRecipients(supabase: AdminSupabase) {
-  const [profilesResult, guestOrdersResult] = await Promise.all([
-    (supabase as SupabaseClient<any>)
-      .from("profiles")
-      .select("email")
-      .not("email", "is", null),
-    (supabase as SupabaseClient<any>)
-      .from("orders")
-      .select("guest_email")
-      .not("guest_email", "is", null),
-  ]);
+  const subscribersResult = await fetchSubscribedNewsletterEmails(supabase);
 
-  if (profilesResult.error) {
-    return { error: profilesResult.error.message } as const;
+  if (subscribersResult.error) {
+    return {
+      error:
+        subscribersResult.error.code === "42P01"
+          ? "Newsletter subscribers table is missing. Run the newsletter SQL upgrade first."
+          : subscribersResult.error.message,
+    } as const;
   }
-
-  if (guestOrdersResult.error) {
-    return { error: guestOrdersResult.error.message } as const;
-  }
-
-  const profileEmails = ((profilesResult.data ?? []) as Array<{ email: string | null }>)
-    .map((row) => row.email)
-    .filter((value): value is string => Boolean(value));
-
-  const guestEmails = ((guestOrdersResult.data ?? []) as Array<{ guest_email: string | null }>)
-    .map((row) => row.guest_email)
-    .filter((value): value is string => Boolean(value));
 
   return {
-    recipients: dedupeAndValidateEmails([...profileEmails, ...guestEmails]),
+    recipients: dedupeAndValidateEmails(subscribersResult.emails),
   } as const;
 }
 

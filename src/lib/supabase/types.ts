@@ -270,6 +270,41 @@ export interface Database {
           updated_at?: string;
         };
       };
+      newsletter_subscribers: {
+        Row: {
+          id: string;
+          email: string;
+          source: string;
+          status: "subscribed" | "unsubscribed";
+          metadata: Json;
+          subscribed_at: string;
+          unsubscribed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          source?: string;
+          status?: "subscribed" | "unsubscribed";
+          metadata?: Json;
+          subscribed_at?: string;
+          unsubscribed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          source?: string;
+          status?: "subscribed" | "unsubscribed";
+          metadata?: Json;
+          subscribed_at?: string;
+          unsubscribed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       payment_events: {
         Row: {
           id: number;
