@@ -3,8 +3,10 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 import Image from "next/image";
 import Link from "next/link";
 import { sanitizeProductCards } from "@/lib/pageValidation";
+import { resolveDisplayPrice } from "@/lib/commerce";
 import { formatINR } from "@/lib/currency";
 import { toSlug } from "@/lib/catalogFilters";
+import { resolveViewerRole } from "@/lib/security/viewerRole";
 
 export const metadata = {
   title: "The Gallery | Studio TFA",
@@ -12,8 +14,14 @@ export const metadata = {
 
 export default async function CollectionsPage() {
   const supabase = await createClient();
-  const { data: products } = await supabase.from('products').select('*');
-  const validatedProducts = sanitizeProductCards(products);
+  const [{ data: products }, viewerRole] = await Promise.all([
+    supabase.from("products").select("*"),
+    resolveViewerRole(supabase),
+  ]);
+  const validatedProducts = sanitizeProductCards(products).map((product) => ({
+    ...product,
+    price: resolveDisplayPrice(Number(product.price) || 0, viewerRole.isWholesale),
+  }));
   const categoryList = Array.from(
     new Set(
       validatedProducts

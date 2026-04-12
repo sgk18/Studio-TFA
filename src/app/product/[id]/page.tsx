@@ -18,8 +18,10 @@ import {
   readFirstString,
   resolveProductCategory,
 } from "@/lib/catalogFilters";
+import { isWholesaleRole, resolveDisplayPrice } from "@/lib/commerce";
 import { isValidPageIdParam } from "@/lib/pageValidation";
 import { formatINR } from "@/lib/currency";
+import { resolveRoleForUserId } from "@/lib/security/viewerRole";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +75,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     notFound();
   }
 
+  const role = user ? await resolveRoleForUserId(supabase, user.id) : null;
+  const isWholesale = isWholesaleRole(role);
+
   const product = productRaw;
   const productTitle = readFirstString(product, ["title"]) || "Untitled Product";
   const productCategory = resolveProductCategory(product);
@@ -99,6 +104,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     : 0;
 
   const isCustomOrder = Boolean(product.is_custom_order);
+  const displayPrice = resolveDisplayPrice(Number(product.price ?? 0), isWholesale);
 
   return (
     <article className="min-h-screen px-6 pb-24 pt-32 md:px-12">
@@ -178,7 +184,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
               <div className="mt-10 flex flex-col gap-5 border-t border-border pt-7 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-3xl font-light">
-                  {isCustomOrder ? "Custom Order" : formatINR(product.price)}
+                  {isCustomOrder ? "Custom Order" : formatINR(displayPrice)}
                 </p>
                 <AddToCartButton
                   product={{
@@ -190,6 +196,12 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                   }}
                 />
               </div>
+
+              {isWholesale && !isCustomOrder ? (
+                <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-primary">
+                  Wholesale price applied (30% off list).
+                </p>
+              ) : null}
 
               <div className="mt-9 border-t border-border pt-7">
                 <Accordion multiple={false} className="w-full">

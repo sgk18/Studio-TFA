@@ -8,6 +8,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { LenisProvider } from "@/components/LenisProvider";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { CartDrawer } from "@/components/CartDrawer";
+import { createClient } from "@/lib/supabase/server";
+import { resolveViewerRole } from "@/lib/security/viewerRole";
 
 const bodoni = Bodoni_Moda({
   variable: "--font-heading",
@@ -33,23 +35,26 @@ export const metadata: Metadata = {
 };
 
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const { isWholesale } = await resolveViewerRole(supabase);
+
   return (
     <html lang="en" className={`${bodoni.variable} ${plusJakartaSans.variable} h-full antialiased`}>
       <body className="min-h-dvh bg-background font-sans text-foreground">
         <LenisProvider>
           <div className="relative flex min-h-dvh flex-col">
-            <Navbar />
+            <Navbar isWholesale={isWholesale} />
             <main className="flex-1">
               {children}
             </main>
             <Footer />
           </div>
-          <CartDrawer />
+          <CartDrawer isWholesale={isWholesale} />
           <WhatsAppFloat />
           <CookieConsentBanner />
         </LenisProvider>

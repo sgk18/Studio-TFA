@@ -16,6 +16,7 @@ import {
   CommandShortcut,
 } from "@/components/ui/command";
 import { createClient } from "@/utils/supabase/client";
+import { resolveDisplayPrice } from "@/lib/commerce";
 import { formatINR } from "@/lib/currency";
 import {
   isRecord,
@@ -63,7 +64,11 @@ const ROUTE_ITEMS = [
   { href: "/about", label: "About Studio TFA", keywords: ["about", "mission"] },
 ] as const;
 
-export function GlobalCommandPalette() {
+export function GlobalCommandPalette({
+  isWholesale = false,
+}: {
+  isWholesale?: boolean;
+}) {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -259,7 +264,7 @@ export function GlobalCommandPalette() {
                         </p>
                       </div>
                       <span className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
-                        {formatINR(item.price)}
+                        {formatINR(resolveDisplayPrice(item.price, isWholesale))}
                       </span>
                     </CommandItem>
                   ))}

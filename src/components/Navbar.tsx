@@ -12,7 +12,7 @@ const navItems = [
   { label: "About", href: "/about" },
 ];
 
-export function Navbar() {
+export function Navbar({ isWholesale = false }: { isWholesale?: boolean }) {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/78 backdrop-blur-xl">
       <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
@@ -43,7 +43,7 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2.5">
-          <GlobalCommandPalette />
+          <GlobalCommandPalette isWholesale={isWholesale} />
           <CartButton className="rounded-full border border-border/60 bg-card/65 px-3 py-2 text-foreground shadow-[0_12px_28px_rgba(139,38,62,0.08)] backdrop-blur-lg transition-transform duration-300 hover:-translate-y-0.5" />
         </div>
       </div>

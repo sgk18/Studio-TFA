@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import { ProductGrid } from "@/components/ProductGrid";
 import { Skeleton } from "@/components/ui/skeleton";
+import { resolveDisplayPrice } from "@/lib/commerce";
+import { resolveViewerRole } from "@/lib/security/viewerRole";
 import { createClient } from "@/utils/supabase/server";
 import {
   deriveMaterial,
@@ -66,9 +68,12 @@ export default async function CategoryCollectionsPage({
         : [categorySlug];
 
   const supabase = await createClient();
-  const { data: facetRows } = await supabase
-    .from("products")
-    .select("id, category, material, story, price");
+  const [{ data: facetRows }, viewerRole] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id, category, material, story, price"),
+    resolveViewerRole(supabase),
+  ]);
 
   const categoryMap = new Map<string, FacetOption>();
   const materialMap = new Map<string, FacetOption>();
@@ -101,7 +106,7 @@ export default async function CategoryCollectionsPage({
       });
     }
 
-    const price = toNumber(item.price);
+    const price = resolveDisplayPrice(toNumber(item.price), viewerRole.isWholesale);
     for (const range of PRICE_RANGE_FILTERS) {
       const inRange =
         range.max === null

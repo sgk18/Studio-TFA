@@ -3,8 +3,10 @@ import { createClient } from "@/utils/supabase/server";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import Link from "next/link";
 import { ParallaxImage } from "@/components/ParallaxImage";
+import { resolveDisplayPrice } from "@/lib/commerce";
 import { sanitizeProductCards } from "@/lib/pageValidation";
 import { formatINR } from "@/lib/currency";
+import { resolveViewerRole } from "@/lib/security/viewerRole";
 
 // Thematic map matching the requested brand palette
 const categoryThemes: Record<string, { accentClass: string, name: string, description: string }> = {
@@ -37,11 +39,14 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
 
   const supabase = await createClient();
   // Filter by the human-readable category name stored in the DB
-  const { data: products } = await supabase
-    .from('products')
-    .select('*')
-    .eq('category', theme.name);
-  const validatedProducts = sanitizeProductCards(products);
+  const [{ data: products }, viewerRole] = await Promise.all([
+    supabase.from("products").select("*").eq("category", theme.name),
+    resolveViewerRole(supabase),
+  ]);
+  const validatedProducts = sanitizeProductCards(products).map((product) => ({
+    ...product,
+    price: resolveDisplayPrice(Number(product.price) || 0, viewerRole.isWholesale),
+  }));
 
 
   return (

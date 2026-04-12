@@ -1,8 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { resolveDisplayPrice } from "@/lib/commerce";
 import { createClient } from "@/utils/supabase/server";
 import { formatINR } from "@/lib/currency";
+import { resolveViewerRole } from "@/lib/security/viewerRole";
 import { cn } from "@/lib/utils";
 import {
   deriveMaterial,
@@ -27,7 +29,7 @@ type ProductCard = {
   title: string;
   category: string;
   imageUrl: string;
-  price: number | string;
+  price: number;
   material: string;
   story: string;
   isCustomOrder: boolean;
@@ -40,13 +42,16 @@ export async function ProductGrid({
   selectedMaterials,
 }: ProductGridProps) {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("products")
-    .select("*")
-    .order("created_at", { ascending: false });
+  const [{ data }, viewerRole] = await Promise.all([
+    supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    resolveViewerRole(supabase),
+  ]);
 
   const cards = (Array.isArray(data) ? data : [])
-    .map((item) => toProductCard(item))
+    .map((item) => toProductCard(item, viewerRole.isWholesale))
     .filter((item): item is ProductCard => item !== null);
 
   const normalizedCategoryFilters = uniqueSlugs(selectedCategories);
@@ -156,7 +161,7 @@ export async function ProductGrid({
   );
 }
 
-function toProductCard(value: unknown): ProductCard | null {
+function toProductCard(value: unknown, isWholesale: boolean): ProductCard | null {
   if (!isRecord(value)) return null;
 
   const id = readFirstString(value, ["id"]);
@@ -169,10 +174,7 @@ function toProductCard(value: unknown): ProductCard | null {
     "Crafted to anchor your space in meaning and beauty.";
 
   const isCustomOrder = Boolean(value.is_custom_order);
-  const priceValue =
-    typeof value.price === "number" || typeof value.price === "string"
-      ? value.price
-      : 0;
+  const basePrice = toNumber(value.price);
 
   if (!id || !title || !imageUrl) return null;
 
@@ -181,7 +183,7 @@ function toProductCard(value: unknown): ProductCard | null {
     title,
     category,
     imageUrl,
-    price: priceValue,
+    price: resolveDisplayPrice(basePrice, isWholesale),
     material,
     story,
     isCustomOrder,

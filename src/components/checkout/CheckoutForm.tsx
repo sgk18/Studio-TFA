@@ -11,7 +11,10 @@ import {
 import {
   FREE_SHIPPING_THRESHOLD_INR,
   PREMIUM_GIFTING_FEE_INR,
+  resolveDisplayPrice,
   STANDARD_SHIPPING_FEE_INR,
+  totalCartQuantity,
+  WHOLESALE_MIN_CART_ITEMS,
 } from "@/lib/commerce";
 import { formatINR } from "@/lib/currency";
 import { useCartStore } from "@/store/cartStore";
@@ -96,7 +99,13 @@ function fieldError(
   return errors?.[key] || null;
 }
 
-export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
+export function CheckoutForm({
+  user,
+  isWholesale,
+}: {
+  user: CheckoutSessionUser | null;
+  isWholesale: boolean;
+}) {
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
   const [premiumGifting, setPremiumGifting] = useState(false);
@@ -121,8 +130,21 @@ export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
   );
 
   const subtotal = useMemo(
-    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [items]
+    () =>
+      items.reduce(
+        (sum, item) =>
+          sum + resolveDisplayPrice(item.price, isWholesale) * item.quantity,
+        0
+      ),
+    [isWholesale, items]
+  );
+
+  const totalItems = useMemo(() => totalCartQuantity(items), [items]);
+  const meetsWholesaleMinimum =
+    !isWholesale || totalItems >= WHOLESALE_MIN_CART_ITEMS;
+  const wholesaleItemsRemaining = Math.max(
+    0,
+    WHOLESALE_MIN_CART_ITEMS - totalItems
   );
 
   const shippingEstimate =
@@ -242,6 +264,12 @@ export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
               ? "Authenticated checkout is active. Your account details are protected on the server."
               : "Guest checkout is active. You can continue without creating an account."}
           </CardDescription>
+
+          {isWholesale ? (
+            <p className="rounded-xl border border-primary/35 bg-primary/10 px-3 py-2 text-xs text-primary">
+              Wholesale pricing active: all catalog prices are shown with a 30% discount and checkout requires at least {WHOLESALE_MIN_CART_ITEMS} items.
+            </p>
+          ) : null}
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -382,8 +410,12 @@ export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
               Sign in instead
             </Button>
           ) : null}
-          <Button type="submit" disabled={isPending}>
-            {isPending ? "Preparing secure totals..." : "Prepare Razorpay payload"}
+          <Button type="submit" disabled={isPending || !meetsWholesaleMinimum}>
+            {isPending
+              ? "Preparing secure totals..."
+              : !meetsWholesaleMinimum
+                ? `Minimum ${WHOLESALE_MIN_CART_ITEMS} items required`
+                : "Prepare Razorpay payload"}
           </Button>
         </CardFooter>
       </Card>
@@ -405,7 +437,11 @@ export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
                     Qty {item.quantity}
                   </p>
                 </div>
-                <p className="font-semibold">{formatINR(item.price * item.quantity)}</p>
+                <p className="font-semibold">
+                  {formatINR(
+                    resolveDisplayPrice(item.price, isWholesale) * item.quantity
+                  )}
+                </p>
               </div>
             ))}
           </div>
@@ -439,6 +475,12 @@ export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
           ) : (
             <p className="text-xs text-primary font-semibold">Free shipping unlocked.</p>
           )}
+
+          {isWholesale && !meetsWholesaleMinimum ? (
+            <p className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              Add {wholesaleItemsRemaining} more item{wholesaleItemsRemaining === 1 ? "" : "s"} to meet the wholesale minimum of {WHOLESALE_MIN_CART_ITEMS}.
+            </p>
+          ) : null}
 
           {state.status === "success" && state.summary && state.razorpayPayload ? (
             <div className="rounded-2xl border border-primary/40 bg-primary/10 p-4 space-y-2 text-sm">

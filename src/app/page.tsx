@@ -7,8 +7,10 @@ import { HorizontalScroll } from "@/components/HorizontalScroll";
 import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 import { NewsletterPopup } from "@/components/NewsletterPopup";
 import { EditorialHero } from "@/components/EditorialHero";
+import { resolveDisplayPrice } from "@/lib/commerce";
 import { sanitizeProductCards } from "@/lib/pageValidation";
 import { formatINR } from "@/lib/currency";
+import { resolveViewerRole } from "@/lib/security/viewerRole";
 
 export const metadata = {
   title: "Studio TFA | Narrative Christian Art",
@@ -17,8 +19,16 @@ export const metadata = {
 
 export default async function Home() {
   const supabase = await createClient();
-  const { data: products } = await supabase.from('products').select('*').limit(3);
-  const featuredProducts = sanitizeProductCards(products).slice(0, 3);
+  const [{ data: products }, viewerRole] = await Promise.all([
+    supabase.from("products").select("*").limit(3),
+    resolveViewerRole(supabase),
+  ]);
+  const featuredProducts = sanitizeProductCards(products)
+    .slice(0, 3)
+    .map((product) => ({
+      ...product,
+      price: resolveDisplayPrice(Number(product.price) || 0, viewerRole.isWholesale),
+    }));
   const shopCategories = [
     { label: "Books", href: "/collections/books" },
     { label: "Journals", href: "/collections/journals" },
