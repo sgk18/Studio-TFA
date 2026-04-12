@@ -27,7 +27,7 @@ export type AdminUserRow = {
   id: string;
   email: string | null;
   fullName: string | null;
-  role: "customer" | "staff" | "admin";
+  role: "customer" | "staff" | "admin" | "wholesale";
   createdAt: string;
 };
 
@@ -81,6 +81,8 @@ export function UsersDataTable({ users }: { users: AdminUserRow[] }) {
             const roleBadge =
               user.role === "admin"
                 ? "bg-emerald-100 text-emerald-700"
+                : user.role === "wholesale"
+                  ? "bg-blue-100 text-blue-700"
                 : user.role === "staff"
                   ? "bg-amber-100 text-amber-700"
                   : "bg-slate-100 text-slate-700";

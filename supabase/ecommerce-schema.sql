@@ -44,7 +44,7 @@ create table if not exists public.profiles (
   email text unique,
   full_name text,
   phone text,
-  role text not null default 'customer' check (role in ('customer', 'staff', 'admin')),
+  role text not null default 'customer' check (role in ('customer', 'staff', 'admin', 'wholesale')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

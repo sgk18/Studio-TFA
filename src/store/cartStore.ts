@@ -1,6 +1,9 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-import { FREE_SHIPPING_THRESHOLD_INR } from "@/lib/commerce";
+import {
+  FREE_SHIPPING_THRESHOLD_INR,
+  MAX_CART_LINE_QUANTITY,
+} from "@/lib/commerce";
 
 export const FREE_SHIPPING_TARGET_INR = FREE_SHIPPING_THRESHOLD_INR;
 
@@ -36,7 +39,8 @@ type CartStore = {
 function normalizeQuantity(quantity: number): number {
   if (!Number.isFinite(quantity)) return 1;
   const rounded = Math.floor(quantity);
-  return rounded < 1 ? 1 : rounded;
+  if (rounded < 1) return 1;
+  return Math.min(rounded, MAX_CART_LINE_QUANTITY);
 }
 
 export const useCartStore = create<CartStore>()(

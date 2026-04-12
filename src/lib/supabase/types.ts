@@ -59,7 +59,7 @@ export interface Database {
           email: string | null;
           full_name: string | null;
           phone: string | null;
-          role: "customer" | "staff" | "admin";
+          role: "customer" | "staff" | "admin" | "wholesale";
           created_at: string;
           updated_at: string;
         };
@@ -68,7 +68,7 @@ export interface Database {
           email?: string | null;
           full_name?: string | null;
           phone?: string | null;
-          role?: "customer" | "staff" | "admin";
+          role?: "customer" | "staff" | "admin" | "wholesale";
           created_at?: string;
           updated_at?: string;
         };
@@ -77,7 +77,7 @@ export interface Database {
           email?: string | null;
           full_name?: string | null;
           phone?: string | null;
-          role?: "customer" | "staff" | "admin";
+          role?: "customer" | "staff" | "admin" | "wholesale";
           created_at?: string;
           updated_at?: string;
         };
