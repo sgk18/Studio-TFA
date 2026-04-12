@@ -3,6 +3,7 @@ import { AdminPagination } from "@/components/admin/AdminPagination";
 import { ADMIN_PAGE_SIZE, pageRange, parsePageParam, totalPages } from "@/lib/adminPagination";
 import { requireAdminAccess } from "@/lib/security/adminRole";
 import type { Database } from "@/lib/supabase/types";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Users | Studio TFA Admin",
@@ -25,12 +26,27 @@ export default async function AdminUsersPage({
     requireAdminAccess({ from: "/admin/users" }),
   ]);
 
-  const currentPage = parsePageParam(pageParam);
+  const requestedPage = parsePageParam(pageParam);
+
+  const { count } = await supabase
+    .from("profiles")
+    .select("id", { count: "exact", head: true });
+
+  const pages = totalPages(count ?? 0, ADMIN_PAGE_SIZE);
+  const currentPage = Math.min(requestedPage, pages);
+
+  if (requestedPage !== currentPage) {
+    if (currentPage <= 1) {
+      redirect("/admin/users");
+    }
+    redirect(`/admin/users?page=${currentPage}`);
+  }
+
   const { from, to } = pageRange(currentPage, ADMIN_PAGE_SIZE);
 
-  const { data: profilesRaw, count } = await supabase
+  const { data: profilesRaw } = await supabase
     .from("profiles")
-    .select("id, email, full_name, role, created_at", { count: "exact" })
+    .select("id, email, full_name, role, created_at")
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -42,8 +58,6 @@ export default async function AdminUsersPage({
     createdAt: profile.created_at,
   }));
 
-  const pages = totalPages(count ?? 0, ADMIN_PAGE_SIZE);
-
   return (
     <section className="glass-shell rounded-[1.5rem] p-5 md:p-7">
       <header className="mb-6">
@@ -51,6 +65,9 @@ export default async function AdminUsersPage({
         <h2 className="mt-2 font-heading text-4xl tracking-tight md:text-5xl">Users</h2>
         <p className="mt-2 text-sm text-foreground/65">
           Manage user roles and promote selected accounts to admin access.
+        </p>
+        <p className="mt-3 text-xs font-bold uppercase tracking-[0.16em] text-foreground/55">
+          {count ?? 0} total user{count === 1 ? "" : "s"}
         </p>
       </header>
 

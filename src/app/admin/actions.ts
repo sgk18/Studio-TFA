@@ -163,12 +163,30 @@ export async function createProductWithImageUpload(formData: FormData) {
 }
 
 export async function promoteUserToAdmin(userId: string) {
-  const parsedUserId = z.string().uuid().safeParse(userId);
+  const parsedUserId = z.string().trim().min(1).max(128).safeParse(userId);
   if (!parsedUserId.success) {
     return { error: "Invalid user identifier." };
   }
 
   const { supabase } = await requireAdminAccess({ from: "/admin/users" });
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", parsedUserId.data)
+    .maybeSingle();
+
+  if (profileError) {
+    return { error: profileError.message };
+  }
+
+  if (!profile) {
+    return { error: "User profile not found." };
+  }
+
+  if (profile.role === "admin") {
+    return { success: true, message: "User is already an admin." };
+  }
 
   const { error } = await supabase
     .from("profiles")
@@ -180,7 +198,7 @@ export async function promoteUserToAdmin(userId: string) {
   }
 
   revalidatePath("/admin/users");
-  return { success: true };
+  return { success: true, message: "User promoted to admin." };
 }
 
 function toProductInsert(
