@@ -23,7 +23,7 @@ export const dynamic = "force-dynamic";
 
 type ProfileRow = Pick<
   Database["public"]["Tables"]["profiles"]["Row"],
-  "id" | "email" | "full_name" | "default_shipping_address"
+  "id" | "email" | "full_name"
 >;
 
 export default async function ProfilePage() {
@@ -40,12 +40,16 @@ export default async function ProfilePage() {
 
   const { data: profileRaw } = await supabase
     .from("profiles")
-    .select("id, email, full_name, default_shipping_address")
+    .select("*")
     .eq("id", user.id)
     .maybeSingle();
 
   const profile = (profileRaw ?? null) as ProfileRow | null;
-  const initialAddress = parseDefaultShippingAddress(profile?.default_shipping_address);
+  const defaultShippingAddress =
+    profileRaw && typeof profileRaw === "object" && !Array.isArray(profileRaw)
+      ? (profileRaw as Record<string, unknown>).default_shipping_address
+      : null;
+  const initialAddress = parseDefaultShippingAddress((defaultShippingAddress as Json | null) ?? null);
   const displayName = profile?.full_name ?? "";
   const email = profile?.email ?? user.email ?? "";
 

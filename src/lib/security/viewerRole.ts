@@ -12,6 +12,7 @@ export type ViewerRoleContext = {
   userId: string | null;
   role: ProfileRole | null;
   isWholesale: boolean;
+  isAdmin: boolean;
 };
 
 export async function resolveRoleForUserId(
@@ -53,5 +54,6 @@ export async function resolveViewerRole(
     userId: user.id,
     role,
     isWholesale: isWholesaleRole(role),
+    isAdmin: role === "admin",
   };
 }

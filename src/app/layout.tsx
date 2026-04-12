@@ -41,15 +41,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const supabase = await createClient();
-  const { isWholesale, userId } = await resolveViewerRole(supabase);
-  const isAuthenticated = Boolean(userId);
+  const { isWholesale, isAdmin } = await resolveViewerRole(supabase);
 
   return (
     <html lang="en" className={`${bodoni.variable} ${plusJakartaSans.variable} h-full antialiased`}>
       <body className="min-h-dvh bg-background font-sans text-foreground">
         <LenisProvider>
           <div className="relative flex min-h-dvh flex-col">
-            <Navbar isWholesale={isWholesale} isAuthenticated={isAuthenticated} />
+            <Navbar isWholesale={isWholesale} isAdmin={isAdmin} />
             <main className="flex-1">
               {children}
             </main>

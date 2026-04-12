@@ -8,34 +8,53 @@ import { GlobalCommandPalette } from "@/components/GlobalCommandPalette";
 import { CartButton } from "./CartButton";
 import PillNav from "./PillNav";
 
-const baseNavItems = [
+const primaryNavItems = [
   { label: "Home", href: "/" },
   { label: "Shop", href: "/collections" },
   { label: "Artists Corner", href: "/artists-corner" },
   { label: "Community", href: "/community" },
   { label: "About", href: "/about" },
+  { label: "Wholesale", href: "/wholesale" },
+];
+
+const utilityNavItems = [
+  { label: "Checkout", href: "/checkout" },
+  { label: "Shipping", href: "/shipping" },
+  { label: "Refunds", href: "/refunds" },
+  { label: "Privacy Policy", href: "/privacy-policy" },
+  { label: "Terms of Service", href: "/terms-of-service" },
 ];
 
 export function Navbar({
   isWholesale = false,
+  isAdmin = false,
   isAuthenticated = false,
 }: {
   isWholesale?: boolean;
+  isAdmin?: boolean;
   isAuthenticated?: boolean;
 }) {
   const pathname = usePathname();
-  const navItems = [
-    ...baseNavItems,
+  const authNavItems = isAuthenticated
+    ? [{ label: "Profile", href: "/profile" }]
+    : [
+        { label: "Login", href: "/login" },
+        { label: "Register", href: "/register" },
+      ];
+
+  const desktopNavItems = [
+    ...primaryNavItems,
     isAuthenticated
       ? { label: "Profile", href: "/profile" }
       : { label: "Login", href: "/login" },
   ];
-  const mobileItems = navItems;
+
+  const quickNavItems = [...utilityNavItems, ...authNavItems];
 
   const isActiveHref = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   const activeHref =
-    navItems
+    desktopNavItems
       .filter((item) =>
         item.href === "/"
           ? pathname === "/"
@@ -59,7 +78,7 @@ export function Navbar({
           <PillNav
             logo="/studio-tfa-mark.svg"
             logoAlt="Studio TFA Logo"
-            items={navItems}
+            items={desktopNavItems}
             activeHref={activeHref}
             className="custom-nav"
             ease="power2.easeOut"
@@ -97,9 +116,9 @@ export function Navbar({
         </div>
       </div>
 
-      {/* Mobile nav links - simple bottom border scroll */}
-      <div className="flex md:hidden items-center gap-6 overflow-x-auto px-6 py-3 border-t border-border/30 bg-background/50 backdrop-blur-md hide-scrollbar">
-        {mobileItems.map((item) => (
+      {/* Quick links strip for full page coverage */}
+      <div className="flex items-center gap-6 overflow-x-auto border-t border-border/30 bg-background/50 px-6 py-3 backdrop-blur-md hide-scrollbar">
+        {quickNavItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
