@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { GlobalCommandPalette } from "@/components/GlobalCommandPalette";
@@ -16,6 +17,11 @@ const navItems = [
   { label: "About", href: "/about" },
 ];
 
+const authItems = [
+  { label: "Sign In", href: "/login" },
+  { label: "Sign Up", href: "/register" },
+];
+
 export function Navbar({ isWholesale = false }: { isWholesale?: boolean }) {
   const pathname = usePathname();
   const activeHref =
@@ -24,7 +30,10 @@ export function Navbar({ isWholesale = false }: { isWholesale?: boolean }) {
       .filter((item) => pathname.startsWith(`${item.href}/`))
       .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
-  const staggeredItems = navItems.map((item) => ({
+  const isLoginPath = pathname.startsWith("/login");
+  const isRegisterPath = pathname.startsWith("/register");
+
+  const staggeredItems = [...navItems, ...authItems].map((item) => ({
     label: item.label,
     link: item.href,
   }));
@@ -47,6 +56,26 @@ export function Navbar({ isWholesale = false }: { isWholesale?: boolean }) {
           </div>
 
           <div className="flex items-center gap-2.5">
+            <Link
+              href="/login"
+              className={`inline-flex h-10 items-center justify-center rounded-full border px-3.5 text-xs font-bold uppercase tracking-[0.16em] transition-colors ${
+                isLoginPath
+                  ? "border-primary/65 bg-primary/12 text-primary"
+                  : "border-border/65 bg-card/55 text-foreground/82 hover:border-primary/50 hover:bg-card/80 hover:text-foreground"
+              }`}
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/register"
+              className={`inline-flex h-10 items-center justify-center rounded-full border px-3.5 text-xs font-bold uppercase tracking-[0.16em] transition-colors ${
+                isRegisterPath
+                  ? "border-primary/85 bg-primary text-primary-foreground ring-2 ring-primary/20"
+                  : "border-primary/75 bg-primary text-primary-foreground hover:bg-primary/90"
+              }`}
+            >
+              Sign Up
+            </Link>
             <GlobalCommandPalette isWholesale={isWholesale} />
             <CartButton className="rounded-full border border-border/60 bg-card/65 px-3 py-2 text-foreground shadow-[0_12px_28px_rgba(139,38,62,0.08)] backdrop-blur-lg transition-transform duration-300 hover:-translate-y-0.5" />
           </div>
