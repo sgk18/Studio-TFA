@@ -98,6 +98,10 @@ export interface Database {
           payment_provider: string;
           payment_status: string;
           payment_reference: string | null;
+          razorpay_payment_id: string | null;
+          payment_signature: string | null;
+          paid_at: string | null;
+          confirmation_email_sent_at: string | null;
           shipping_address: Json;
           line_items: Json;
           notes: string | null;
@@ -119,6 +123,10 @@ export interface Database {
           payment_provider?: string;
           payment_status?: string;
           payment_reference?: string | null;
+          razorpay_payment_id?: string | null;
+          payment_signature?: string | null;
+          paid_at?: string | null;
+          confirmation_email_sent_at?: string | null;
           shipping_address: Json;
           line_items: Json;
           notes?: string | null;
@@ -140,6 +148,10 @@ export interface Database {
           payment_provider?: string;
           payment_status?: string;
           payment_reference?: string | null;
+          razorpay_payment_id?: string | null;
+          payment_signature?: string | null;
+          paid_at?: string | null;
+          confirmation_email_sent_at?: string | null;
           shipping_address?: Json;
           line_items?: Json;
           notes?: string | null;
@@ -212,6 +224,47 @@ export interface Database {
           details?: Json;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      payment_events: {
+        Row: {
+          id: number;
+          event_fingerprint: string;
+          order_id: string | null;
+          provider: string;
+          event_type: string;
+          payment_id: string | null;
+          provider_order_id: string | null;
+          payload: Json;
+          processing_status: string;
+          created_at: string;
+          processed_at: string;
+        };
+        Insert: {
+          id?: number;
+          event_fingerprint: string;
+          order_id?: string | null;
+          provider?: string;
+          event_type: string;
+          payment_id?: string | null;
+          provider_order_id?: string | null;
+          payload?: Json;
+          processing_status?: string;
+          created_at?: string;
+          processed_at?: string;
+        };
+        Update: {
+          id?: number;
+          event_fingerprint?: string;
+          order_id?: string | null;
+          provider?: string;
+          event_type?: string;
+          payment_id?: string | null;
+          provider_order_id?: string | null;
+          payload?: Json;
+          processing_status?: string;
+          created_at?: string;
+          processed_at?: string;
         };
       };
     };

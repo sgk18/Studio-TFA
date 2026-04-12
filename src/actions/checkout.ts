@@ -1,5 +1,6 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import {
   FREE_SHIPPING_THRESHOLD_INR,
@@ -7,6 +8,16 @@ import {
   STANDARD_SHIPPING_FEE_INR,
 } from "@/lib/commerce";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  logPaymentEvent,
+  markOrderPaymentCaptured,
+} from "@/lib/payments/orderCallbacks";
+import {
+  createRazorpayOrder,
+  getRazorpayPublicKey,
+  verifyRazorpayCheckoutSignature,
+} from "@/lib/payments/razorpay";
 import type { Database } from "@/lib/supabase/types";
 
 const cartItemSchema = z.object({
@@ -32,6 +43,20 @@ type CheckoutCartItem = z.infer<typeof cartItemSchema>;
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 type OrdersInsert = Database["public"]["Tables"]["orders"]["Insert"];
 
+const callbackPayloadSchema = z.object({
+  orderId: z.string().trim().min(1),
+  razorpayOrderId: z.string().trim().min(1),
+  razorpayPaymentId: z.string().trim().min(1),
+  razorpaySignature: z.string().trim().min(1),
+});
+
+export type RazorpayCallbackActionResult = {
+  status: "success" | "error";
+  message: string;
+  orderId?: string;
+  emailSent?: boolean;
+};
+
 export type CheckoutActionState = {
   status: "idle" | "error" | "success";
   message?: string;
@@ -47,6 +72,7 @@ export type CheckoutActionState = {
   razorpayPayload?: {
     amount: number;
     currency: "INR";
+    razorpayOrderId: string;
     receipt: string;
     notes: Record<string, string>;
     keyId: string;
@@ -295,7 +321,33 @@ export async function prepareCheckoutAction(
     notes: shippingResult.data.notes || null,
   };
 
+  const orderId = randomUUID();
+
+  let razorpayOrder;
+  try {
+    razorpayOrder = await createRazorpayOrder({
+      amountInPaise: Math.round(total * 100),
+      receipt: orderId,
+      currency: "INR",
+      notes: {
+        order_id: orderId,
+        checkout_mode: isAuthenticated ? "authenticated" : "guest",
+        premium_gifting: premiumGiftingEnabled ? "yes" : "no",
+        promo_code: promo.normalizedPromoCode || "none",
+      },
+    });
+  } catch (error) {
+    return {
+      status: "error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to create Razorpay order.",
+    };
+  }
+
   const orderPayload: OrdersInsert = {
+    id: orderId,
     user_id: user?.id ?? null,
     guest_email: user ? null : shippingResult.data.email,
     status: "pending",
@@ -308,7 +360,7 @@ export async function prepareCheckoutAction(
     promo_code: promo.normalizedPromoCode,
     payment_provider: "razorpay",
     payment_status: "created",
-    payment_reference: null,
+    payment_reference: razorpayOrder.id,
     shipping_address: shippingAddress,
     line_items: lineItems,
     notes: shippingResult.data.notes || null,
@@ -327,12 +379,12 @@ export async function prepareCheckoutAction(
     };
   }
 
-  const orderId = String((insertedOrder as { id: string }).id);
+  const insertedOrderId = String((insertedOrder as { id: string }).id);
 
   return {
     status: "success",
     message: "Checkout has been prepared securely. Continue with Razorpay.",
-    orderId,
+    orderId: insertedOrderId,
     summary: {
       subtotal,
       discount: promo.discount,
@@ -341,16 +393,83 @@ export async function prepareCheckoutAction(
       total,
     },
     razorpayPayload: {
-      amount: Math.round(total * 100),
+      amount: razorpayOrder.amount,
       currency: "INR",
-      receipt: orderId,
+      razorpayOrderId: razorpayOrder.id,
+      receipt: razorpayOrder.receipt,
       notes: {
-        order_id: orderId,
+        order_id: insertedOrderId,
         checkout_mode: isAuthenticated ? "authenticated" : "guest",
         premium_gifting: premiumGiftingEnabled ? "yes" : "no",
         promo_code: promo.normalizedPromoCode || "none",
       },
-      keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
+      keyId: getRazorpayPublicKey(),
     },
+  };
+}
+
+export async function confirmRazorpayPaymentAction(
+  payload: unknown
+): Promise<RazorpayCallbackActionResult> {
+  const parsed = callbackPayloadSchema.safeParse(payload);
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      message: "Invalid payment callback payload.",
+    };
+  }
+
+  const callback = parsed.data;
+
+  if (
+    !verifyRazorpayCheckoutSignature({
+      razorpayOrderId: callback.razorpayOrderId,
+      razorpayPaymentId: callback.razorpayPaymentId,
+      razorpaySignature: callback.razorpaySignature,
+    })
+  ) {
+    return {
+      status: "error",
+      message: "Razorpay signature verification failed.",
+    };
+  }
+
+  const adminClient = createAdminClient();
+
+  await logPaymentEvent({
+    client: adminClient,
+    fingerprint: `checkout.callback:${callback.razorpayPaymentId}`,
+    eventType: "checkout.callback.captured",
+    payload: {
+      order_id: callback.orderId,
+      provider_order_id: callback.razorpayOrderId,
+      payment_id: callback.razorpayPaymentId,
+    },
+    orderId: callback.orderId,
+    paymentId: callback.razorpayPaymentId,
+    providerOrderId: callback.razorpayOrderId,
+  });
+
+  const result = await markOrderPaymentCaptured({
+    client: adminClient,
+    orderId: callback.orderId,
+    providerOrderId: callback.razorpayOrderId,
+    paymentId: callback.razorpayPaymentId,
+    signature: callback.razorpaySignature,
+  });
+
+  if (!result.ok) {
+    return {
+      status: "error",
+      message: result.message,
+    };
+  }
+
+  return {
+    status: "success",
+    message: result.message,
+    orderId: callback.orderId,
+    emailSent: result.emailSent,
   };
 }

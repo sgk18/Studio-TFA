@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useMemo, useState, useTransition } from "react";
 import { Gift, ShieldCheck, TicketPercent, Truck } from "lucide-react";
-import { prepareCheckoutAction, initialCheckoutActionState } from "@/actions/checkout";
+import {
+  confirmRazorpayPaymentAction,
+  initialCheckoutActionState,
+  prepareCheckoutAction,
+} from "@/actions/checkout";
 import {
   FREE_SHIPPING_THRESHOLD_INR,
   PREMIUM_GIFTING_FEE_INR,
@@ -17,6 +21,67 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: {
+      key: string;
+      amount: number;
+      currency: "INR";
+      order_id: string;
+      name: string;
+      description: string;
+      notes?: Record<string, string>;
+      prefill?: {
+        name?: string;
+        email?: string;
+        contact?: string;
+      };
+      theme?: {
+        color?: string;
+      };
+      modal?: {
+        ondismiss?: () => void;
+      };
+      handler: (response: {
+        razorpay_payment_id: string;
+        razorpay_order_id: string;
+        razorpay_signature: string;
+      }) => void;
+    }) => {
+      open: () => void;
+    };
+  }
+}
+
+let razorpayScriptPromise: Promise<void> | null = null;
+
+function loadRazorpayScript(): Promise<void> {
+  if (typeof window === "undefined") {
+    return Promise.reject(new Error("Razorpay can only load in the browser."));
+  }
+
+  if (window.Razorpay) {
+    return Promise.resolve();
+  }
+
+  if (razorpayScriptPromise) {
+    return razorpayScriptPromise;
+  }
+
+  razorpayScriptPromise = new Promise<void>((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("Failed to load Razorpay checkout script."));
+
+    document.body.appendChild(script);
+  });
+
+  return razorpayScriptPromise;
+}
 
 export type CheckoutSessionUser = {
   id: string;
@@ -39,6 +104,9 @@ export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
     prepareCheckoutAction,
     initialCheckoutActionState
   );
+  const [callbackMessage, setCallbackMessage] = useState<string>("");
+  const [callbackError, setCallbackError] = useState<string>("");
+  const [isLaunchingPayment, startLaunchingPayment] = useTransition();
 
   const cartPayload = useMemo(
     () =>
@@ -61,6 +129,79 @@ export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
   const giftingFee = premiumGifting ? PREMIUM_GIFTING_FEE_INR : 0;
   const estimatedTotal = Math.max(0, subtotal + shippingEstimate + giftingFee);
   const isAuthenticated = Boolean(user);
+
+  const canLaunchPayment =
+    state.status === "success" &&
+    Boolean(state.orderId) &&
+    Boolean(state.razorpayPayload?.razorpayOrderId) &&
+    Boolean(state.razorpayPayload?.keyId);
+
+  const launchRazorpayCheckout = () => {
+    if (!canLaunchPayment || !state.orderId || !state.razorpayPayload) {
+      setCallbackError("Prepare checkout first to continue with payment.");
+      return;
+    }
+
+    startLaunchingPayment(async () => {
+      setCallbackError("");
+      setCallbackMessage("");
+
+      try {
+        await loadRazorpayScript();
+
+        if (!window.Razorpay) {
+          setCallbackError("Razorpay SDK is unavailable. Please refresh and try again.");
+          return;
+        }
+
+        const razorpay = new window.Razorpay({
+          key: state.razorpayPayload.keyId,
+          amount: state.razorpayPayload.amount,
+          currency: state.razorpayPayload.currency,
+          order_id: state.razorpayPayload.razorpayOrderId,
+          name: "Studio TFA",
+          description: "Secure checkout",
+          notes: state.razorpayPayload.notes,
+          prefill: {
+            name: user?.fullName || undefined,
+            email: user?.email || undefined,
+          },
+          theme: {
+            color: "#8B263E",
+          },
+          modal: {
+            ondismiss: () => {
+              setCallbackMessage("Payment window closed. You can resume checkout anytime.");
+            },
+          },
+          handler: async (response) => {
+            const result = await confirmRazorpayPaymentAction({
+              orderId: state.orderId,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            if (result.status === "success") {
+              setCallbackMessage(result.message);
+              setCallbackError("");
+              return;
+            }
+
+            setCallbackError(result.message);
+          },
+        });
+
+        razorpay.open();
+      } catch (error) {
+        setCallbackError(
+          error instanceof Error
+            ? error.message
+            : "Unable to launch Razorpay checkout."
+        );
+      }
+    });
+  };
 
   if (items.length === 0) {
     return (
@@ -306,7 +447,27 @@ export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
                 <ShieldCheck className="h-3.5 w-3.5" />
                 Razorpay amount in paise: {state.razorpayPayload.amount}
               </p>
+              <Button
+                type="button"
+                className="w-full"
+                onClick={launchRazorpayCheckout}
+                disabled={!canLaunchPayment || isLaunchingPayment}
+              >
+                {isLaunchingPayment ? "Opening Razorpay..." : "Pay securely with Razorpay"}
+              </Button>
             </div>
+          ) : null}
+
+          {callbackMessage ? (
+            <p className="rounded-xl border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
+              {callbackMessage}
+            </p>
+          ) : null}
+
+          {callbackError ? (
+            <p className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+              {callbackError}
+            </p>
           ) : null}
         </CardContent>
       </Card>
