@@ -16,7 +16,7 @@ function countOrderItems(value: Json): number {
     return 0;
   }
 
-  return value.reduce((total, item) => {
+  return value.reduce<number>((total, item) => {
     if (typeof item === "object" && item !== null && !Array.isArray(item)) {
       const quantityValue = (item as Record<string, unknown>).quantity;
       const quantity = typeof quantityValue === "number" ? quantityValue : Number(quantityValue);
