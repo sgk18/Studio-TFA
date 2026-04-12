@@ -1,16 +1,24 @@
 import * as React from "react";
 
-interface OrderItem {
+export interface OrderConfirmationItem {
   title: string;
   quantity: number;
   price: number;
 }
 
-interface OrderConfirmationEmailProps {
+export interface OrderConfirmationEmailProps {
   orderId: string;
   customerName: string;
-  items: OrderItem[];
+  items: OrderConfirmationItem[];
   total: number;
+  subtotal?: number;
+  discount?: number;
+  shippingAmount?: number;
+  premiumGiftingFee?: number;
+}
+
+export function buildOrderConfirmationSubject(orderId: string): string {
+  return `Order Confirmed • ${orderId.slice(0, 8).toUpperCase()}`;
 }
 
 export function OrderConfirmationEmail({
@@ -18,7 +26,17 @@ export function OrderConfirmationEmail({
   customerName,
   items,
   total,
+  subtotal,
+  discount,
+  shippingAmount,
+  premiumGiftingFee,
 }: OrderConfirmationEmailProps) {
+  const hasBreakdown =
+    typeof subtotal === "number" &&
+    typeof discount === "number" &&
+    typeof shippingAmount === "number" &&
+    typeof premiumGiftingFee === "number";
+
   return (
     <html>
       <head>
@@ -92,6 +110,41 @@ export function OrderConfirmationEmail({
                           </tbody>
                         </table>
 
+                        {hasBreakdown ? (
+                          <table width="100%" cellPadding={0} cellSpacing={0} style={{ marginBottom: "20px" }}>
+                            <tbody>
+                              <tr>
+                                <td style={{ color: "#4B5563", fontSize: "13px", padding: "4px 0" }}>Subtotal</td>
+                                <td style={{ color: "#111", fontSize: "13px", textAlign: "right", padding: "4px 0" }}>
+                                  ₹{Number(subtotal).toLocaleString("en-IN")}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style={{ color: "#4B5563", fontSize: "13px", padding: "4px 0" }}>Discount</td>
+                                <td style={{ color: "#111", fontSize: "13px", textAlign: "right", padding: "4px 0" }}>
+                                  -₹{Number(discount).toLocaleString("en-IN")}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style={{ color: "#4B5563", fontSize: "13px", padding: "4px 0" }}>Shipping</td>
+                                <td style={{ color: "#111", fontSize: "13px", textAlign: "right", padding: "4px 0" }}>
+                                  {Number(shippingAmount) <= 0
+                                    ? "Free"
+                                    : `₹${Number(shippingAmount).toLocaleString("en-IN")}`}
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style={{ color: "#4B5563", fontSize: "13px", padding: "4px 0" }}>Premium gifting</td>
+                                <td style={{ color: "#111", fontSize: "13px", textAlign: "right", padding: "4px 0" }}>
+                                  {Number(premiumGiftingFee) <= 0
+                                    ? "-"
+                                    : `₹${Number(premiumGiftingFee).toLocaleString("en-IN")}`}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        ) : null}
+
                         {/* Total */}
                         <div style={{ display: "flex", justifyContent: "space-between", borderTop: "2px solid #111", paddingTop: "16px" }}>
                           <p style={{ margin: 0, fontSize: "12px", fontWeight: "bold", letterSpacing: "0.2em", textTransform: "uppercase", color: "#111" }}>Total</p>
@@ -126,4 +179,53 @@ export function OrderConfirmationEmail({
       </body>
     </html>
   );
+}
+
+export function buildOrderConfirmationText({
+  orderId,
+  customerName,
+  items,
+  total,
+  subtotal,
+  discount,
+  shippingAmount,
+  premiumGiftingFee,
+}: OrderConfirmationEmailProps): string {
+  const itemLines = items
+    .map(
+      (item) =>
+        `- ${item.title} x${item.quantity}: ₹${(item.price * item.quantity).toLocaleString("en-IN")}`
+    )
+    .join("\n");
+
+  const breakdown =
+    typeof subtotal === "number" &&
+    typeof discount === "number" &&
+    typeof shippingAmount === "number" &&
+    typeof premiumGiftingFee === "number"
+      ? [
+          `Subtotal: ₹${subtotal.toLocaleString("en-IN")}`,
+          `Discount: -₹${discount.toLocaleString("en-IN")}`,
+          `Shipping: ${shippingAmount <= 0 ? "Free" : `₹${shippingAmount.toLocaleString("en-IN")}`}`,
+          `Premium gifting: ${premiumGiftingFee <= 0 ? "-" : `₹${premiumGiftingFee.toLocaleString("en-IN")}`}`,
+        ].join("\n")
+      : "";
+
+  return [
+    `Order Confirmed - ${orderId.slice(0, 8).toUpperCase()}`,
+    "",
+    `Thank you, ${customerName}.`,
+    "Your Studio TFA order has been received and is being prepared with care.",
+    "",
+    "Items:",
+    itemLines || "- No line items available",
+    breakdown ? "" : null,
+    breakdown || null,
+    "",
+    `Total: ₹${total.toLocaleString("en-IN")}`,
+    "",
+    "Need help? Reach us at fearlesslypursuing@gmail.com",
+  ]
+    .filter((line): line is string => Boolean(line))
+    .join("\n");
 }

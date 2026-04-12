@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import type { Database } from "@/lib/supabase/types";
+import type { Database, Json } from "@/lib/supabase/types";
 import { toSlug } from "@/lib/catalogFilters";
 import { requireAdminAccess } from "@/lib/security/adminRole";
 
@@ -14,6 +14,17 @@ const PRODUCT_IMAGE_BUCKETS = [
 ] as const;
 const MAX_PRODUCT_IMAGE_BYTES = 8 * 1024 * 1024;
 
+const jsonSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(jsonSchema),
+    z.record(z.string(), jsonSchema),
+  ])
+);
+
 const productMutationSchema = z.object({
   title: z.string().trim().min(2).max(140),
   category: z.string().trim().min(2).max(80),
@@ -22,7 +33,7 @@ const productMutationSchema = z.object({
   description: z.string().trim().min(10).max(5000),
   image_url: z.string().trim().url().nullable(),
   is_active: z.boolean(),
-  metadata: z.record(z.string(), z.unknown()).default({}),
+  metadata: z.record(z.string(), jsonSchema).default({}),
 });
 
 type ProductInsert = Database["public"]["Tables"]["products"]["Insert"];

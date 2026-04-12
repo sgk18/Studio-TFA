@@ -1,5 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { OrderConfirmationEmail } from "@/emails/OrderConfirmationEmail";
+import {
+  buildOrderConfirmationSubject,
+  buildOrderConfirmationText,
+  OrderConfirmationEmail,
+} from "@/emails/OrderConfirmationEmail";
 import { resend } from "@/lib/resend";
 import type { Database, Json } from "@/lib/supabase/types";
 
@@ -80,17 +84,28 @@ async function sendOrderConfirmationEmail(order: OrderRow): Promise<{
 
   const items = toLineItems(order.line_items);
   const total = Number(order.total_amount || 0);
+  const subtotal = Number(order.subtotal || 0);
+  const discount = Number(order.discount || 0);
+  const shippingAmount = Number(order.shipping_amount || 0);
+  const premiumGiftingFee = Number(order.premium_gifting_fee || 0);
+
+  const templatePayload = {
+    orderId: order.id,
+    customerName,
+    items,
+    total,
+    subtotal,
+    discount,
+    shippingAmount,
+    premiumGiftingFee,
+  };
 
   const response = await resend.emails.send({
     from: process.env.RESEND_FROM_EMAIL || "Studio TFA <orders@studiotfa.com>",
     to: [email],
-    subject: `Order Confirmed • ${order.id.slice(0, 8).toUpperCase()}`,
-    react: OrderConfirmationEmail({
-      orderId: order.id,
-      customerName,
-      items,
-      total,
-    }),
+    subject: buildOrderConfirmationSubject(order.id),
+    react: OrderConfirmationEmail(templatePayload),
+    text: buildOrderConfirmationText(templatePayload),
   });
 
   if (response.error) {
