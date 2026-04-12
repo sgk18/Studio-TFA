@@ -4,119 +4,89 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { GlobalCommandPalette } from "@/components/GlobalCommandPalette";
-import PillNav from "./PillNav";
-import StaggeredMenu from "./StaggeredMenu";
 import { CartButton } from "./CartButton";
+import { motion } from "framer-motion";
 
 const navItems = [
-  { label: "Collections", href: "/collections" },
-  { label: "Books", href: "/collections/books" },
-  { label: "Journals", href: "/collections/journals" },
-  { label: "Artists Corner", href: "/artists-corner" },
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/collections" },
   { label: "Community", href: "/community" },
-  { label: "About", href: "/about" },
 ];
 
-const authItems = [
-  { label: "Sign In", href: "/login" },
-  { label: "Sign Up", href: "/register" },
-];
+const mobileItems = [...navItems, { label: "Login", href: "/login" }];
 
 export function Navbar({ isWholesale = false }: { isWholesale?: boolean }) {
   const pathname = usePathname();
-  const activeHref =
-    navItems.find((item) => pathname === item.href)?.href ??
-    navItems
-      .filter((item) => pathname.startsWith(`${item.href}/`))
-      .sort((a, b) => b.href.length - a.href.length)[0]?.href;
-
-  const isLoginPath    = pathname.startsWith("/login");
-  const isRegisterPath = pathname.startsWith("/register");
-
-  const staggeredItems = [...navItems, ...authItems].map((item) => ({
-    label: item.label,
-    link:  item.href,
-  }));
+  const isActiveHref = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
-    <>
-      {/* Desktop nav */}
-      <header
-        className="sticky top-0 z-40 hidden md:block"
-        style={{
-          background: "rgba(253,248,244,0.84)",
-          borderBottom: "1px solid rgba(139,38,62,0.08)",
-          WebkitBackdropFilter: "blur(28px) saturate(160%)",
-          backdropFilter: "blur(28px) saturate(160%)",
-        }}
-      >
-        <div className="mx-auto flex h-[72px] w-full max-w-7xl items-center justify-between gap-6 px-6 lg:px-10">
-          {/* Logo + pill nav */}
-          <div className="min-w-0 flex-1">
-            <PillNav
-              logoText="Studio TFA"
-              items={navItems}
-              activeHref={activeHref}
-              baseColor="var(--foreground)"
-              pillColor="var(--card)"
-              pillTextColor="var(--foreground)"
-              hoveredPillTextColor="var(--foreground)"
-              initialLoadAnimation={false}
-            />
-          </div>
+    <header
+      className="sticky top-0 z-40 w-full border-b border-[rgba(139,38,62,0.12)] bg-[rgba(253,248,244,0.88)] backdrop-blur-[24px] backdrop-saturate-150"
+    >
+      <div className="mx-auto flex h-[76px] w-full max-w-7xl items-center justify-between px-6 lg:px-12">
+        {/* Logo - Elegant Bodoni treatment */}
+        <Link
+          href="/"
+          className="flex-shrink-0 font-heading text-2xl md:text-3xl tracking-[-0.02em] text-foreground transition-colors hover:text-primary"
+        >
+          Studio TFA
+        </Link>
 
-          {/* Right actions */}
-          <div className="flex items-center gap-2">
-            {/* Sign In — ghost */}
+        {/* Center Links - Premium Editorial spacing */}
+        <nav className="hidden md:flex items-center space-x-8 lg:space-x-12">
+          {navItems.map((item) => {
+            const isActive = isActiveHref(item.href);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="relative text-xs font-bold uppercase tracking-[0.18em] transition-colors hover:text-primary text-foreground/80"
+              >
+                {item.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="navbar-indicator"
+                    className="absolute -bottom-2 left-1/2 h-[3px] w-6 -translate-x-1/2 bg-primary rounded-full"
+                    transition={{ duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
+                  />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Right Actions */}
+        <div className="flex items-center gap-3 md:gap-5 flex-shrink-0">
+          <div className="hidden md:flex items-center gap-4 border-r border-border/40 pr-4">
             <Link
               href="/login"
-              className={[
-                "inline-flex h-9 items-center justify-center rounded-full border px-4 text-xs font-bold uppercase tracking-[0.16em] transition-all duration-250",
-                isLoginPath
-                  ? "border-primary/50 bg-primary/10 text-primary"
-                  : "border-border/50 text-foreground/72 hover:border-primary/40 hover:text-primary",
-              ].join(" ")}
+              className="text-xs font-bold uppercase tracking-[0.16em] text-foreground/70 transition-colors hover:text-primary"
             >
-              Sign In
+              Login
             </Link>
-
-            {/* Sign Up — filled */}
-            <Link
-              href="/register"
-              className={[
-                "inline-flex h-9 items-center justify-center rounded-full border px-4 text-xs font-bold uppercase tracking-[0.16em] transition-all duration-250",
-                isRegisterPath
-                  ? "border-primary bg-primary text-primary-foreground ring-2 ring-primary/20"
-                  : "border-primary bg-primary text-primary-foreground hover:bg-rose-400 hover:shadow-[0_6px_20px_rgba(209,116,132,0.30)]",
-              ].join(" ")}
-            >
-              Sign Up
-            </Link>
-
-            <GlobalCommandPalette isWholesale={isWholesale} />
-
-            <CartButton className="rounded-full border border-border/50 bg-card/70 px-3 py-2 text-foreground backdrop-blur-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(139,38,62,0.12)]" />
           </div>
-        </div>
-      </header>
 
-      {/* Mobile nav */}
-      <div className="md:hidden">
-        <StaggeredMenu
-          isFixed
-          logoText="Studio TFA"
-          items={staggeredItems}
-          displaySocials={false}
-          displayItemNumbering={false}
-          rightSlot={
-            <>
-              <GlobalCommandPalette isWholesale={isWholesale} />
-              <CartButton className="rounded-full border border-border/50 bg-card/70 px-3 py-2 text-foreground backdrop-blur-lg" />
-            </>
-          }
-        />
-        <div className="h-[72px]" aria-hidden="true" />
+          <GlobalCommandPalette isWholesale={isWholesale} />
+
+          <CartButton className="group relative flex items-center justify-center rounded-full p-2 text-foreground transition-colors hover:text-primary" />
+        </div>
       </div>
-    </>
+
+      {/* Mobile nav links - simple bottom border scroll */}
+      <div className="flex md:hidden items-center gap-6 overflow-x-auto px-6 py-3 border-t border-border/30 bg-background/50 backdrop-blur-md hide-scrollbar">
+        {mobileItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.18em] transition-colors ${
+              isActiveHref(item.href) ? "text-primary" : "text-foreground/75"
+            }`}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
+    </header>
   );
 }
