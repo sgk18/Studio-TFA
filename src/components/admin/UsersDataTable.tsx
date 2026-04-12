@@ -43,17 +43,25 @@ export function UsersDataTable({ users }: { users: AdminUserRow[] }) {
 
     startTransition(async () => {
       setPendingUserId(user.id);
-      const result = await promoteUserToAdmin(user.id);
+      try {
+        const result = await promoteUserToAdmin(user.id);
 
-      if (result?.error) {
-        toast.error(result.error);
+        if (result?.error) {
+          toast.error(result.error);
+          return;
+        }
+
+        toast.success(result?.message || `${user.email ?? user.id} promoted to admin.`);
+        router.refresh();
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : "Unable to promote user to admin right now."
+        );
+      } finally {
         setPendingUserId(null);
-        return;
       }
-
-      toast.success(`${user.email ?? user.id} promoted to admin.`);
-      setPendingUserId(null);
-      router.refresh();
     });
   };
 
@@ -118,6 +126,7 @@ export function UsersDataTable({ users }: { users: AdminUserRow[] }) {
                       <DropdownMenuLabel>User Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
+                        className="cursor-pointer"
                         disabled={user.role === "admin" || loading}
                         onClick={() => promote(user)}
                       >

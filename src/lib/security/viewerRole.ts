@@ -19,7 +19,20 @@ export async function resolveRoleForUserId(
   supabase: ServerClient,
   userId: string
 ): Promise<ProfileRole | null> {
-  const { data: profile, error } = await (supabase as SupabaseClient<any>)
+  const profileQueryClient = supabase as unknown as {
+    from: (table: "profiles") => {
+      select: (columns: "role") => {
+        eq: (column: "id", value: string) => {
+          maybeSingle: () => Promise<{
+            data: { role: ProfileRole | null } | null;
+            error: { message?: string } | null;
+          }>;
+        };
+      };
+    };
+  };
+
+  const { data: profile, error } = await profileQueryClient
     .from("profiles")
     .select("role")
     .eq("id", userId)
