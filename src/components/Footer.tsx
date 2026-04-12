@@ -1,37 +1,100 @@
 import Link from "next/link";
 
+const footerLinks = [
+  {
+    heading: "Shop",
+    links: [
+      { label: "All Collections", href: "/collections" },
+      { label: "Books", href: "/collections/books" },
+      { label: "Journals", href: "/collections/journals" },
+      { label: "Home Decor", href: "/collections/home-decor" },
+      { label: "Gift Hampers", href: "/collections/gift-hampers" },
+    ],
+  },
+  {
+    heading: "Studio",
+    links: [
+      { label: "Artists Corner", href: "/artists-corner" },
+      { label: "Community Gallery", href: "/community" },
+      { label: "About", href: "/about" },
+    ],
+  },
+  {
+    heading: "Legal",
+    links: [
+      { label: "Terms of Service", href: "/terms-of-service" },
+      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Shipping", href: "/shipping" },
+      { label: "Refunds", href: "/refunds" },
+    ],
+  },
+];
+
 export function Footer() {
   return (
-    <footer className="border-t border-border/60 bg-background/78 px-4 py-12 backdrop-blur-xl sm:px-6 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-8 md:flex-row md:items-end md:justify-between">
-        <div className="max-w-xl space-y-3">
-          <p className="font-heading text-3xl tracking-[0.16em] text-foreground sm:text-4xl">
-            Studio TFA
-          </p>
-          <p className="max-w-lg text-sm leading-6 text-foreground/72 sm:text-base">
-            A headless commerce foundation for editorial storefronts, intentional branding, and production-ready customer flows.
-          </p>
+    <footer className="relative border-t border-border/40 bg-background px-6 pt-20 pb-10 lg:px-14">
+      {/* Top section */}
+      <div className="mx-auto max-w-7xl">
+        <div className="grid grid-cols-1 gap-16 md:grid-cols-12">
+
+          {/* Brand column */}
+          <div className="md:col-span-5">
+            <p className="font-heading text-5xl tracking-[-0.02em] text-foreground leading-none mb-6">
+              Studio TFA
+            </p>
+            <p className="max-w-sm text-foreground/62 leading-relaxed" style={{ fontSize: "var(--type-sm)" }}>
+              Elegant, boldly minimalist, Christ-centred art and lifestyle products
+              that nurture identity and spark conversations.
+            </p>
+
+            {/* Subtle brand tag */}
+            <div className="mt-8 flex items-center gap-3">
+              <hr className="editorial-rule w-8" />
+              <span className="overline opacity-60">Est. in faith</span>
+            </div>
+          </div>
+
+          {/* Link columns */}
+          <nav
+            aria-label="Footer navigation"
+            className="md:col-span-7 grid grid-cols-3 gap-8"
+          >
+            {footerLinks.map((group) => (
+              <div key={group.heading}>
+                <p className="overline mb-5 opacity-70">{group.heading}</p>
+                <ul className="space-y-3">
+                  {group.links.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="text-foreground/62 transition-colors duration-200 hover:text-primary"
+                        style={{ fontSize: "var(--type-sm)" }}
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
         </div>
 
-        <nav aria-label="Footer legal links" className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-foreground/72">
-          <Link href="/terms-of-service" className="transition-colors hover:text-primary">
-            Terms of Service
-          </Link>
-          <Link href="/privacy-policy" className="transition-colors hover:text-primary">
-            Privacy Policy
-          </Link>
-          <Link href="/shipping" className="transition-colors hover:text-primary">
-            Shipping
-          </Link>
-          <Link href="/refunds" className="transition-colors hover:text-primary">
-            Refunds
-          </Link>
-        </nav>
-      </div>
-
-      <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-2 border-t border-border/50 pt-6 text-xs uppercase tracking-[0.24em] text-foreground/55 sm:flex-row sm:items-center sm:justify-between">
-        <p>&copy; {new Date().getFullYear()} Studio TFA. All rights reserved.</p>
-        <p>Designed for a premium commerce experience.</p>
+        {/* Bottom bar */}
+        <div className="mt-20 flex flex-col items-start gap-3 border-t border-border/40 pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <p
+            className="text-foreground/45 uppercase tracking-[0.22em]"
+            style={{ fontSize: "var(--type-xs)" }}
+          >
+            © {new Date().getFullYear()} Studio TFA. All rights reserved.
+          </p>
+          <p
+            className="text-foreground/38 uppercase tracking-[0.22em]"
+            style={{ fontSize: "var(--type-xs)" }}
+          >
+            Designed with intentionality.
+          </p>
+        </div>
       </div>
     </footer>
   );

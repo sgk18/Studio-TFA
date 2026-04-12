@@ -30,18 +30,28 @@ export function Navbar({ isWholesale = false }: { isWholesale?: boolean }) {
       .filter((item) => pathname.startsWith(`${item.href}/`))
       .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
-  const isLoginPath = pathname.startsWith("/login");
+  const isLoginPath    = pathname.startsWith("/login");
   const isRegisterPath = pathname.startsWith("/register");
 
   const staggeredItems = [...navItems, ...authItems].map((item) => ({
     label: item.label,
-    link: item.href,
+    link:  item.href,
   }));
 
   return (
     <>
-      <header className="sticky top-0 z-40 hidden border-b border-border/60 bg-background/78 backdrop-blur-xl md:block">
-        <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      {/* Desktop nav */}
+      <header
+        className="sticky top-0 z-40 hidden md:block"
+        style={{
+          background: "rgba(253,248,244,0.84)",
+          borderBottom: "1px solid rgba(139,38,62,0.08)",
+          WebkitBackdropFilter: "blur(28px) saturate(160%)",
+          backdropFilter: "blur(28px) saturate(160%)",
+        }}
+      >
+        <div className="mx-auto flex h-[72px] w-full max-w-7xl items-center justify-between gap-6 px-6 lg:px-10">
+          {/* Logo + pill nav */}
           <div className="min-w-0 flex-1">
             <PillNav
               logoText="Studio TFA"
@@ -55,33 +65,42 @@ export function Navbar({ isWholesale = false }: { isWholesale?: boolean }) {
             />
           </div>
 
-          <div className="flex items-center gap-2.5">
+          {/* Right actions */}
+          <div className="flex items-center gap-2">
+            {/* Sign In — ghost */}
             <Link
               href="/login"
-              className={`inline-flex h-10 items-center justify-center rounded-full border px-3.5 text-xs font-bold uppercase tracking-[0.16em] transition-colors ${
+              className={[
+                "inline-flex h-9 items-center justify-center rounded-full border px-4 text-xs font-bold uppercase tracking-[0.16em] transition-all duration-250",
                 isLoginPath
-                  ? "border-primary/65 bg-primary/12 text-primary"
-                  : "border-border/65 bg-card/55 text-foreground/82 hover:border-primary/50 hover:bg-card/80 hover:text-foreground"
-              }`}
+                  ? "border-primary/50 bg-primary/10 text-primary"
+                  : "border-border/50 text-foreground/72 hover:border-primary/40 hover:text-primary",
+              ].join(" ")}
             >
               Sign In
             </Link>
+
+            {/* Sign Up — filled */}
             <Link
               href="/register"
-              className={`inline-flex h-10 items-center justify-center rounded-full border px-3.5 text-xs font-bold uppercase tracking-[0.16em] transition-colors ${
+              className={[
+                "inline-flex h-9 items-center justify-center rounded-full border px-4 text-xs font-bold uppercase tracking-[0.16em] transition-all duration-250",
                 isRegisterPath
-                  ? "border-primary/85 bg-primary text-primary-foreground ring-2 ring-primary/20"
-                  : "border-primary/75 bg-primary text-primary-foreground hover:bg-primary/90"
-              }`}
+                  ? "border-primary bg-primary text-primary-foreground ring-2 ring-primary/20"
+                  : "border-primary bg-primary text-primary-foreground hover:bg-rose-400 hover:shadow-[0_6px_20px_rgba(209,116,132,0.30)]",
+              ].join(" ")}
             >
               Sign Up
             </Link>
+
             <GlobalCommandPalette isWholesale={isWholesale} />
-            <CartButton className="rounded-full border border-border/60 bg-card/65 px-3 py-2 text-foreground shadow-[0_12px_28px_rgba(139,38,62,0.08)] backdrop-blur-lg transition-transform duration-300 hover:-translate-y-0.5" />
+
+            <CartButton className="rounded-full border border-border/50 bg-card/70 px-3 py-2 text-foreground backdrop-blur-lg transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(139,38,62,0.12)]" />
           </div>
         </div>
       </header>
 
+      {/* Mobile nav */}
       <div className="md:hidden">
         <StaggeredMenu
           isFixed
@@ -92,11 +111,11 @@ export function Navbar({ isWholesale = false }: { isWholesale?: boolean }) {
           rightSlot={
             <>
               <GlobalCommandPalette isWholesale={isWholesale} />
-              <CartButton className="rounded-full border border-border/60 bg-card/65 px-3 py-2 text-foreground shadow-[0_10px_24px_rgba(139,38,62,0.08)] backdrop-blur-lg" />
+              <CartButton className="rounded-full border border-border/50 bg-card/70 px-3 py-2 text-foreground backdrop-blur-lg" />
             </>
           }
         />
-        <div className="h-20" aria-hidden="true" />
+        <div className="h-[72px]" aria-hidden="true" />
       </div>
     </>
   );

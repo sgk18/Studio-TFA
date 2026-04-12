@@ -56,26 +56,18 @@ export async function ProductGrid({
 
   const normalizedCategoryFilters = uniqueSlugs(selectedCategories);
   const normalizedMaterialFilters = uniqueSlugs(selectedMaterials);
-  const normalizedPriceFilters = uniqueSlugs(selectedPriceRanges);
+  const normalizedPriceFilters    = uniqueSlugs(selectedPriceRanges);
 
   const filteredCards = cards.filter((card) => {
     const categorySlugForCard = toSlug(card.category);
     const materialSlugForCard = toSlug(card.material);
 
-    if (
-      normalizedCategoryFilters.length > 0 &&
-      !normalizedCategoryFilters.includes(categorySlugForCard)
-    ) {
+    if (normalizedCategoryFilters.length > 0 && !normalizedCategoryFilters.includes(categorySlugForCard)) {
       return false;
     }
-
-    if (
-      normalizedMaterialFilters.length > 0 &&
-      !normalizedMaterialFilters.includes(materialSlugForCard)
-    ) {
+    if (normalizedMaterialFilters.length > 0 && !normalizedMaterialFilters.includes(materialSlugForCard)) {
       return false;
     }
-
     if (!matchesPriceRanges(toNumber(card.price), normalizedPriceFilters)) {
       return false;
     }
@@ -85,13 +77,13 @@ export async function ProductGrid({
 
   if (filteredCards.length === 0) {
     return (
-      <div className="glass-shell rounded-[1.6rem] p-8 text-center md:p-12">
-        <p className="text-base text-foreground/75">
-          No pieces match these filters yet. Try widening your selection.
+      <div className="glass-shell rounded-[1.6rem] p-12 text-center">
+        <p className="text-foreground/65 mb-6" style={{ fontSize: "var(--type-lg)" }}>
+          No pieces match these filters yet.
         </p>
         <Link
           href={categorySlug === "all" ? "/collections" : `/collections/${categorySlug}`}
-          className="mt-4 inline-flex text-xs font-bold uppercase tracking-[0.18em] text-primary underline underline-offset-4"
+          className="link-arrow"
         >
           Reset filters
         </Link>
@@ -100,24 +92,33 @@ export async function ProductGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-6 lg:gap-8">
+    /**
+     * Asymmetrical editorial grid:
+     * – Cards at position 0 mod 7 → wide feature (col-span-4), tall aspect
+     * – Cards at position 3 mod 7 → medium accent (col-span-3), square-ish
+     * – All others              → standard half-width (col-span-3)
+     */
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-6 lg:gap-7">
       {filteredCards.map((product, index) => {
-        const isFeatureCard = index % 7 === 0;
-        const cardSpan = isFeatureCard ? "md:col-span-4" : "md:col-span-3";
-        const mediaAspect = isFeatureCard ? "aspect-[5/6]" : "aspect-[3/4]";
+        const isFeature = index % 7 === 0;
+        const isAccent  = index % 7 === 3;
+
+        const cardSpan    = isFeature ? "md:col-span-4" : "md:col-span-3";
+        const mediaAspect = isFeature ? "aspect-[4/5]"  : isAccent ? "aspect-[1/1]" : "aspect-[3/4]";
 
         return (
           <Link
             key={product.id}
             href={`/product/${product.id}`}
             className={cn(
-              "group block glass-shell rounded-[1.4rem] p-4 transition-transform hover:-translate-y-1",
+              "product-card group block glass-shell rounded-[1.4rem] p-4",
               cardSpan
             )}
           >
+            {/* Image */}
             <div
               className={cn(
-                "relative mb-5 overflow-hidden rounded-xl border border-border/70 bg-card/65",
+                "relative mb-5 overflow-hidden rounded-[0.9rem] border border-border/50 bg-card/60",
                 mediaAspect
               )}
             >
@@ -125,33 +126,43 @@ export async function ProductGrid({
                 src={product.imageUrl}
                 alt={product.title}
                 fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
+                className="product-card__image object-cover"
               />
+
+              {/* Category badge on hover */}
+              <span className="absolute bottom-3 left-3 rounded-full border border-white/20 bg-background/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/70 opacity-0 backdrop-blur-sm transition-opacity duration-300 group-hover:opacity-100">
+                {product.category}
+              </span>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-foreground/60">
-                    {product.category}
-                  </p>
-                  <h3 className="mt-2 font-heading text-3xl leading-tight tracking-tight text-foreground transition-colors group-hover:text-primary">
-                    {product.title}
-                  </h3>
-                </div>
-
-                <p className="shrink-0 text-sm font-bold uppercase tracking-[0.15em] text-primary">
-                  {product.isCustomOrder ? "Custom Order" : formatINR(product.price)}
+            {/* Meta */}
+            <div className="space-y-2 px-1 pb-2">
+              <div className="flex items-start justify-between gap-3">
+                <h3
+                  className="font-heading leading-tight tracking-tight text-foreground transition-colors duration-200 group-hover:text-primary"
+                  style={{ fontSize: "var(--type-2xl)" }}
+                >
+                  {product.title}
+                </h3>
+                <p className="shrink-0 font-bold uppercase tracking-[0.14em] text-primary pt-1"
+                   style={{ fontSize: "var(--type-xs)" }}>
+                  {product.isCustomOrder ? "Custom" : formatINR(product.price)}
                 </p>
               </div>
 
-              <p className="line-clamp-2 text-sm leading-relaxed text-foreground/72">
+              <p
+                className="line-clamp-2 text-foreground/60 leading-relaxed"
+                style={{ fontSize: "var(--type-sm)" }}
+              >
                 {product.story}
               </p>
 
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground/45">
-                Material: {product.material}
+              <p
+                className="text-foreground/38 uppercase tracking-[0.18em]"
+                style={{ fontSize: "var(--type-xs)" }}
+              >
+                {product.material}
               </p>
             </div>
           </Link>
@@ -164,17 +175,17 @@ export async function ProductGrid({
 function toProductCard(value: unknown, isWholesale: boolean): ProductCard | null {
   if (!isRecord(value)) return null;
 
-  const id = readFirstString(value, ["id"]);
-  const title = readFirstString(value, ["title"]);
+  const id       = readFirstString(value, ["id"]);
+  const title    = readFirstString(value, ["title"]);
   const imageUrl = readFirstString(value, ["image_url"]);
   const category = resolveProductCategory(value);
   const material = deriveMaterial(value);
-  const story =
+  const story    =
     readFirstString(value, ["story", "description", "inspiration"]) ||
     "Crafted to anchor your space in meaning and beauty.";
 
   const isCustomOrder = Boolean(value.is_custom_order);
-  const basePrice = toNumber(value.price);
+  const basePrice     = toNumber(value.price);
 
   if (!id || !title || !imageUrl) return null;
 

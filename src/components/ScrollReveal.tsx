@@ -37,7 +37,7 @@ export function ScrollReveal({
 
   const transition = shouldReduceMotion
     ? { duration: 0.32, delay, ease: [0, 0, 0.58, 1] as const }
-    : { duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] as const };
+    : { duration: 1.1, delay, ease: [0.25, 1, 0.5, 1] as const };
 
   return (
     <motion.div
