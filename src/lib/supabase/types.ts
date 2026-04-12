@@ -226,6 +226,50 @@ export interface Database {
           updated_at?: string;
         };
       };
+      custom_orders: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          full_name: string;
+          email: string;
+          vision: string;
+          color_palette: string[];
+          palette_notes: string | null;
+          reference_image_path: string | null;
+          reference_image_url: string | null;
+          status: "todo" | "in_progress" | "review" | "shipped";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          full_name: string;
+          email: string;
+          vision: string;
+          color_palette?: string[];
+          palette_notes?: string | null;
+          reference_image_path?: string | null;
+          reference_image_url?: string | null;
+          status?: "todo" | "in_progress" | "review" | "shipped";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          full_name?: string;
+          email?: string;
+          vision?: string;
+          color_palette?: string[];
+          palette_notes?: string | null;
+          reference_image_path?: string | null;
+          reference_image_url?: string | null;
+          status?: "todo" | "in_progress" | "review" | "shipped";
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       payment_events: {
         Row: {
           id: number;
