@@ -1,0 +1,10 @@
+<svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Recommended icon">
+  <defs>
+    <linearGradient id="doGradient" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9EDDA3" />
+      <stop offset="1" stop-color="#2F7D3D" />
+    </linearGradient>
+  </defs>
+  <circle cx="12" cy="12" r="10" fill="url(#doGradient)" />
+  <path d="M17.5 8.5L10.7 15.3L6.8 11.4L8.1 10.1L10.7 12.7L16.2 7.2L17.5 8.5Z" fill="#FFFFFF" />
+</svg>

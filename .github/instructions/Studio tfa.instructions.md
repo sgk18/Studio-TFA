@@ -3,10 +3,10 @@ description: Global project context, architectural rules, and coding guidelines 
 applyTo: '**/*.{ts,tsx,js,jsx,css,md,sql}'
 ---
 
-# 🌍 Project Context: Studio TFA
+# <img src="../assets/icons/section-badge.svg" alt="" width="16" height="16" /> Project Context: Studio TFA
 You are building "Studio TFA" (The Fearlessly Authentic), a premium, mission-driven Christian creative studio and headless e-commerce platform. The aesthetic is feminine, editorial, modern, and high-end.
 
-## 🛠️ Core Technology Stack
+## <img src="../assets/icons/section-badge.svg" alt="" width="16" height="16" /> Core Technology Stack
 - **Framework:** Next.js 16+ (App Router strictly)
 - **Language:** TypeScript
 - **Library:** React 19
@@ -16,7 +16,7 @@ You are building "Studio TFA" (The Fearlessly Authentic), a premium, mission-dri
 - **Motion & UX:** Framer Motion (animations), Lenis (smooth scroll)
 - **Emails:** Resend
 
-## 🎨 Design System & Branding
+## <img src="../assets/icons/section-badge.svg" alt="" width="16" height="16" /> Design System & Branding
 - **Typography:** `Bodoni Moda` for headings and `Plus Jakarta Sans` for body/UI. Never use Inter or default system fonts.
 - **Color Palette (CSS Variables):**
   - `--blush`: `#E0AEBA`
@@ -29,7 +29,7 @@ You are building "Studio TFA" (The Fearlessly Authentic), a premium, mission-dri
 
 ---
 
-# 🧠 Strict Coding Guidelines
+# <img src="../assets/icons/section-badge.svg" alt="" width="16" height="16" /> Strict Coding Guidelines
 
 ## 1. Next.js App Router Rules
 - **Server Components by Default:** Assume all components are React Server Components (RSC) unless interactivity (hooks, state, onClick) is explicitly required. Use `"use client"` sparingly and push it down the component tree.
