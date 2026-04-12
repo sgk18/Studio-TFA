@@ -1,10 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import {
-  buildOrderConfirmationSubject,
-  buildOrderConfirmationText,
-  OrderConfirmationEmail,
-} from "@/emails/OrderConfirmationEmail";
-import { resend } from "@/lib/resend";
+import { sendOrderConfirmation } from "@/actions/sendEmail";
 import type { Database, Json } from "@/lib/supabase/types";
 
 type AdminClient = SupabaseClient<Database>;
@@ -60,64 +55,6 @@ function resolveRecipient(order: OrderRow): { email: string | null; customerName
   return {
     email: emailFromAddress || order.guest_email,
     customerName: nameFromAddress || "Studio TFA Customer",
-  };
-}
-
-async function sendOrderConfirmationEmail(order: OrderRow): Promise<{
-  sent: boolean;
-  message: string;
-}> {
-  if (!process.env.RESEND_API_KEY) {
-    return {
-      sent: false,
-      message: "RESEND_API_KEY is missing.",
-    };
-  }
-
-  const { email, customerName } = resolveRecipient(order);
-  if (!email) {
-    return {
-      sent: false,
-      message: "Order does not have a reachable recipient email.",
-    };
-  }
-
-  const items = toLineItems(order.line_items);
-  const total = Number(order.total_amount || 0);
-  const subtotal = Number(order.subtotal || 0);
-  const discount = Number(order.discount || 0);
-  const shippingAmount = Number(order.shipping_amount || 0);
-  const premiumGiftingFee = Number(order.premium_gifting_fee || 0);
-
-  const templatePayload = {
-    orderId: order.id,
-    customerName,
-    items,
-    total,
-    subtotal,
-    discount,
-    shippingAmount,
-    premiumGiftingFee,
-  };
-
-  const response = await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL || "Studio TFA <orders@studiotfa.com>",
-    to: [email],
-    subject: buildOrderConfirmationSubject(order.id),
-    react: OrderConfirmationEmail(templatePayload),
-    text: buildOrderConfirmationText(templatePayload),
-  });
-
-  if (response.error) {
-    return {
-      sent: false,
-      message: response.error.message || "Resend rejected the email request.",
-    };
-  }
-
-  return {
-    sent: true,
-    message: "Order confirmation email sent.",
   };
 }
 
@@ -241,9 +178,18 @@ export async function markOrderPaymentCaptured(input: {
     paid_at: paidAt,
   };
 
-  const emailResult = await sendOrderConfirmationEmail(refreshedOrder);
+  const { email } = resolveRecipient(refreshedOrder);
+  if (!email) {
+    return {
+      ok: true,
+      message: "Order marked paid, but no recipient email was available for confirmation.",
+      emailSent: false,
+    };
+  }
 
-  if (emailResult.sent) {
+  const emailResult = await sendOrderConfirmation(email, refreshedOrder.id);
+
+  if (emailResult.success) {
     await adminClient
       .from("orders")
       .update({ confirmation_email_sent_at: new Date().toISOString() })
@@ -252,8 +198,10 @@ export async function markOrderPaymentCaptured(input: {
 
   return {
     ok: true,
-    message: emailResult.message,
-    emailSent: emailResult.sent,
+    message: emailResult.success
+      ? "Order marked paid. Confirmation email sent."
+      : emailResult.error || "Order marked paid, but the confirmation email could not be sent.",
+    emailSent: emailResult.success,
   };
 }
 
