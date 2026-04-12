@@ -11,7 +11,7 @@ export type StepperStep = {
 };
 
 type StepperProps = {
-  steps: StepperStep[];
+  steps: ReadonlyArray<StepperStep>;
   activeStep: number;
   onStepChange?: (stepIndex: number) => void;
   className?: string;

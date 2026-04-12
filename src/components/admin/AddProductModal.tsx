@@ -156,7 +156,16 @@ export function AddProductModal() {
                   <FormItem>
                     <FormLabel>Price (INR)</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" step="0.01" {...field} />
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        name={field.name}
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        value={typeof field.value === "number" ? field.value : 0}
+                        onChange={(event) => field.onChange(event.target.valueAsNumber)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -170,7 +179,16 @@ export function AddProductModal() {
                   <FormItem>
                     <FormLabel>Stock</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" step="1" {...field} />
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        name={field.name}
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        value={typeof field.value === "number" ? field.value : 0}
+                        onChange={(event) => field.onChange(event.target.valueAsNumber)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

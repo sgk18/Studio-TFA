@@ -56,7 +56,8 @@ export function AdminRevenueChart({ labels, values }: AdminRevenueChartProps) {
       tooltip: {
         callbacks: {
           label: (context) => {
-            return `Revenue: INR ${Math.round(context.parsed.y).toLocaleString("en-IN")}`;
+            const parsedY = typeof context.parsed.y === "number" ? context.parsed.y : 0;
+            return `Revenue: INR ${Math.round(parsedY).toLocaleString("en-IN")}`;
           },
         },
       },

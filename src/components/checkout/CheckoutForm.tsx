@@ -160,7 +160,10 @@ export function CheckoutForm({
     Boolean(state.razorpayPayload?.keyId);
 
   const launchRazorpayCheckout = () => {
-    if (!canLaunchPayment || !state.orderId || !state.razorpayPayload) {
+    const orderId = state.orderId;
+    const razorpayPayload = state.razorpayPayload;
+
+    if (!canLaunchPayment || !orderId || !razorpayPayload) {
       setCallbackError("Prepare checkout first to continue with payment.");
       return;
     }
@@ -178,13 +181,13 @@ export function CheckoutForm({
         }
 
         const razorpay = new window.Razorpay({
-          key: state.razorpayPayload.keyId,
-          amount: state.razorpayPayload.amount,
-          currency: state.razorpayPayload.currency,
-          order_id: state.razorpayPayload.razorpayOrderId,
+          key: razorpayPayload.keyId,
+          amount: razorpayPayload.amount,
+          currency: razorpayPayload.currency,
+          order_id: razorpayPayload.razorpayOrderId,
           name: "Studio TFA",
           description: "Secure checkout",
-          notes: state.razorpayPayload.notes,
+          notes: razorpayPayload.notes,
           prefill: {
             name: user?.fullName || undefined,
             email: user?.email || undefined,
@@ -199,7 +202,7 @@ export function CheckoutForm({
           },
           handler: async (response) => {
             const result = await confirmRazorpayPaymentAction({
-              orderId: state.orderId,
+              orderId,
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
