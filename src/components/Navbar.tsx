@@ -82,7 +82,7 @@ export function Navbar({
               aria-label="Profile"
               className="hidden sm:inline-flex items-center justify-center rounded-full border border-border/70 bg-card/55 p-2.5 text-foreground transition-colors hover:border-primary hover:text-primary"
             >
-              <CircleUserRound className="h-4.5 w-4.5" />
+              <CircleUserRound className="h-4 w-4" />
             </Link>
           ) : (
             <Link
