@@ -23,7 +23,7 @@ export type RazorpayOrderResponse = {
   created_at: number;
 };
 
-function getRazorpayCredentials() {
+function getRazorpayApiCredentials() {
   const keyId =
     process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
   const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -35,6 +35,26 @@ function getRazorpayCredentials() {
   }
 
   return { keyId, keySecret };
+}
+
+function getRazorpaySignatureSecret() {
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keySecret) {
+    throw new Error("Missing RAZORPAY_KEY_SECRET for signature verification.");
+  }
+
+  return keySecret;
+}
+
+function getRazorpayWebhookSecret() {
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET;
+  if (!webhookSecret) {
+    throw new Error(
+      "Missing webhook secret. Set RAZORPAY_WEBHOOK_SECRET (recommended) or RAZORPAY_KEY_SECRET."
+    );
+  }
+
+  return webhookSecret;
 }
 
 function safeTimingCompare(expected: string, received: string): boolean {
@@ -55,7 +75,7 @@ function safeTimingCompare(expected: string, received: string): boolean {
 export async function createRazorpayOrder(
   input: CreateRazorpayOrderInput
 ): Promise<RazorpayOrderResponse> {
-  const { keyId, keySecret } = getRazorpayCredentials();
+  const { keyId, keySecret } = getRazorpayApiCredentials();
 
   if (!Number.isFinite(input.amountInPaise) || input.amountInPaise <= 0) {
     throw new Error("Razorpay amount must be a positive integer in paise.");
@@ -93,7 +113,7 @@ export function verifyRazorpayCheckoutSignature(input: {
   razorpayPaymentId: string;
   razorpaySignature: string;
 }): boolean {
-  const { keySecret } = getRazorpayCredentials();
+  const keySecret = getRazorpaySignatureSecret();
 
   const expectedSignature = crypto
     .createHmac("sha256", keySecret)
@@ -107,9 +127,9 @@ export function verifyRazorpayWebhookSignature(input: {
   rawBody: string;
   razorpaySignature: string;
 }): boolean {
-  const { keySecret } = getRazorpayCredentials();
+  const webhookSecret = getRazorpayWebhookSecret();
   const expectedSignature = crypto
-    .createHmac("sha256", keySecret)
+    .createHmac("sha256", webhookSecret)
     .update(input.rawBody)
     .digest("hex");
 

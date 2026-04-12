@@ -1,14 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import {
-  evaluateMasterAdminAccess,
-  getClientIpFromHeaderGetter,
-  getMasterAdminErrorMessage,
-} from "@/lib/security/masterAdmin";
-import {
-  readAdminAccessSettings,
-  recordDeniedAdminAccess,
-} from "@/lib/security/adminAccessStore";
+import type { Database } from "@/lib/supabase/types";
 
 function redirectToAccessDenied(request: NextRequest, errorMessage?: string) {
   const redirectUrl = request.nextUrl.clone();
@@ -22,12 +14,20 @@ function redirectToAccessDenied(request: NextRequest, errorMessage?: string) {
   return NextResponse.redirect(redirectUrl);
 }
 
+function redirectToLogin(request: NextRequest) {
+  const redirectUrl = request.nextUrl.clone();
+  redirectUrl.pathname = "/login";
+  redirectUrl.searchParams.set("redirectedFrom", request.nextUrl.pathname);
+
+  return NextResponse.redirect(redirectUrl);
+}
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
 
-  const supabase = createServerClient(
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
@@ -50,42 +50,27 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   if (!request.nextUrl.pathname.startsWith("/admin")) {
     return supabaseResponse;
   }
 
-  const clientIp = getClientIpFromHeaderGetter((headerName) =>
-    request.headers.get(headerName)
-  );
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  const settings = await readAdminAccessSettings(
-    supabase,
-    process.env.MASTER_ADMIN_ALLOWED_IPS ?? null
-  );
-  const effectiveAllowedIpsRaw = settings.allowedIpsRaw;
+  if (userError || !user) {
+    return redirectToLogin(request);
+  }
 
-  const decision = evaluateMasterAdminAccess({
-    userEmail: user?.email,
-    clientIp,
-    masterAdminEmail: process.env.MASTER_ADMIN_EMAIL,
-    allowedIpsRaw: effectiveAllowedIpsRaw,
-    environment: process.env.NODE_ENV,
-  });
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
 
-  if (!decision.allowed) {
-    await recordDeniedAdminAccess(supabase, {
-      attemptedEmail: user?.email ?? null,
-      ipAddress: clientIp || null,
-      path: request.nextUrl.pathname,
-      reason: decision.reason,
-      userAgent: request.headers.get("user-agent"),
-    });
-
-    return redirectToAccessDenied(request, getMasterAdminErrorMessage(decision.reason));
+  if (profileError || !profile || profile.role !== "admin") {
+    return redirectToAccessDenied(request, "Admin role required.");
   }
 
   return supabaseResponse;

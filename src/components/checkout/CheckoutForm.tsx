@@ -98,6 +98,7 @@ function fieldError(
 
 export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
   const items = useCartStore((state) => state.items);
+  const clearCart = useCartStore((state) => state.clearCart);
   const [premiumGifting, setPremiumGifting] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [state, formAction, isPending] = useActionState(
@@ -183,6 +184,7 @@ export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
             });
 
             if (result.status === "success") {
+              clearCart();
               setCallbackMessage(result.message);
               setCallbackError("");
               return;
