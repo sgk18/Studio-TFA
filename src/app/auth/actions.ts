@@ -2,6 +2,7 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 function getSafeNextPath(value: FormDataEntryValue | null | undefined): string {
   if (typeof value !== "string") return "/";
@@ -20,14 +21,11 @@ function hasAcceptedLegal(formData: FormData): boolean {
   return value === "on" || value === "true" || value === "1";
 }
 
-function getSiteUrl(): string {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-
-  try {
-    return new URL(configured).toString().replace(/\/$/, "");
-  } catch {
-    return "http://localhost:3000";
-  }
+async function getSiteUrl(): Promise<string> {
+  const headersList = await headers();
+  const host = headersList.get("host") || "localhost:3000";
+  const protocol = host.includes("localhost") ? "http" : "https";
+  return `${protocol}://${host}`;
 }
 
 async function startGoogleOAuth(
@@ -37,7 +35,8 @@ async function startGoogleOAuth(
   const supabase = await createClient();
   const nextPath = getSafeNextPath(formData.get("next"));
 
-  const callbackUrl = new URL("/auth/callback", `${getSiteUrl()}/`);
+  const siteUrl = await getSiteUrl();
+  const callbackUrl = new URL("/auth/callback", `${siteUrl}/`);
   callbackUrl.searchParams.set("next", nextPath);
 
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -96,12 +95,14 @@ export async function signUp(formData: FormData) {
   const password = formData.get("password") as string;
   const full_name = formData.get("full_name") as string;
 
+  const siteUrl = await getSiteUrl();
+
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: { full_name },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback`,
+      emailRedirectTo: `${siteUrl}/auth/callback`,
     },
   });
 
