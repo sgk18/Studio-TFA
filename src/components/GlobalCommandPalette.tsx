@@ -51,6 +51,11 @@ const ROUTE_ITEMS = [
     keywords: ["journals", "writing", "reflection"],
   },
   {
+    href: "/artists-corner",
+    label: "Artists Corner",
+    keywords: ["commission", "custom", "personalization", "studio"],
+  },
+  {
     href: "/community",
     label: "Community Gallery",
     keywords: ["reviews", "photos", "five star"],
