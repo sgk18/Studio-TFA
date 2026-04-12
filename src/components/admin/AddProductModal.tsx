@@ -52,14 +52,15 @@ const formSchema = z.object({
     }),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormInputValues = z.input<typeof formSchema>;
+type FormValues = z.output<typeof formSchema>;
 
 export function AddProductModal() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<FormValues>({
+  const form = useForm<FormInputValues, unknown, FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
@@ -98,11 +99,11 @@ export function AddProductModal() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button type="button" className="action-pill-link px-4 py-2 text-xs">
-          <Plus className="h-3.5 w-3.5" />
-          Add Product
-        </button>
+      <DialogTrigger
+        render={<button type="button" className="action-pill-link px-4 py-2 text-xs" />}
+      >
+        <Plus className="h-3.5 w-3.5" />
+        Add Product
       </DialogTrigger>
 
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">

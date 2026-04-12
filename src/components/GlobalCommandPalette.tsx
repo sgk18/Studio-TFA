@@ -232,7 +232,7 @@ export function GlobalCommandPalette({
                     <CommandItem
                       key={item.href}
                       value={`${item.label} ${item.href}`}
-                      keywords={item.keywords as string[]}
+                      keywords={[...item.keywords]}
                       onSelect={() => navigate(item.href)}
                     >
                       <span className="font-medium">{item.label}</span>
