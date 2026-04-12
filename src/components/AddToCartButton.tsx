@@ -1,6 +1,6 @@
 "use client";
 
-import { useCart } from "@/store/useCart";
+import { useCartStore } from "@/store/cartStore";
 
 type Product = {
   id: string;
@@ -11,7 +11,7 @@ type Product = {
 };
 
 export function AddToCartButton({ product }: { product: Product }) {
-  const { addItem } = useCart();
+  const { addItem } = useCartStore();
 
   return (
     <button

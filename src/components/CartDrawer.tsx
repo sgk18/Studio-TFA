@@ -1,6 +1,6 @@
 "use client";
 
-import { useCart } from "@/store/useCart";
+import { FREE_SHIPPING_TARGET_INR, useCartStore } from "@/store/cartStore";
 import {
   Sheet,
   SheetContent,
@@ -14,13 +14,30 @@ import { useEffect, useState } from "react";
 import { formatINR } from "@/lib/currency";
 
 export function CartDrawer() {
-  const { items, isOpen, closeCart, removeItem, updateQuantity, getTotal, clearCart } = useCart();
-  // Hydration guard — don't render cart content until client-mounted
+  const {
+    items,
+    isOpen,
+    closeCart,
+    removeItem,
+    updateQuantity,
+    getSubtotal,
+    getCount,
+    getFreeShippingRemaining,
+    clearCart,
+  } = useCartStore();
   const [mounted, setMounted] = useState(false);
+
   useEffect(() => setMounted(true), []);
 
-  const total = mounted ? getTotal() : 0;
-  const count = mounted ? items.length : 0;
+  const subtotal = mounted ? getSubtotal() : 0;
+  const totalItems = mounted ? getCount() : 0;
+  const freeShippingRemaining = mounted
+    ? getFreeShippingRemaining(FREE_SHIPPING_TARGET_INR)
+    : FREE_SHIPPING_TARGET_INR;
+  const shippingProgress = Math.min(
+    100,
+    Math.round((subtotal / FREE_SHIPPING_TARGET_INR) * 100)
+  );
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
@@ -28,13 +45,14 @@ export function CartDrawer() {
         <SheetHeader className="px-6 pt-8 pb-4 border-b border-border/60">
           <SheetTitle className="font-heading text-2xl font-normal tracking-tight">
             Your Cart
-            {mounted && count > 0 && (
-              <span className="text-base font-sans font-light text-foreground/50 ml-3">({count} items)</span>
+            {mounted && totalItems > 0 && (
+              <span className="text-base font-sans font-light text-foreground/50 ml-3">
+                ({totalItems} items)
+              </span>
             )}
           </SheetTitle>
         </SheetHeader>
 
-        {/* Items */}
         {!mounted || items.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
             <p className="font-heading text-3xl text-muted-foreground mb-4">Empty</p>
@@ -49,7 +67,29 @@ export function CartDrawer() {
             </button>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+            <div className="glass-subpanel rounded-2xl p-4 space-y-2.5">
+              <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-foreground/62">
+                <span>Free shipping</span>
+                <span>{shippingProgress}%</span>
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-background/75" role="progressbar" aria-label="Free shipping progress" aria-valuemin={0} aria-valuemax={FREE_SHIPPING_TARGET_INR} aria-valuenow={Math.min(subtotal, FREE_SHIPPING_TARGET_INR)}>
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500"
+                  style={{ width: `${shippingProgress}%` }}
+                />
+              </div>
+              {freeShippingRemaining > 0 ? (
+                <p className="text-xs text-foreground/68 leading-relaxed">
+                  Add {formatINR(freeShippingRemaining)} more to unlock free shipping at {formatINR(FREE_SHIPPING_TARGET_INR)}.
+                </p>
+              ) : (
+                <p className="text-xs font-semibold text-primary">
+                  Free shipping unlocked for this order.
+                </p>
+              )}
+            </div>
+
             {items.map((item) => (
               <div key={item.id} className="glass-subpanel rounded-xl p-3 flex gap-4 items-start">
                 <div className="relative w-20 h-20 bg-card/50 rounded-md flex-shrink-0 overflow-hidden">
@@ -99,11 +139,17 @@ export function CartDrawer() {
           <div className="px-6 pb-8 pt-4 border-t border-border/60 space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-sm text-foreground/60 tracking-widest uppercase font-bold">Subtotal</span>
-              <span className="font-heading text-2xl">{formatINR(total)}</span>
+              <span className="font-heading text-2xl">{formatINR(subtotal)}</span>
             </div>
-            <p className="text-xs text-foreground/40 leading-relaxed">
-              Shipping and taxes calculated at checkout.
-            </p>
+            {freeShippingRemaining > 0 ? (
+              <p className="text-xs text-foreground/52 leading-relaxed">
+                Shipping applies below {formatINR(FREE_SHIPPING_TARGET_INR)}.
+              </p>
+            ) : (
+              <p className="text-xs text-primary leading-relaxed font-semibold">
+                Shipping fee waived.
+              </p>
+            )}
             <Link
               href="/checkout"
               onClick={closeCart}

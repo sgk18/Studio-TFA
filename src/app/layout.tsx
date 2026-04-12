@@ -7,6 +7,7 @@ import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { Toaster } from "@/components/ui/sonner";
 import { LenisProvider } from "@/components/LenisProvider";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
+import { CartDrawer } from "@/components/CartDrawer";
 
 const bodoni = Bodoni_Moda({
   variable: "--font-heading",
@@ -48,6 +49,7 @@ export default function RootLayout({
             </main>
             <Footer />
           </div>
+          <CartDrawer />
           <WhatsAppFloat />
           <CookieConsentBanner />
         </LenisProvider>

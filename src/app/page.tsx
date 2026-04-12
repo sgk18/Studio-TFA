@@ -6,6 +6,7 @@ import { ParallaxImage } from "@/components/ParallaxImage";
 import { HorizontalScroll } from "@/components/HorizontalScroll";
 import ScrollStack, { ScrollStackItem } from "@/components/ScrollStack";
 import { NewsletterPopup } from "@/components/NewsletterPopup";
+import { EditorialHero } from "@/components/EditorialHero";
 import { sanitizeProductCards } from "@/lib/pageValidation";
 import { formatINR } from "@/lib/currency";
 
@@ -19,40 +20,15 @@ export default async function Home() {
   const { data: products } = await supabase.from('products').select('*').limit(3);
   const featuredProducts = sanitizeProductCards(products).slice(0, 3);
   const shopCategories = [
-    { label: "Books", href: "/c/books" },
-    { label: "Journals", href: "/c/journals" },
-    { label: "Home Decor", href: "/c/home-decor" },
-    { label: "Gift Hampers", href: "/c/gift-hampers" },
+    { label: "Books", href: "/collections/books" },
+    { label: "Journals", href: "/collections/journals" },
+    { label: "Home Decor", href: "/collections/home-decor" },
+    { label: "Gift Hampers", href: "/collections/gift-hampers" },
   ];
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Hero Section - Parallax Background */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <ParallaxImage 
-            src="https://images.unsplash.com/photo-1544967082-d9d25d867d66?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" 
-            alt="Studio TFA Vision" 
-            priority
-          />
-          <div className="absolute inset-0 glass-overlay" />
-        </div>
-        
-        <div className="relative z-10 text-center max-w-5xl mx-auto px-6 pt-20">
-          <StaggeredText 
-            text="To create elegant, boldly minimalist, Christ-centred art and lifestyle products that nurture identity, spark conversations, and infuse homes with beauty and purpose."
-            className="font-heading text-4xl md:text-6xl lg:text-7xl tracking-tight leading-[1.15] text-foreground"
-          />
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/collections" className="action-pill-link">
-              Shop All Products
-            </Link>
-            <Link href="/c/books" className="action-pill-link">
-              Shop Books
-            </Link>
-          </div>
-        </div>
-      </section>
+      <EditorialHero />
 
       {/* The Mission */}
       <section className="py-32 px-6">
