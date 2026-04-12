@@ -3,12 +3,19 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import {
+  applyWholesaleDiscount,
   FREE_SHIPPING_THRESHOLD_INR,
+  isWholesaleRole,
+  MAX_CART_LINE_QUANTITY,
   PREMIUM_GIFTING_FEE_INR,
   STANDARD_SHIPPING_FEE_INR,
+  totalCartQuantity,
+  WHOLESALE_DISCOUNT_RATE,
+  WHOLESALE_MIN_CART_ITEMS,
 } from "@/lib/commerce";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resolveRoleForUserId } from "@/lib/security/viewerRole";
 import {
   logPaymentEvent,
   markOrderPaymentCaptured,
@@ -22,7 +29,7 @@ import type { Database } from "@/lib/supabase/types";
 
 const cartItemSchema = z.object({
   productId: z.string().trim().min(1),
-  quantity: z.coerce.number().int().min(1).max(20),
+  quantity: z.coerce.number().int().min(1).max(MAX_CART_LINE_QUANTITY),
 });
 
 const shippingSchema = z.object({
@@ -180,6 +187,9 @@ export async function prepareCheckoutAction(
 
   const isAuthenticated = Boolean(user);
 
+  const viewerRole = user ? await resolveRoleForUserId(supabase, user.id) : null;
+  const isWholesale = isWholesaleRole(viewerRole);
+
   if (checkoutMode === "authenticated" && !isAuthenticated) {
     return {
       status: "error",
@@ -194,6 +204,19 @@ export async function prepareCheckoutAction(
     return {
       status: "error",
       message: "Cart payload is invalid. Refresh the page and try again.",
+    };
+  }
+
+  const cartQuantity = totalCartQuantity(cartItems);
+  if (isWholesale && cartQuantity < WHOLESALE_MIN_CART_ITEMS) {
+    const message = `Wholesale checkout requires at least ${WHOLESALE_MIN_CART_ITEMS} items in cart.`;
+
+    return {
+      status: "error",
+      message,
+      fieldErrors: {
+        cart: message,
+      },
     };
   }
 
@@ -259,7 +282,10 @@ export async function prepareCheckoutAction(
         throw new Error(`Insufficient stock for ${product.title}.`);
       }
 
-      const unitPrice = Number(product.price);
+      const baseUnitPrice = Number(product.price);
+      const unitPrice = isWholesale
+        ? applyWholesaleDiscount(baseUnitPrice)
+        : baseUnitPrice;
       const lineTotal = toMoney(unitPrice * cartItem.quantity);
       subtotal = toMoney(subtotal + lineTotal);
 
@@ -267,8 +293,11 @@ export async function prepareCheckoutAction(
         product_id: product.id,
         title: product.title,
         quantity: cartItem.quantity,
+        base_unit_price: baseUnitPrice,
         unit_price: unitPrice,
         line_total: lineTotal,
+        pricing_tier: isWholesale ? "wholesale" : "retail",
+        wholesale_discount_rate: isWholesale ? WHOLESALE_DISCOUNT_RATE : 0,
       };
     });
   } catch (error) {
@@ -332,6 +361,7 @@ export async function prepareCheckoutAction(
       notes: {
         order_id: orderId,
         checkout_mode: isAuthenticated ? "authenticated" : "guest",
+        pricing_tier: isWholesale ? "wholesale" : "retail",
         premium_gifting: premiumGiftingEnabled ? "yes" : "no",
         promo_code: promo.normalizedPromoCode || "none",
       },
@@ -400,6 +430,7 @@ export async function prepareCheckoutAction(
       notes: {
         order_id: insertedOrderId,
         checkout_mode: isAuthenticated ? "authenticated" : "guest",
+        pricing_tier: isWholesale ? "wholesale" : "retail",
         premium_gifting: premiumGiftingEnabled ? "yes" : "no",
         promo_code: promo.normalizedPromoCode || "none",
       },
