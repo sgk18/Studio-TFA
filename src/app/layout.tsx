@@ -1,51 +1,33 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Bodoni_Moda, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { Toaster } from "@/components/ui/sonner";
 import { LenisProvider } from "@/components/LenisProvider";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 
-const inter = Inter({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
-const playfair = Playfair_Display({
+const bodoni = Bodoni_Moda({
   variable: "--font-heading",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "Studio TFA | Christian Art & Home Decor — Kothanur, Bangalore",
+    default: "Studio TFA | Headless E-Commerce",
     template: "%s | Studio TFA",
   },
   description:
-    "Studio TFA is a Christian creative studio in Kothanur, Bangalore, crafting intentional, boldly minimalist art and lifestyle products. Books, journals, apparels, home decor and more.",
-  keywords: [
-    "Christian art Bangalore",
-    "Christian home decor India",
-    "Studio TFA",
-    "faith-based products Kothanur",
-    "Christian lifestyle brand",
-    "Christian journals India",
-    "Christian books Bangalore",
-  ],
-  authors: [{ name: "Studio TFA", url: "https://studiotfa.com" }],
-  openGraph: {
-    title: "Studio TFA | Christian Art & Home Decor",
-    description: "Intentional, Christ-centred art and lifestyle products from Kothanur, Bangalore.",
-    siteName: "Studio TFA",
-    locale: "en_IN",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Studio TFA | Christian Art & Home Decor",
-    description: "Intentional, Christ-centred art and lifestyle products. Kothanur, Bangalore.",
-  },
+    "Studio TFA is a headless e-commerce platform built for editorial, brand-led commerce experiences.",
+  authors: [{ name: "Studio TFA" }],
   robots: { index: true, follow: true },
 };
 
@@ -56,18 +38,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${inter.variable} ${playfair.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col font-sans transition-colors duration-300">
-        <LenisProvider />
-        <Navbar />
-        <WhatsAppFloat />
-        <main className="flex-1 w-full flex flex-col">
-          {children}
-        </main>
-        <Footer />
+    <html lang="en" className={`${bodoni.variable} ${plusJakartaSans.variable} h-full antialiased`}>
+      <body className="min-h-dvh bg-background font-sans text-foreground">
+        <LenisProvider>
+          <div className="relative flex min-h-dvh flex-col">
+            <Navbar />
+            <main className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </div>
+          <WhatsAppFloat />
+          <CookieConsentBanner />
+        </LenisProvider>
         <Toaster />
       </body>
     </html>
