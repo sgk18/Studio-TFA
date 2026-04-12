@@ -201,6 +201,49 @@ export async function promoteUserToAdmin(userId: string) {
   return { success: true, message: "User promoted to admin." };
 }
 
+export async function revokeUserAdminAccess(userId: string) {
+  const parsedUserId = z.string().trim().min(1).max(128).safeParse(userId);
+  if (!parsedUserId.success) {
+    return { error: "Invalid user identifier." };
+  }
+
+  const { supabase, userId: actingAdminId } = await requireAdminAccess({ from: "/admin/users" });
+
+  if (parsedUserId.data === actingAdminId) {
+    return { error: "You cannot revoke your own admin access." };
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, role")
+    .eq("id", parsedUserId.data)
+    .maybeSingle();
+
+  if (profileError) {
+    return { error: profileError.message };
+  }
+
+  if (!profile) {
+    return { error: "User profile not found." };
+  }
+
+  if (profile.role !== "admin") {
+    return { success: true, message: "User is not an admin." };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ role: "customer" })
+    .eq("id", parsedUserId.data);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/admin/users");
+  return { success: true, message: "Admin access revoked." };
+}
+
 function toProductInsert(
   input: z.infer<typeof productMutationSchema>
 ): ProductInsert {
