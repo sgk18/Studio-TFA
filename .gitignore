@@ -23,6 +23,7 @@
 # misc
 .DS_Store
 *.pem
+OAuth.json
 
 # debug
 npm-debug.log*

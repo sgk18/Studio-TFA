@@ -131,7 +131,8 @@ export async function logPaymentEvent(input: {
   providerOrderId?: string | null;
   processingStatus?: string;
 }) {
-  const { error } = await input.client.from("payment_events").insert({
+  // payment_events may lag behind generated DB types; keep runtime logging resilient.
+  const { error } = await (input.client as SupabaseClient<any>).from("payment_events").insert({
     event_fingerprint: input.fingerprint,
     order_id: input.orderId || null,
     provider: "razorpay",
@@ -154,7 +155,7 @@ export async function resolveOrderIdFromProviderOrderId(input: {
   client: AdminClient;
   providerOrderId: string;
 }): Promise<string | null> {
-  const { data, error } = await input.client
+  const { data, error } = await (input.client as SupabaseClient<any>)
     .from("orders")
     .select("id")
     .eq("payment_reference", input.providerOrderId)
@@ -174,11 +175,15 @@ export async function markOrderPaymentCaptured(input: {
   paymentId: string;
   signature: string;
 }): Promise<{ ok: boolean; message: string; emailSent: boolean }> {
-  const { data: order, error: orderError } = await input.client
+  const adminClient = input.client as SupabaseClient<any>;
+
+  const { data: orderData, error: orderError } = await adminClient
     .from("orders")
     .select("*")
     .eq("id", input.orderId)
     .maybeSingle();
+
+  const order = orderData as OrderRow | null;
 
   if (orderError || !order) {
     return {
@@ -198,7 +203,7 @@ export async function markOrderPaymentCaptured(input: {
 
   const paidAt = order.paid_at || new Date().toISOString();
 
-  const { error: updateError } = await input.client
+  const { error: updateError } = await adminClient
     .from("orders")
     .update({
       status: "paid",
@@ -239,7 +244,7 @@ export async function markOrderPaymentCaptured(input: {
   const emailResult = await sendOrderConfirmationEmail(refreshedOrder);
 
   if (emailResult.sent) {
-    await input.client
+    await adminClient
       .from("orders")
       .update({ confirmation_email_sent_at: new Date().toISOString() })
       .eq("id", order.id);
@@ -258,7 +263,9 @@ export async function markOrderPaymentFailed(input: {
   providerOrderId: string;
   paymentId: string | null;
 }): Promise<{ ok: boolean; message: string }> {
-  const { error } = await input.client
+  const adminClient = input.client as SupabaseClient<any>;
+
+  const { error } = await adminClient
     .from("orders")
     .update({
       status: "failed",
@@ -286,7 +293,9 @@ export async function markOrderPaymentRefunded(input: {
   orderId: string;
   providerOrderId: string;
 }): Promise<{ ok: boolean; message: string }> {
-  const { error } = await input.client
+  const adminClient = input.client as SupabaseClient<any>;
+
+  const { error } = await adminClient
     .from("orders")
     .update({
       status: "refunded",

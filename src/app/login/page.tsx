@@ -54,6 +54,25 @@ export default async function LoginPage({
 
         <form id="google-signin" action={signInWithGoogle} className="space-y-3">
           <input type="hidden" name="next" value={nextPath} />
+          <label className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-card/55 px-3 py-2.5 text-xs leading-relaxed text-foreground/72">
+            <input
+              type="checkbox"
+              name="accept_legal"
+              required
+              className="mt-0.5 h-4 w-4 rounded border-border/70 accent-primary"
+            />
+            <span>
+              I agree to the{" "}
+              <Link href="/terms-of-service" className="underline underline-offset-4 hover:text-primary transition-colors">
+                Terms and Conditions
+              </Link>
+              {" "}and{" "}
+              <Link href="/privacy-policy" className="underline underline-offset-4 hover:text-primary transition-colors">
+                Privacy Policy
+              </Link>
+              .
+            </span>
+          </label>
           <button
             type="submit"
             className="w-full inline-flex items-center justify-center gap-3 border border-border/80 bg-card/70 hover:bg-card/90 backdrop-blur-xl text-foreground py-3.5 text-xs tracking-widest uppercase font-bold transition-colors"
@@ -114,6 +133,17 @@ export default async function LoginPage({
 
         <div className="mt-8 space-y-4 text-center">
           <div className="h-px bg-border" />
+          <p className="text-xs leading-relaxed text-foreground/55">
+            By continuing, you agree to our{" "}
+            <Link href="/terms-of-service" className="underline underline-offset-4 hover:text-primary transition-colors">
+              Terms and Conditions
+            </Link>
+            {" "}and{" "}
+            <Link href="/privacy-policy" className="underline underline-offset-4 hover:text-primary transition-colors">
+              Privacy Policy
+            </Link>
+            .
+          </p>
           <Link
             href="/collections"
             className="block w-full border border-border/70 bg-card/55 py-4 text-xs tracking-widest uppercase font-bold text-foreground/80 hover:border-primary/50 hover:bg-card/80 hover:text-foreground transition-colors backdrop-blur-lg"

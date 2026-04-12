@@ -14,6 +14,12 @@ function getSafeNextPath(value: FormDataEntryValue | null | undefined): string {
   return nextPath;
 }
 
+function hasAcceptedLegal(formData: FormData): boolean {
+  const value = formData.get("accept_legal");
+  if (typeof value !== "string") return false;
+  return value === "on" || value === "true" || value === "1";
+}
+
 function getSiteUrl(): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -76,6 +82,14 @@ export async function signIn(formData: FormData) {
 }
 
 export async function signUp(formData: FormData) {
+  if (!hasAcceptedLegal(formData)) {
+    redirect(
+      `/register?error=${encodeURIComponent(
+        "Please accept the Terms and Privacy Policy before creating an account."
+      )}`
+    );
+  }
+
   const supabase = await createClient();
   
   const email = formData.get("email") as string;
@@ -105,9 +119,25 @@ export async function signOut() {
 }
 
 export async function signInWithGoogle(formData: FormData) {
+  if (!hasAcceptedLegal(formData)) {
+    redirect(
+      `/login?error=${encodeURIComponent(
+        "Please accept the Terms and Privacy Policy before continuing with Google sign-in."
+      )}`
+    );
+  }
+
   await startGoogleOAuth(formData, "/login");
 }
 
 export async function signUpWithGoogle(formData: FormData) {
+  if (!hasAcceptedLegal(formData)) {
+    redirect(
+      `/register?error=${encodeURIComponent(
+        "Please accept the Terms and Privacy Policy before creating an account."
+      )}`
+    );
+  }
+
   await startGoogleOAuth(formData, "/register");
 }

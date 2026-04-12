@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
 
 function redirectToAccessDenied(request: NextRequest, errorMessage?: string) {
@@ -63,7 +64,7 @@ export async function proxy(request: NextRequest) {
     return redirectToLogin(request);
   }
 
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile, error: profileError } = await (supabase as SupabaseClient<any>)
     .from("profiles")
     .select("role")
     .eq("id", user.id)

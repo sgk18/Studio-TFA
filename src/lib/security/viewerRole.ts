@@ -18,7 +18,7 @@ export async function resolveRoleForUserId(
   supabase: ServerClient,
   userId: string
 ): Promise<ProfileRole | null> {
-  const { data: profile, error } = await supabase
+  const { data: profile, error } = await (supabase as SupabaseClient<any>)
     .from("profiles")
     .select("role")
     .eq("id", userId)
@@ -28,7 +28,7 @@ export async function resolveRoleForUserId(
     return null;
   }
 
-  return profile.role;
+  return profile.role as ProfileRole;
 }
 
 export async function resolveViewerRole(

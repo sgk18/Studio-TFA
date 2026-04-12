@@ -72,6 +72,25 @@ export default async function RegisterPage({
 
         <form id="google-signup" action={signUpWithGoogle} className="space-y-3">
           <input type="hidden" name="next" value="/" />
+          <label className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-card/55 px-3 py-2.5 text-xs leading-relaxed text-foreground/72">
+            <input
+              type="checkbox"
+              name="accept_legal"
+              required
+              className="mt-0.5 h-4 w-4 rounded border-border/70 accent-primary"
+            />
+            <span>
+              I agree to the{" "}
+              <Link href="/terms-of-service" className="underline underline-offset-4 hover:text-primary transition-colors">
+                Terms and Conditions
+              </Link>
+              {" "}and{" "}
+              <Link href="/privacy-policy" className="underline underline-offset-4 hover:text-primary transition-colors">
+                Privacy Policy
+              </Link>
+              .
+            </span>
+          </label>
           <button
             type="submit"
             className="w-full inline-flex items-center justify-center gap-3 border border-border/80 bg-card/70 hover:bg-card/90 backdrop-blur-xl text-foreground py-3.5 text-xs tracking-widest uppercase font-bold transition-colors"
@@ -134,6 +153,26 @@ export default async function RegisterPage({
               placeholder="At least 8 characters"
             />
           </div>
+
+          <label className="flex items-start gap-2.5 rounded-xl border border-border/60 bg-card/55 px-3 py-2.5 text-xs leading-relaxed text-foreground/72">
+            <input
+              type="checkbox"
+              name="accept_legal"
+              required
+              className="mt-0.5 h-4 w-4 rounded border-border/70 accent-primary"
+            />
+            <span>
+              I agree to the{" "}
+              <Link href="/terms-of-service" className="underline underline-offset-4 hover:text-primary transition-colors">
+                Terms and Conditions
+              </Link>
+              {" "}and{" "}
+              <Link href="/privacy-policy" className="underline underline-offset-4 hover:text-primary transition-colors">
+                Privacy Policy
+              </Link>
+              .
+            </span>
+          </label>
 
           <button
             type="submit"
