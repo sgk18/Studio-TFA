@@ -45,6 +45,7 @@ export async function resolveViewerRole(
       userId: null,
       role: null,
       isWholesale: false,
+      isAdmin: false,
     };
   }
 
