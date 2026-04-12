@@ -2,24 +2,36 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { CircleUserRound } from "lucide-react";
 
 import { GlobalCommandPalette } from "@/components/GlobalCommandPalette";
 import { CartButton } from "./CartButton";
 import PillNav from "./PillNav";
 
-const navItems = [
+const baseNavItems = [
   { label: "Home", href: "/" },
   { label: "Shop", href: "/collections" },
   { label: "Artists Corner", href: "/artists-corner" },
   { label: "Community", href: "/community" },
   { label: "About", href: "/about" },
-  { label: "Login", href: "/login" },
 ];
 
-const mobileItems = navItems;
-
-export function Navbar({ isWholesale = false }: { isWholesale?: boolean }) {
+export function Navbar({
+  isWholesale = false,
+  isAuthenticated = false,
+}: {
+  isWholesale?: boolean;
+  isAuthenticated?: boolean;
+}) {
   const pathname = usePathname();
+  const navItems = [
+    ...baseNavItems,
+    isAuthenticated
+      ? { label: "Profile", href: "/profile" }
+      : { label: "Login", href: "/login" },
+  ];
+  const mobileItems = navItems;
+
   const isActiveHref = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   const activeHref =
@@ -63,6 +75,23 @@ export function Navbar({ isWholesale = false }: { isWholesale?: boolean }) {
         {/* Right Actions */}
         <div className="flex items-center gap-3 md:gap-5 flex-shrink-0">
           <GlobalCommandPalette isWholesale={isWholesale} />
+
+          {isAuthenticated ? (
+            <Link
+              href="/profile"
+              aria-label="Profile"
+              className="hidden sm:inline-flex items-center justify-center rounded-full border border-border/70 bg-card/55 p-2.5 text-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+              <CircleUserRound className="h-4.5 w-4.5" />
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="hidden sm:inline-flex items-center justify-center rounded-full border border-border/70 bg-card/55 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/80 transition-colors hover:border-primary hover:text-primary"
+            >
+              Login
+            </Link>
+          )}
 
           <CartButton className="group relative flex items-center justify-center rounded-full p-2 text-foreground transition-colors hover:text-primary" />
         </div>
