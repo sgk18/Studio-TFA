@@ -133,6 +133,13 @@ export async function prepareCheckoutAction(
   const supabase = await createClient();
   const checkoutMode = getString(formData, "checkout_mode") || "guest";
 
+  if (checkoutMode !== "guest" && checkoutMode !== "authenticated") {
+    return {
+      status: "error",
+      message: "Checkout mode is invalid.",
+    };
+  }
+
   const {
     data: { user },
     error: userError,
@@ -206,30 +213,47 @@ export async function prepareCheckoutAction(
   const productById = new Map(products.map((product) => [product.id, product]));
 
   let subtotal = 0;
+  let lineItems: Array<{
+    product_id: string;
+    title: string;
+    quantity: number;
+    unit_price: number;
+    line_total: number;
+  }> = [];
 
-  const lineItems = cartItems.map((cartItem) => {
-    const product = productById.get(cartItem.productId);
+  try {
+    lineItems = cartItems.map((cartItem) => {
+      const product = productById.get(cartItem.productId);
 
-    if (!product || !product.is_active) {
-      throw new Error("One or more products are unavailable.");
-    }
+      if (!product || !product.is_active) {
+        throw new Error("One or more products are unavailable.");
+      }
 
-    if (product.stock < cartItem.quantity) {
-      throw new Error(`Insufficient stock for ${product.title}.`);
-    }
+      if (product.stock < cartItem.quantity) {
+        throw new Error(`Insufficient stock for ${product.title}.`);
+      }
 
-    const unitPrice = Number(product.price);
-    const lineTotal = toMoney(unitPrice * cartItem.quantity);
-    subtotal = toMoney(subtotal + lineTotal);
+      const unitPrice = Number(product.price);
+      const lineTotal = toMoney(unitPrice * cartItem.quantity);
+      subtotal = toMoney(subtotal + lineTotal);
 
+      return {
+        product_id: product.id,
+        title: product.title,
+        quantity: cartItem.quantity,
+        unit_price: unitPrice,
+        line_total: lineTotal,
+      };
+    });
+  } catch (error) {
     return {
-      product_id: product.id,
-      title: product.title,
-      quantity: cartItem.quantity,
-      unit_price: unitPrice,
-      line_total: lineTotal,
+      status: "error",
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to validate cart inventory.",
     };
-  });
+  }
 
   const promoCode = getString(formData, "promo_code");
   const promo = computePromoDiscount(promoCode, subtotal);

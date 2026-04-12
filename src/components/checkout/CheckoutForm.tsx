@@ -72,7 +72,12 @@ export function CheckoutForm({ user }: { user: CheckoutSessionUser | null }) {
           </CardDescription>
         </CardHeader>
         <CardFooter>
-          <Button render={<Link href="/collections" />}>Browse Collections</Button>
+          <Link
+            href="/collections"
+            className="inline-flex h-10 items-center justify-center rounded-full border border-primary/35 bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            Browse Collections
+          </Link>
         </CardFooter>
       </Card>
     );

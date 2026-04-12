@@ -14,21 +14,6 @@ begin
 end;
 $$;
 
-create or replace function public.has_role(role_names text[])
-returns boolean
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1
-    from public.profiles p
-    where p.id = auth.uid()
-      and p.role = any(role_names)
-  );
-$$;
-
 create table if not exists public.products (
   id text primary key default gen_random_uuid()::text,
   title text not null,
@@ -71,6 +56,21 @@ create trigger trg_profiles_updated_at
 before update on public.profiles
 for each row
 execute function public.set_row_updated_at();
+
+create or replace function public.has_role(role_names text[])
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from public.profiles p
+    where p.id = auth.uid()
+      and p.role = any(role_names)
+  );
+$$;
 
 create or replace function public.handle_new_user_profile()
 returns trigger

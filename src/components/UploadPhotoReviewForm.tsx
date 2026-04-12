@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { type FormEvent, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { StarRating } from "@/components/StarRating";
@@ -17,7 +17,7 @@ export function UploadPhotoReviewForm({ productId }: UploadPhotoReviewFormProps)
   const [fileInputKey, setFileInputKey] = useState(0);
   const [isPending, startTransition] = useTransition();
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (rating < 1 || rating > 5) {

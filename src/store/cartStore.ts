@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { FREE_SHIPPING_THRESHOLD_INR } from "@/lib/commerce";
 
-export const FREE_SHIPPING_TARGET_INR = 2500;
+export const FREE_SHIPPING_TARGET_INR = FREE_SHIPPING_THRESHOLD_INR;
 
 export type CartItem = {
   id: string;

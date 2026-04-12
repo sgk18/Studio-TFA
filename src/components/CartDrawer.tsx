@@ -1,6 +1,6 @@
 "use client";
 
-import { FREE_SHIPPING_TARGET_INR, useCartStore } from "@/store/cartStore";
+import { useCartStore } from "@/store/cartStore";
 import {
   Sheet,
   SheetContent,
@@ -12,6 +12,7 @@ import Link from "next/link";
 import { Minus, Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatINR } from "@/lib/currency";
+import { FREE_SHIPPING_THRESHOLD_INR } from "@/lib/commerce";
 
 export function CartDrawer() {
   const {
@@ -32,12 +33,9 @@ export function CartDrawer() {
   const subtotal = mounted ? getSubtotal() : 0;
   const totalItems = mounted ? getCount() : 0;
   const freeShippingRemaining = mounted
-    ? getFreeShippingRemaining(FREE_SHIPPING_TARGET_INR)
-    : FREE_SHIPPING_TARGET_INR;
-  const shippingProgress = Math.min(
-    100,
-    Math.round((subtotal / FREE_SHIPPING_TARGET_INR) * 100)
-  );
+    ? getFreeShippingRemaining(FREE_SHIPPING_THRESHOLD_INR)
+    : FREE_SHIPPING_THRESHOLD_INR;
+  const shippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD_INR) * 100));
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
@@ -73,15 +71,15 @@ export function CartDrawer() {
                 <span>Free shipping</span>
                 <span>{shippingProgress}%</span>
               </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-background/75" role="progressbar" aria-label="Free shipping progress" aria-valuemin={0} aria-valuemax={FREE_SHIPPING_TARGET_INR} aria-valuenow={Math.min(subtotal, FREE_SHIPPING_TARGET_INR)}>
-                <div
-                  className="h-full rounded-full bg-primary transition-all duration-500"
-                  style={{ width: `${shippingProgress}%` }}
-                />
-              </div>
+              <progress
+                className="h-2 w-full overflow-hidden rounded-full [&::-webkit-progress-bar]:rounded-full [&::-webkit-progress-bar]:bg-background/75 [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-primary"
+                value={Math.min(subtotal, FREE_SHIPPING_THRESHOLD_INR)}
+                max={FREE_SHIPPING_THRESHOLD_INR}
+                aria-label="Free shipping progress"
+              />
               {freeShippingRemaining > 0 ? (
                 <p className="text-xs text-foreground/68 leading-relaxed">
-                  Add {formatINR(freeShippingRemaining)} more to unlock free shipping at {formatINR(FREE_SHIPPING_TARGET_INR)}.
+                  Add {formatINR(freeShippingRemaining)} more to unlock free shipping at {formatINR(FREE_SHIPPING_THRESHOLD_INR)}.
                 </p>
               ) : (
                 <p className="text-xs font-semibold text-primary">
@@ -143,7 +141,7 @@ export function CartDrawer() {
             </div>
             {freeShippingRemaining > 0 ? (
               <p className="text-xs text-foreground/52 leading-relaxed">
-                Shipping applies below {formatINR(FREE_SHIPPING_TARGET_INR)}.
+                Shipping applies below {formatINR(FREE_SHIPPING_THRESHOLD_INR)}.
               </p>
             ) : (
               <p className="text-xs text-primary leading-relaxed font-semibold">

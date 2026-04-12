@@ -56,7 +56,7 @@ export default function AboutPage() {
               {["Books", "Journals", "Apparels", "Home Decor", "Gift Hampers", "Custom Orders"].map((cat) => (
                 <Link
                   key={cat}
-                  href={`/c/${cat.toLowerCase().replace(/ /g, '-')}`}
+                  href={`/collections/${cat.toLowerCase().replace(/ /g, '-')}`}
                   className="glass-subpanel rounded-xl px-6 py-4 text-sm font-bold uppercase tracking-widest hover:bg-primary hover:text-primary-foreground transition-all duration-300 text-center"
                 >
                   {cat}

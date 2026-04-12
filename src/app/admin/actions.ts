@@ -26,6 +26,7 @@ export async function createProduct(data: any) {
 
   revalidatePath('/admin/products');
   revalidatePath('/collections');
+  revalidatePath('/collections/[category]', 'page');
   revalidatePath('/c/[category]', 'page');
 }
 
@@ -52,6 +53,7 @@ export async function updateProduct(id: string, data: any) {
   revalidatePath('/admin/products');
   revalidatePath('/collections');
   revalidatePath('/product/[id]', 'page');
+  revalidatePath('/collections/[category]', 'page');
   revalidatePath('/c/[category]', 'page');
 }
 
@@ -69,4 +71,5 @@ export async function deleteProduct(id: string) {
 
   revalidatePath('/admin/products');
   revalidatePath('/collections');
+  revalidatePath('/collections/[category]', 'page');
 }
