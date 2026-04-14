@@ -30,6 +30,7 @@ import type { Database } from "@/lib/supabase/types";
 const cartItemSchema = z.object({
   productId: z.string().trim().min(1),
   quantity: z.coerce.number().int().min(1).max(MAX_CART_LINE_QUANTITY),
+  customisations: z.record(z.string(), z.string()).optional(),
 });
 
 const shippingSchema = z.object({
@@ -121,42 +122,6 @@ function mapFieldErrors(
   }
 
   return mapped;
-}
-
-function computePromoDiscount(
-  promoCode: string,
-  subtotal: number
-): { discount: number; normalizedPromoCode: string | null; error?: string } {
-  const normalized = promoCode.trim().toUpperCase();
-
-  if (!normalized) {
-    return { discount: 0, normalizedPromoCode: null };
-  }
-
-  if (normalized === "TFA10") {
-    return {
-      discount: toMoney(Math.min(subtotal * 0.1, 300)),
-      normalizedPromoCode: normalized,
-    };
-  }
-
-  if (normalized === "WELCOME150") {
-    if (subtotal < 1500) {
-      return {
-        discount: 0,
-        normalizedPromoCode: normalized,
-        error: "WELCOME150 requires a minimum subtotal of Rs. 1500.",
-      };
-    }
-
-    return { discount: 150, normalizedPromoCode: normalized };
-  }
-
-  return {
-    discount: 0,
-    normalizedPromoCode: normalized,
-    error: "Promo code is invalid or unsupported.",
-  };
 }
 
 export async function prepareCheckoutAction(
@@ -268,6 +233,7 @@ export async function prepareCheckoutAction(
     quantity: number;
     unit_price: number;
     line_total: number;
+    customisations?: Record<string, string>;
   }> = [];
 
   try {
@@ -298,6 +264,7 @@ export async function prepareCheckoutAction(
         line_total: lineTotal,
         pricing_tier: isWholesale ? "wholesale" : "retail",
         wholesale_discount_rate: isWholesale ? WHOLESALE_DISCOUNT_RATE : 0,
+        ...(cartItem.customisations ? { customisations: cartItem.customisations } : {}),
       };
     });
   } catch (error) {
@@ -311,13 +278,39 @@ export async function prepareCheckoutAction(
   }
 
   const promoCode = getString(formData, "promo_code");
-  const promo = computePromoDiscount(promoCode, subtotal);
+  let promoDiscount = 0;
+  let normalizedPromoCode: string | null = null;
+  let promoError: string | undefined = undefined;
 
-  if (promo.error) {
+  if (promoCode.trim()) {
+    normalizedPromoCode = promoCode.trim().toUpperCase();
+    const { data: dbPromo } = await supabase
+      .from("discount_codes")
+      .select("*")
+      .eq("code", normalizedPromoCode)
+      .eq("is_active", true)
+      .single();
+
+    if (!dbPromo) {
+      promoError = "Promo code is invalid or inactive.";
+    } else if (dbPromo.expires_at && new Date(dbPromo.expires_at) < new Date()) {
+      promoError = "This promo code has expired.";
+    } else if (dbPromo.max_uses !== null && dbPromo.used_count >= dbPromo.max_uses) {
+      promoError = "This promo code limit has been reached.";
+    } else if (subtotal < dbPromo.min_order) {
+      promoError = `Minimum order of ₹${dbPromo.min_order} required.`;
+    } else {
+      promoDiscount = dbPromo.type === "percent"
+        ? Math.round((subtotal * dbPromo.value) / 100)
+        : Math.min(dbPromo.value, subtotal);
+    }
+  }
+
+  if (promoError) {
     return {
       status: "error",
-      message: promo.error,
-      fieldErrors: { promo_code: promo.error },
+      message: promoError,
+      fieldErrors: { promo_code: promoError },
     };
   }
 
@@ -327,7 +320,7 @@ export async function prepareCheckoutAction(
     subtotal >= FREE_SHIPPING_THRESHOLD_INR ? 0 : STANDARD_SHIPPING_FEE_INR;
 
   const total = toMoney(
-    subtotal - promo.discount + shippingAmount + premiumGiftingFee
+    subtotal - promoDiscount + shippingAmount + premiumGiftingFee
   );
 
   if (total <= 0) {
@@ -363,7 +356,7 @@ export async function prepareCheckoutAction(
         checkout_mode: isAuthenticated ? "authenticated" : "guest",
         pricing_tier: isWholesale ? "wholesale" : "retail",
         premium_gifting: premiumGiftingEnabled ? "yes" : "no",
-        promo_code: promo.normalizedPromoCode || "none",
+        promo_code: normalizedPromoCode || "none",
       },
     });
   } catch (error) {
@@ -383,11 +376,11 @@ export async function prepareCheckoutAction(
     status: "pending",
     currency: "INR",
     subtotal,
-    discount: promo.discount,
+    discount: promoDiscount,
     shipping_amount: shippingAmount,
     premium_gifting_fee: premiumGiftingFee,
     total_amount: total,
-    promo_code: promo.normalizedPromoCode,
+    promo_code: normalizedPromoCode,
     payment_provider: "razorpay",
     payment_status: "created",
     payment_reference: razorpayOrder.id,
@@ -417,7 +410,7 @@ export async function prepareCheckoutAction(
     orderId: insertedOrderId,
     summary: {
       subtotal,
-      discount: promo.discount,
+      discount: promoDiscount,
       shipping: shippingAmount,
       premiumGiftingFee: premiumGiftingFee,
       total,
@@ -432,7 +425,7 @@ export async function prepareCheckoutAction(
         checkout_mode: isAuthenticated ? "authenticated" : "guest",
         pricing_tier: isWholesale ? "wholesale" : "retail",
         premium_gifting: premiumGiftingEnabled ? "yes" : "no",
-        promo_code: promo.normalizedPromoCode || "none",
+        promo_code: normalizedPromoCode || "none",
       },
       keyId: getRazorpayPublicKey(),
     },

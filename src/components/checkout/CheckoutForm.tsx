@@ -108,8 +108,10 @@ export function CheckoutForm({
 }) {
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
-  const [premiumGifting, setPremiumGifting] = useState(false);
-  const [promoCode, setPromoCode] = useState("");
+  const coupon = useCartStore((state) => state.coupon);
+  const isGift = useCartStore((state) => state.isGift);
+  const toggleGift = useCartStore((state) => state.toggleGift);
+  const getDiscountAmount = useCartStore((state) => state.getDiscountAmount);
   const [state, formAction, isPending] = useActionState(
     prepareCheckoutAction,
     initialCheckoutActionState
@@ -149,8 +151,9 @@ export function CheckoutForm({
 
   const shippingEstimate =
     subtotal >= FREE_SHIPPING_THRESHOLD_INR ? 0 : STANDARD_SHIPPING_FEE_INR;
-  const giftingFee = premiumGifting ? PREMIUM_GIFTING_FEE_INR : 0;
-  const estimatedTotal = Math.max(0, subtotal + shippingEstimate + giftingFee);
+  const giftingFee = isGift ? PREMIUM_GIFTING_FEE_INR : 0;
+  const discountAmount = getDiscountAmount();
+  const estimatedTotal = Math.max(0, subtotal - discountAmount + shippingEstimate + giftingFee);
   const isAuthenticated = Boolean(user);
 
   const canLaunchPayment =
@@ -255,7 +258,8 @@ export function CheckoutForm({
     <form action={formAction} className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
       <input type="hidden" name="checkout_mode" value={isAuthenticated ? "authenticated" : "guest"} />
       <input type="hidden" name="cart_payload" value={cartPayload} />
-      <input type="hidden" name="premium_gifting" value={premiumGifting ? "true" : "false"} />
+      <input type="hidden" name="premium_gifting" value={isGift ? "true" : "false"} />
+      <input type="hidden" name="promo_code" value={coupon?.code || ""} />
 
       <Card>
         <CardHeader>
@@ -355,23 +359,6 @@ export function CheckoutForm({
           <section className="space-y-4">
             <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Order options</h2>
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="promo_code" className="flex items-center gap-2">
-                  <TicketPercent className="h-4 w-4" />
-                  Promo code
-                </Label>
-                <Input
-                  id="promo_code"
-                  name="promo_code"
-                  value={promoCode}
-                  onChange={(event) => setPromoCode(event.target.value)}
-                  placeholder="TFA10 or WELCOME150"
-                />
-                {fieldError(state.fieldErrors, "promo_code") ? (
-                  <p className="text-xs text-destructive">{fieldError(state.fieldErrors, "promo_code")}</p>
-                ) : null}
-              </div>
-
               <div className="sm:col-span-2 flex items-center justify-between rounded-2xl border border-border/70 bg-card/65 px-4 py-3">
                 <div className="space-y-1">
                   <p className="text-sm font-medium flex items-center gap-2">
@@ -382,7 +369,7 @@ export function CheckoutForm({
                     Add gift wrap and blessing card for {formatINR(PREMIUM_GIFTING_FEE_INR)}.
                   </p>
                 </div>
-                <Switch checked={premiumGifting} onCheckedChange={setPremiumGifting} />
+                <Switch checked={isGift} onCheckedChange={toggleGift} />
               </div>
 
               <div className="space-y-2 sm:col-span-2">
@@ -454,6 +441,15 @@ export function CheckoutForm({
               <span>Subtotal</span>
               <span>{formatINR(subtotal)}</span>
             </div>
+            {discountAmount > 0 && (
+              <div className="flex items-center justify-between text-green-600">
+                <span className="flex items-center gap-2">
+                  <TicketPercent className="h-4 w-4" />
+                  Discount {coupon?.code ? `(${coupon.code})` : ""}
+                </span>
+                <span>−{formatINR(discountAmount)}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-primary" />

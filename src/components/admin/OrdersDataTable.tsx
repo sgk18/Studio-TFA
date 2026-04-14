@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Printer } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { Printer, ChevronDown, ChevronUp, Check, LoaderCircle, Package } from "lucide-react";
+import { toast } from "sonner";
+import { updateOrderStatus } from "@/actions/sendEmail";
 
 import {
   Table,
@@ -23,6 +25,7 @@ export type AdminOrderRow = {
   createdAt: string;
   shippingAddress: unknown;
   lineItems: unknown;
+  trackingNumber: string | null;
 };
 
 export function OrdersDataTable({ orders }: { orders: AdminOrderRow[] }) {
@@ -62,36 +65,17 @@ export function OrdersDataTable({ orders }: { orders: AdminOrderRow[] }) {
           <TableBody>
             {orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-36 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-36 text-center text-muted-foreground">
                   No orders found.
                 </TableCell>
               </TableRow>
             ) : (
               orders.map((order) => (
-                <TableRow key={order.id}>
-                  <TableCell className="font-mono text-xs text-foreground/70">{order.id}</TableCell>
-                  <TableCell>{order.customerEmail}</TableCell>
-                  <TableCell>{order.status}</TableCell>
-                  <TableCell>{order.paymentStatus}</TableCell>
-                  <TableCell>{formatINR(order.totalAmount)}</TableCell>
-                  <TableCell>
-                    {new Date(order.createdAt).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <button
-                      type="button"
-                      onClick={() => printInvoice(order.id)}
-                      className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/45 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-foreground/72 transition-colors hover:border-primary hover:text-primary"
-                    >
-                      <Printer className="h-3.5 w-3.5" />
-                      Print
-                    </button>
-                  </TableCell>
-                </TableRow>
+                <OrderRowComponent
+                  key={order.id}
+                  order={order}
+                  onPrint={() => printInvoice(order.id)}
+                />
               ))
             )}
           </TableBody>
@@ -101,6 +85,125 @@ export function OrdersDataTable({ orders }: { orders: AdminOrderRow[] }) {
       <div className="hidden print:block">
         {selectedOrder ? <InvoiceTemplate order={selectedOrder} /> : null}
       </div>
+    </>
+  );
+}
+
+function OrderRowComponent({ order, onPrint }: { order: AdminOrderRow; onPrint: () => void }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [status, setStatus] = useState(order.status);
+  const [tracking, setTracking] = useState(order.trackingNumber || "");
+  const [isPending, startTransition] = useTransition();
+
+  const handleUpdate = () => {
+    startTransition(async () => {
+      const result = await updateOrderStatus(order.id, status, tracking);
+      if (result.success) {
+        toast.success(`Order ${order.id.slice(0, 8)} updated.`);
+        setIsExpanded(false);
+      } else {
+        toast.error(result.error);
+      }
+    });
+  };
+
+  return (
+    <>
+      <TableRow className={isExpanded ? "bg-muted/50" : ""}>
+        <TableCell className="font-mono text-xs text-foreground/70">{order.id.slice(0, 8)}</TableCell>
+        <TableCell>
+          <div className="flex flex-col">
+            <span>{order.customerEmail}</span>
+            {order.trackingNumber && (
+              <span className="text-[10px] text-primary tracking-wider uppercase mt-1 flex items-center gap-1">
+                <Package className="h-3 w-3" />
+                {order.trackingNumber}
+              </span>
+            )}
+          </div>
+        </TableCell>
+        <TableCell>
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+            status === 'shipped' ? 'bg-green-100 text-green-700' :
+            status === 'processing' ? 'bg-amber-100 text-amber-700' :
+            'bg-muted text-foreground/70'
+          }`}>
+            {status}
+          </span>
+        </TableCell>
+        <TableCell>{order.paymentStatus}</TableCell>
+        <TableCell>{formatINR(order.totalAmount)}</TableCell>
+        <TableCell>
+          {new Date(order.createdAt).toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          })}
+        </TableCell>
+        <TableCell className="text-right flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onPrint}
+            className="inline-flex items-center justify-center rounded-lg border border-border/70 bg-card/45 p-1.5 text-foreground/72 transition-colors hover:border-primary hover:text-primary"
+            title="Print Invoice"
+          >
+            <Printer className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="inline-flex items-center justify-center rounded-lg border border-border/70 bg-card/45 p-1.5 text-foreground/72 transition-colors hover:border-primary hover:text-primary"
+            title="Update Status"
+          >
+            {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+        </TableCell>
+      </TableRow>
+      {isExpanded && (
+        <TableRow>
+          <TableCell colSpan={8} className="bg-muted/20 p-0 border-b">
+            <div className="p-4 flex gap-4 items-end bg-card/50">
+              <div className="space-y-1.5">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-foreground/60">Status</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-40 rounded-lg border border-border/70 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div className="space-y-1.5 flex-1 max-w-xs">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-foreground/60">Tracking Number</label>
+                <input
+                  type="text"
+                  value={tracking}
+                  onChange={(e) => setTracking(e.target.value)}
+                  placeholder="AWB / Tracking ID"
+                  className="w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <button
+                onClick={handleUpdate}
+                disabled={isPending || (status === order.status && tracking === (order.trackingNumber || ""))}
+                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-xs font-bold uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+              >
+                {isPending ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+                Save
+              </button>
+              {status === "shipped" && tracking && (!order.trackingNumber || order.status !== "shipped") && (
+                <p className="text-[10px] text-primary/70 animate-pulse ml-2 mb-2">
+                  ✦ Sending shipping email
+                </p>
+              )}
+            </div>
+          </TableCell>
+        </TableRow>
+      )}
     </>
   );
 }

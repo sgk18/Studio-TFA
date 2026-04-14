@@ -22,6 +22,7 @@ type OrderRow = Pick<
   | "shipping_address"
   | "line_items"
   | "user_id"
+  | "tracking_number"
 >;
 
 export default async function AdminOrdersPage({
@@ -40,7 +41,7 @@ export default async function AdminOrdersPage({
   const { data: ordersRaw, count } = await supabase
     .from("orders")
     .select(
-      "id, guest_email, status, payment_status, total_amount, currency, created_at, shipping_address, line_items, user_id",
+      "id, guest_email, status, payment_status, total_amount, currency, created_at, shipping_address, line_items, user_id, tracking_number",
       { count: "exact" }
     )
     .order("created_at", { ascending: false })
@@ -56,6 +57,7 @@ export default async function AdminOrdersPage({
     createdAt: order.created_at,
     shippingAddress: order.shipping_address,
     lineItems: order.line_items,
+    trackingNumber: order.tracking_number,
   }));
 
   const pages = totalPages(count ?? 0, ADMIN_PAGE_SIZE);

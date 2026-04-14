@@ -14,23 +14,51 @@ export type CartItem = {
   image_url: string;
   category: string;
   quantity: number;
+  customisations?: Record<string, string>;
 };
 
 export type CartCheckoutItem = {
   productId: string;
   quantity: number;
+  customisations?: Record<string, string>;
+};
+
+export type AppliedCoupon = {
+  code: string;
+  type: "percent" | "flat";
+  value: number;
+  discountAmount: number;
 };
 
 type CartStore = {
   items: CartItem[];
   isOpen: boolean;
+  coupon: AppliedCoupon | null;
+  isGift: boolean;
+  giftMessage: string;
+
+  // Item actions
   addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
+
+  // Drawer actions
   openCart: () => void;
   closeCart: () => void;
+
+  // Coupon actions
+  applyCoupon: (coupon: AppliedCoupon) => void;
+  removeCoupon: () => void;
+
+  // Gift actions
+  toggleGift: () => void;
+  setGiftMessage: (message: string) => void;
+
+  // Computed
   getSubtotal: () => number;
+  getDiscountAmount: () => number;
+  getTotal: () => number;
   getCount: () => number;
   getFreeShippingRemaining: (target?: number) => number;
   toCheckoutItems: () => CartCheckoutItem[];
@@ -48,6 +76,9 @@ export const useCartStore = create<CartStore>()(
     (set, get) => ({
       items: [],
       isOpen: false,
+      coupon: null,
+      isGift: false,
+      giftMessage: "",
 
       addItem: (product, quantity = 1) =>
         set((state) => {
@@ -93,12 +124,26 @@ export const useCartStore = create<CartStore>()(
           };
         }),
 
-      clearCart: () => set({ items: [] }),
+      clearCart: () => set({ items: [], coupon: null, isGift: false, giftMessage: "" }),
       openCart: () => set({ isOpen: true }),
       closeCart: () => set({ isOpen: false }),
 
+      applyCoupon: (coupon) => set({ coupon }),
+      removeCoupon: () => set({ coupon: null }),
+
+      toggleGift: () => set((state) => ({ isGift: !state.isGift })),
+      setGiftMessage: (message) => set({ giftMessage: message }),
+
       getSubtotal: () =>
         get().items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+
+      getDiscountAmount: () => get().coupon?.discountAmount ?? 0,
+
+      getTotal: () => {
+        const subtotal = get().getSubtotal();
+        const discount = get().getDiscountAmount();
+        return Math.max(0, subtotal - discount);
+      },
 
       getCount: () =>
         get().items.reduce((sum, item) => sum + item.quantity, 0),
@@ -112,12 +157,18 @@ export const useCartStore = create<CartStore>()(
         get().items.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
+          ...(item.customisations ? { customisations: item.customisations } : {}),
         })),
     }),
     {
       name: "studio-tfa-cart",
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ items: state.items }),
+      partialize: (state) => ({
+        items: state.items,
+        coupon: state.coupon,
+        isGift: state.isGift,
+        giftMessage: state.giftMessage,
+      }),
     }
   )
 );

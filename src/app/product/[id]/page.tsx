@@ -28,7 +28,10 @@ export const dynamic = "force-dynamic";
 type ReviewCard = {
   id: string;
   rating: number;
+  title: string | null;
   comment: string | null;
+  adminReply: string | null;
+  adminReplyAt: string | null;
   createdAt: string;
   reviewerName: string;
 };
@@ -66,8 +69,9 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     supabase.auth.getUser(),
     supabase
       .from('reviews')
-      .select('id, rating, comment, created_at, profiles(full_name)')
+      .select('id, rating, title, comment, admin_reply, admin_reply_at, created_at, profiles(full_name)')
       .eq('product_id', id)
+      .eq('is_approved', true)
       .order('created_at', { ascending: false }),
   ]);
 
@@ -246,8 +250,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {reviews.length > 0 ? (
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 {reviews.map((review) => (
-                  <div key={review.id} className="glass-subpanel rounded-xl p-5">
-                    <div className="mb-3 flex items-start justify-between gap-4">
+                  <div key={review.id} className="glass-subpanel rounded-xl p-5 space-y-3">
+                    <div className="flex items-start justify-between gap-4">
                       <p className="text-sm font-bold text-foreground/90">{review.reviewerName}</p>
                       <p className="text-[11px] uppercase tracking-[0.14em] text-foreground/45">
                         {new Date(review.createdAt).toLocaleDateString("en-IN", {
@@ -258,12 +262,33 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
                       </p>
                     </div>
                     <StarRating rating={review.rating} size={15} />
+                    {review.title && (
+                      <p className="text-sm font-semibold text-foreground/85">{review.title}</p>
+                    )}
                     {review.comment ? (
-                      <p className="mt-3 text-sm leading-relaxed text-foreground/72">{review.comment}</p>
+                      <p className="text-sm leading-relaxed text-foreground/72">{review.comment}</p>
                     ) : (
-                      <p className="mt-3 text-sm italic text-foreground/45">
+                      <p className="text-sm italic text-foreground/45">
                         Shared a rating without comment.
                       </p>
+                    )}
+                    {review.adminReply && (
+                      <div className="rounded-xl border border-primary/15 bg-[rgba(224,174,186,0.1)] px-4 py-3 border-l-2 border-l-primary">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-1.5">
+                          Response from Sherlin ✦
+                        </p>
+                        <p className="text-sm text-foreground/80 leading-relaxed">{review.adminReply}</p>
+                        {review.adminReplyAt && (
+                          <p className="text-[10px] text-foreground/40 mt-1">
+                            Replied{" "}
+                            {new Date(review.adminReplyAt).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -302,6 +327,9 @@ function toReviewCard(value: unknown): ReviewCard | null {
   const createdAt = readFirstString(value, ["created_at"]);
   const rating = Number(value.rating);
   const comment = typeof value.comment === "string" ? value.comment : null;
+  const title = typeof value.title === "string" ? value.title : null;
+  const adminReply = typeof value.admin_reply === "string" ? value.admin_reply : null;
+  const adminReplyAt = typeof value.admin_reply_at === "string" ? value.admin_reply_at : null;
 
   if (!id || !createdAt || !Number.isFinite(rating)) {
     return null;
@@ -311,7 +339,10 @@ function toReviewCard(value: unknown): ReviewCard | null {
     id,
     createdAt,
     rating: Math.min(5, Math.max(1, Math.round(rating))),
+    title,
     comment,
+    adminReply,
+    adminReplyAt,
     reviewerName: resolveReviewerName(value.profiles),
   };
 }

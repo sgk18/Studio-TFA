@@ -9,14 +9,16 @@ import {
 } from "@/components/ui/sheet";
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Gift, Minus, Plus, Tag, X, LoaderCircle, Check } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
 import { formatINR } from "@/lib/currency";
 import {
   FREE_SHIPPING_THRESHOLD_INR,
   resolveDisplayPrice,
   WHOLESALE_MIN_CART_ITEMS,
 } from "@/lib/commerce";
+import { validateCouponAction } from "@/actions/discounts";
+import { cn } from "@/lib/utils";
 
 export function CartDrawer({ isWholesale = false }: { isWholesale?: boolean }) {
   const {
@@ -27,8 +29,19 @@ export function CartDrawer({ isWholesale = false }: { isWholesale?: boolean }) {
     updateQuantity,
     getCount,
     clearCart,
+    coupon,
+    applyCoupon,
+    removeCoupon,
+    isGift,
+    giftMessage,
+    toggleGift,
+    setGiftMessage,
+    getDiscountAmount,
   } = useCartStore();
   const [mounted, setMounted] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [isPendingCoupon, startCouponTransition] = useTransition();
 
   useEffect(() => setMounted(true), []);
 
@@ -38,6 +51,8 @@ export function CartDrawer({ isWholesale = false }: { isWholesale?: boolean }) {
         0
       )
     : 0;
+  const discountAmount = mounted ? getDiscountAmount() : 0;
+  const total = Math.max(0, subtotal - discountAmount);
   const totalItems = mounted ? getCount() : 0;
   const meetsWholesaleMinimum =
     !isWholesale || totalItems >= WHOLESALE_MIN_CART_ITEMS;
@@ -49,6 +64,20 @@ export function CartDrawer({ isWholesale = false }: { isWholesale?: boolean }) {
     ? Math.max(0, FREE_SHIPPING_THRESHOLD_INR - subtotal)
     : FREE_SHIPPING_THRESHOLD_INR;
   const shippingProgress = Math.min(100, Math.round((subtotal / FREE_SHIPPING_THRESHOLD_INR) * 100));
+
+  const handleApplyCoupon = () => {
+    if (!couponInput.trim()) return;
+    setCouponError("");
+    startCouponTransition(async () => {
+      const result = await validateCouponAction({ code: couponInput.trim(), subtotal });
+      if (result.valid) {
+        applyCoupon(result);
+        setCouponInput("");
+      } else {
+        setCouponError(result.error);
+      }
+    });
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && closeCart()}>
@@ -158,10 +187,84 @@ export function CartDrawer({ isWholesale = false }: { isWholesale?: boolean }) {
         {/* Footer */}
         {mounted && items.length > 0 && (
           <div className="px-6 pb-8 pt-4 border-t border-border/60 space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-foreground/60 tracking-widest uppercase font-bold">Subtotal</span>
-              <span className="font-heading text-2xl">{formatINR(subtotal)}</span>
+            {/* Coupon input */}
+            {!coupon ? (
+              <div className="space-y-1.5">
+                <div className="flex gap-2">
+                  <input
+                    value={couponInput}
+                    onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(""); }}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                    placeholder="Promo code"
+                    className="flex-1 rounded-lg border border-border/70 bg-card/50 px-3 py-2 text-xs uppercase tracking-widest placeholder:normal-case placeholder:tracking-normal focus:outline-none focus:border-primary/60"
+                  />
+                  <button
+                    onClick={handleApplyCoupon}
+                    disabled={isPendingCoupon || !couponInput.trim()}
+                    className="rounded-lg border border-border/70 bg-card/50 px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-colors hover:border-primary/60 hover:text-primary disabled:opacity-50"
+                  >
+                    {isPendingCoupon ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" /> : <Tag className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+                {couponError && (
+                  <p className="text-[11px] text-red-600">{couponError}</p>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center justify-between rounded-lg border border-green-600/25 bg-green-50/50 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <Check className="h-3.5 w-3.5 text-green-600" />
+                  <span className="text-xs font-bold uppercase tracking-[0.14em] text-green-700">{coupon.code}</span>
+                  <span className="text-xs text-green-600">−{formatINR(coupon.discountAmount)}</span>
+                </div>
+                <button onClick={removeCoupon} className="text-foreground/40 hover:text-foreground transition-colors">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+
+            {/* Gift toggle */}
+            <button
+              onClick={toggleGift}
+              className={cn(
+                "flex w-full items-center gap-2.5 rounded-lg border px-3 py-2.5 text-xs transition-colors",
+                isGift
+                  ? "border-primary/30 bg-primary/5 text-primary"
+                  : "border-border/70 bg-card/40 text-foreground/60 hover:text-foreground"
+              )}
+            >
+              <Gift className="h-3.5 w-3.5" />
+              <span className="font-semibold uppercase tracking-[0.14em]">This is a gift</span>
+            </button>
+
+            {isGift && (
+              <textarea
+                value={giftMessage}
+                onChange={(e) => setGiftMessage(e.target.value)}
+                placeholder="Add a gift message (optional)…"
+                rows={2}
+                className="w-full resize-none rounded-lg border border-border/70 bg-card/50 px-3 py-2 text-xs placeholder:text-foreground/40 focus:outline-none focus:border-primary/60"
+              />
+            )}
+
+            {/* Totals */}
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-foreground/55 uppercase tracking-[0.14em]">Subtotal</span>
+                <span className="text-sm">{formatINR(subtotal)}</span>
+              </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-green-600 uppercase tracking-[0.14em]">Discount</span>
+                  <span className="text-sm text-green-600">−{formatINR(discountAmount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-bold uppercase tracking-[0.14em]">Total</span>
+                <span className="font-heading text-2xl">{formatINR(total)}</span>
+              </div>
             </div>
+
             {freeShippingRemaining > 0 ? (
               <p className="text-xs text-foreground/52 leading-relaxed">
                 Shipping applies below {formatINR(FREE_SHIPPING_THRESHOLD_INR)}.
