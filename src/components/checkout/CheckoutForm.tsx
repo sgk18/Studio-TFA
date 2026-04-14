@@ -126,6 +126,7 @@ export function CheckoutForm({
         items.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
+          ...(item.customisations ? { customisations: item.customisations } : {}),
         }))
       ),
     [items]

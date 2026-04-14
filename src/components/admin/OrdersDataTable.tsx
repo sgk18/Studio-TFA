@@ -265,10 +265,19 @@ export function InvoiceTemplate({ order }: { order: AdminOrderRow }) {
           ) : (
             lineItems.map((item, index) => (
               <tr key={`${item.title}-${index}`} className="border-b border-black/10">
-                <td className="px-2 py-2">{item.title}</td>
-                <td className="px-2 py-2">{item.quantity}</td>
-                <td className="px-2 py-2">{formatINR(item.unitPrice)}</td>
-                <td className="px-2 py-2 text-right">{formatINR(item.lineTotal)}</td>
+                <td className="px-2 py-2">
+                  <p>{item.title}</p>
+                  {item.customisations && Object.keys(item.customisations).length > 0 && (
+                    <ul className="text-xs text-black/60 mt-1 pl-2">
+                      {Object.entries(item.customisations).map(([key, value]) => (
+                        <li key={key}>{key}: {value}</li>
+                      ))}
+                    </ul>
+                  )}
+                </td>
+                <td className="px-2 py-2 align-top">{item.quantity}</td>
+                <td className="px-2 py-2 align-top">{formatINR(item.unitPrice)}</td>
+                <td className="px-2 py-2 align-top text-right">{formatINR(item.lineTotal)}</td>
               </tr>
             ))
           )}
@@ -294,6 +303,7 @@ type InvoiceLineItem = {
   quantity: number;
   unitPrice: number;
   lineTotal: number;
+  customisations?: Record<string, string>;
 };
 
 function parseInvoiceLineItems(input: unknown): InvoiceLineItem[] {
@@ -319,11 +329,17 @@ function parseInvoiceLineItems(input: unknown): InvoiceLineItem[] {
         unitPrice * quantity
       );
 
+      const customisations =
+        record.customisations && typeof record.customisations === "object"
+          ? (record.customisations as Record<string, string>)
+          : undefined;
+
       return {
         title,
         quantity,
         unitPrice,
         lineTotal,
+        customisations,
       };
     })
     .filter((item): item is InvoiceLineItem => item !== null);
