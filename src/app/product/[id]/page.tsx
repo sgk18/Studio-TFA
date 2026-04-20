@@ -24,7 +24,24 @@ import { isValidPageIdParam } from "@/lib/pageValidation";
 import { formatINR } from "@/lib/currency";
 import { resolveRoleForUserId } from "@/lib/security/viewerRole";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // 60 minutes — ISR
+
+/**
+ * Pre-build the 50 most recently created products at deploy time.
+ * All other product pages are generated on-demand and then cached.
+ */
+export async function generateStaticParams() {
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("products")
+    .select("id")
+    .eq("is_archived", false)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  return (data ?? []).map(({ id }) => ({ id }));
+}
 
 type ReviewCard = {
   id: string;

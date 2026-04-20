@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import { requireAdminAccess } from "@/lib/security/adminRole";
 
+export const dynamic = "force-dynamic"; // Admin is always real-time, never cached
+
 const adminNavItems = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/products", label: "Products" },

@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { StaggeredText } from "@/components/StaggeredText";
@@ -12,6 +12,8 @@ import { sanitizeProductCards } from "@/lib/pageValidation";
 import { formatINR } from "@/lib/currency";
 import { resolveViewerRole } from "@/lib/security/viewerRole";
 
+export const revalidate = 1800; // 30 minutes — ISR
+
 export const metadata = {
   title: "Studio TFA | Narrative Christian Art",
   description: "To create elegant, boldly minimalist, Christ-centred art and lifestyle products that nurture identity and spark conversations."
@@ -20,7 +22,7 @@ export const metadata = {
 export default async function Home() {
   const supabase = await createClient();
   const [{ data: products }, viewerRole] = await Promise.all([
-    supabase.from("products").select("*").limit(3),
+    supabase.from("products").select("id, title, slug, price, image_url, category, is_archived, is_active, is_custom_order").eq("is_archived", false).eq("is_active", true).limit(3),
     resolveViewerRole(supabase),
   ]);
   const featuredProducts = sanitizeProductCards(products)

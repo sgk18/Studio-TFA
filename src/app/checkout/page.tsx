@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+export const dynamic = "force-dynamic"; // Checkout is always user-specific, never cached
 import type { Metadata } from "next";
 import { CheckoutForm, type CheckoutSessionUser } from "@/components/checkout/CheckoutForm";
 import { isWholesaleRole } from "@/lib/commerce";

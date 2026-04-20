@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,6 +8,8 @@ import { formatINR } from "@/lib/currency";
 import { toSlug } from "@/lib/catalogFilters";
 import { resolveViewerRole } from "@/lib/security/viewerRole";
 
+export const revalidate = 900; // 15 minutes — ISR
+
 export const metadata = {
   title: "The Gallery | Studio TFA",
 };
@@ -15,7 +17,7 @@ export const metadata = {
 export default async function CollectionsPage() {
   const supabase = await createClient();
   const [{ data: products }, viewerRole] = await Promise.all([
-    supabase.from("products").select("*"),
+    supabase.from("products").select("id, title, slug, price, image_url, category, is_active, is_archived").eq("is_archived", false).eq("is_active", true),
     resolveViewerRole(supabase),
   ]);
   const validatedProducts = sanitizeProductCards(products).map((product) => ({

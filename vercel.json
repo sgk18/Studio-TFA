@@ -1,0 +1,26 @@
+{
+  "regions": ["bom1"],
+  "functions": {
+    "app/api/payments/**": { "maxDuration": 30 },
+    "app/api/send-welcome-email": { "maxDuration": 15 },
+    "app/api/**": { "maxDuration": 10 }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
+      "source": "/api/cart/validate-coupon",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, s-maxage=60, stale-while-revalidate=300" }
+      ]
+    },
+    {
+      "source": "/api/products/check-stock",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, s-maxage=30, stale-while-revalidate=60" }
+      ]
+    }
+  ]
+}

@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { UnboxingReveal } from "@/components/checkout/UnboxingReveal";
 import { getRandomScripture } from "@/lib/scriptures";
 import { formatINR } from "@/lib/currency";
-import { Separator } from "@/components/ui/separator";
 import { ScrollReveal } from "@/components/ScrollReveal";
 
 export const dynamic = "force-dynamic";
@@ -48,7 +47,7 @@ async function OrderDetails({ orderId }: { orderId: string }) {
                   A confirmation email has been sent to <span className="font-bold text-primary">{order.shipping_address.email}</span>.
                   We'll notify you once our artists have prepared your piece for transit.
                 </p>
-                <Separator className="bg-border/50" />
+                <hr className="border-border/50" />
                 <div className="grid grid-cols-2 gap-8 pt-2">
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">Status</p>
@@ -70,7 +69,7 @@ async function OrderDetails({ orderId }: { orderId: string }) {
                 <p className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">Order Total</p>
                 <p className="text-3xl font-heading tracking-tight">{formatINR(order.total_amount)}</p>
               </div>
-              <Separator />
+              <hr className="border-border" />
               <div className="space-y-4">
                 <Link 
                   href="/account/orders" 

@@ -13,6 +13,8 @@ import { createClient } from "@/lib/supabase/server";
 import { resolveViewerRole } from "@/lib/security/viewerRole";
 import { CartSync } from "@/components/CartSync";
 import { AuthListener } from "@/components/AuthListener";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import { siteConfig } from "@/config/site";
 
 const bodoni = Bodoni_Moda({
@@ -102,6 +104,8 @@ export default async function RootLayout({
           </CategoryThemeProvider>
         </LenisProvider>
         <Toaster />
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

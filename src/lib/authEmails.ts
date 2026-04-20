@@ -1,7 +1,6 @@
 "use server";
 
 import * as React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { resend } from "@/lib/resend";
 import { WelcomeEmail, buildWelcomeEmailText } from "@/emails/WelcomeEmail";
 import {
@@ -38,16 +37,12 @@ export async function sendWelcomeEmail({
   siteUrl: string;
 }): Promise<void> {
   try {
-    const html = renderToStaticMarkup(
-      React.createElement(WelcomeEmail, { name, email, siteUrl })
-    );
     const text = buildWelcomeEmailText(name, email);
-
     await resend.emails.send({
       from: FROM_ADDRESS,
       to: email,
       subject: "Welcome to Studio TFA ✦",
-      html,
+      react: React.createElement(WelcomeEmail, { name, email, siteUrl }),
       text,
     });
   } catch (err) {
@@ -74,22 +69,18 @@ export async function sendLoginNotificationEmail({
   try {
     const loginTime = formatLoginTime();
 
-    const html = renderToStaticMarkup(
-      React.createElement(LoginNotificationEmail, {
+    const text = buildLoginNotificationText(name, email, loginTime, method);
+    await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: email,
+      subject: "New sign-in to your Studio TFA account",
+      react: React.createElement(LoginNotificationEmail, {
         name,
         email,
         loginTime,
         method,
         siteUrl,
-      })
-    );
-    const text = buildLoginNotificationText(name, email, loginTime, method);
-
-    await resend.emails.send({
-      from: FROM_ADDRESS,
-      to: email,
-      subject: "New sign-in to your Studio TFA account",
-      html,
+      }),
       text,
     });
   } catch (err) {

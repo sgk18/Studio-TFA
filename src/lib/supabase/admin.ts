@@ -12,9 +12,14 @@ export function createAdminClient() {
   }
 
   return createClient<Database>(supabaseUrl, serviceRoleKey, {
+    db: { poolMode: "transaction" },
     auth: {
       autoRefreshToken: false,
       persistSession: false,
+    },
+    global: {
+      // Prevent connection hoarding in serverless
+      fetch: (url, options) => fetch(url, options),
     },
   });
 }

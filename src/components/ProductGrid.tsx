@@ -47,7 +47,9 @@ export async function ProductGrid({
   const [{ data }, viewerRole] = await Promise.all([
     supabase
       .from("products")
-      .select("*")
+      .select("id, title, slug, price, image_url, category, story, is_archived, is_active, is_custom_order, is_customisable, metadata")
+      .eq("is_archived", false)
+      .eq("is_active", true)
       .order("created_at", { ascending: false }),
     resolveViewerRole(supabase),
   ]);

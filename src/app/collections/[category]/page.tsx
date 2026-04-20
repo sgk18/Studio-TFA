@@ -19,6 +19,8 @@ import { Suspense } from "react";
 import { ProductGrid } from "@/components/ProductGrid";
 import { Skeleton } from "@/components/ui/skeleton";
 
+export const revalidate = 900; // 15 minutes — ISR
+
 type FacetOption = {
   slug: string;
   label: string;

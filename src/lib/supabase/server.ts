@@ -14,6 +14,7 @@ export async function createClient() {
   }
 
   return createServerClient(supabaseUrl, supabaseKey, {
+    db: { poolMode: "transaction" },
     cookies: {
       getAll() {
         return cookieStore.getAll();
