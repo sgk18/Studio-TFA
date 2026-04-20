@@ -13,52 +13,13 @@ const MAX_REVIEW_PHOTO_BYTES = 8 * 1024 * 1024;
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 
-export async function submitReview({
-  productId,
-  rating,
-  comment,
-}: {
-  productId: string;
-  rating: number;
-  comment: string;
-}) {
-  if (!isValidPageIdParam(productId)) {
-    return { error: "Invalid product identifier." };
-  }
-
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-    return { error: "Rating must be between 1 and 5 stars." };
-  }
-
-  const supabase = await createClient();
-
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) {
-    return { error: "You must be signed in to leave a review." };
-  }
-
-  const { error } = await supabase.from("reviews").insert({
-    product_id: productId,
-    user_id: user.id,
-    rating,
-    comment: comment.trim() || null,
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  revalidatePath(`/product/${productId}`);
-  if (rating === 5) {
-    revalidatePath("/community");
-  }
-
-  return { success: true };
-}
-
-export async function submitPhotoReview(formData: FormData) {
+/**
+ * Consolidated action to submit a review with rating, title, comment and optional photo.
+ */
+export async function submitGalleryReview(formData: FormData) {
   const productId = String(formData.get("productId") ?? "").trim();
   const rating = Number(formData.get("rating") ?? 0);
+  const title = String(formData.get("title") ?? "").trim();
   const comment = String(formData.get("comment") ?? "").trim();
   const photo = formData.get("photo");
 
@@ -70,36 +31,40 @@ export async function submitPhotoReview(formData: FormData) {
     return { error: "Rating must be between 1 and 5 stars." };
   }
 
-  if (!(photo instanceof File)) {
-    return { error: "Please attach a photo before submitting." };
-  }
-
-  if (!photo.type.startsWith("image/")) {
-    return { error: "Only image files are allowed." };
-  }
-
-  if (photo.size <= 0 || photo.size > MAX_REVIEW_PHOTO_BYTES) {
-    return { error: "Photo must be between 1 byte and 8MB." };
-  }
-
   const supabase = await createClient();
-
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    return { error: "You must be signed in to upload a photo review." };
+    return { error: "You must be signed in to leave a review." };
   }
 
+  // 1. Verify Purchase Gate
+  const { data: purchaseCount, error: purchaseError } = await supabase
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .containedBy("items", JSON.stringify([{ product_id: productId }]))
+    .in("payment_status", ["captured", "authorized"]);
+
+  if (purchaseError) {
+    return { error: "Verification failed. Please try again." };
+  }
+
+  if ((purchaseCount ?? 0) === 0) {
+    return { error: "Purchase this product to leave a verified review." };
+  }
+
+  // 2. Insert Review (Draft Status)
   const { data: insertedReview, error: insertError } = await supabase
     .from("reviews")
     .insert({
       product_id: productId,
       user_id: user.id,
       rating,
+      title: title || null,
       comment: comment || null,
+      is_approved: false,
+      is_verified: true,
     })
     .select("id")
     .single();
@@ -108,25 +73,30 @@ export async function submitPhotoReview(formData: FormData) {
     return { error: insertError.message };
   }
 
-  const reviewId =
-    insertedReview && typeof insertedReview.id === "string" ? insertedReview.id : null;
+  const reviewId = insertedReview.id;
 
-  const uploadResult = await uploadReviewPhoto({
-    supabase,
-    file: photo,
-    productId,
-    userId: user.id,
-    rating,
-  });
-
-  if ("error" in uploadResult) {
-    if (reviewId) {
-      await supabase.from("reviews").delete().eq("id", reviewId);
+  // 3. Handle Optional Photo
+  if (photo instanceof File && photo.size > 0) {
+    if (!photo.type.startsWith("image/")) {
+      return { error: "Only image files are allowed." };
     }
-    return { error: uploadResult.error };
-  }
+    if (photo.size > MAX_REVIEW_PHOTO_BYTES) {
+      return { error: "Photo must be 8MB or less." };
+    }
 
-  if (reviewId) {
+    const uploadResult = await uploadReviewPhoto({
+      supabase,
+      file: photo,
+      productId,
+      userId: user.id,
+      rating,
+    });
+
+    if ("error" in uploadResult) {
+      // We don't delete the review if the photo fails, just notify
+      return { success: true, message: "Review posted, but photo upload failed." };
+    }
+
     await attachPhotoReferenceToReview(
       supabase,
       reviewId,
@@ -136,12 +106,33 @@ export async function submitPhotoReview(formData: FormData) {
   }
 
   revalidatePath(`/product/${productId}`);
+  revalidatePath("/admin/reviews");
   if (rating === 5) {
     revalidatePath("/community");
   }
 
   return { success: true };
 }
+
+/**
+ * Helper to check if a user has purchased a specific product.
+ */
+export async function checkProductPurchaseAction(productId: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { count } = await supabase
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .containedBy("items", JSON.stringify([{ product_id: productId }]))
+    .in("payment_status", ["captured", "authorized"]);
+
+  return (count ?? 0) > 0;
+}
+
+// ── INTERNAL HELPERS ─────────────────────────────────────────────────────────
 
 async function uploadReviewPhoto({
   supabase,
@@ -161,32 +152,19 @@ async function uploadReviewPhoto({
 > {
   const baseName = file.name.replace(/\.[^.]+$/, "");
   const safeBaseName = sanitizeStorageSegment(baseName) || "review-photo";
-  const fileExtension = extensionForFile(file);
-  const ratingFolder = `rating-${rating}`;
-  const objectPath = `${ratingFolder}/${sanitizeStorageSegment(productId)}/${sanitizeStorageSegment(userId)}/${Date.now()}-${safeBaseName}.${fileExtension}`;
-
-  let lastErrorMessage = "Unable to upload your review photo right now.";
+  const fileExtension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const objectPath = `rating-${rating}/${sanitizeStorageSegment(productId)}/${sanitizeStorageSegment(userId)}/${Date.now()}-${safeBaseName}.${fileExtension}`;
 
   for (const bucket of REVIEW_PHOTO_BUCKET_CANDIDATES) {
-    const { error } = await supabase.storage.from(bucket).upload(objectPath, file, {
-      cacheControl: "3600",
-      contentType: file.type,
-      upsert: false,
-    });
+    const { error } = await supabase.storage.from(bucket).upload(objectPath, file);
 
     if (!error) {
       const { data } = supabase.storage.from(bucket).getPublicUrl(objectPath);
-      return {
-        bucket,
-        path: objectPath,
-        publicUrl: data.publicUrl,
-      };
+      return { bucket, path: objectPath, publicUrl: data.publicUrl };
     }
-
-    lastErrorMessage = error.message;
   }
 
-  return { error: lastErrorMessage };
+  return { error: "Upload failed" };
 }
 
 async function attachPhotoReferenceToReview(
@@ -196,55 +174,11 @@ async function attachPhotoReferenceToReview(
   publicUrl: string
 ) {
   for (const column of REVIEW_PHOTO_COLUMN_CANDIDATES) {
-    const pathPayload: Record<string, string> = { [column]: storagePath };
     const { error } = await supabase
       .from("reviews")
-      .update(pathPayload)
+      .update({ [column]: publicUrl })
       .eq("id", reviewId);
 
-    if (!error) {
-      return;
-    }
-
-    const isMissingColumn =
-      error.code === "42703" || error.message.toLowerCase().includes("column");
-
-    if (!isMissingColumn) {
-      break;
-    }
+    if (!error) return;
   }
-
-  for (const column of REVIEW_PHOTO_COLUMN_CANDIDATES) {
-    const urlPayload: Record<string, string> = { [column]: publicUrl };
-    const { error } = await supabase
-      .from("reviews")
-      .update(urlPayload)
-      .eq("id", reviewId);
-
-    if (!error) {
-      return;
-    }
-
-    const isMissingColumn =
-      error.code === "42703" || error.message.toLowerCase().includes("column");
-
-    if (!isMissingColumn) {
-      break;
-    }
-  }
-}
-
-function extensionForFile(file: File): string {
-  const directExtension = file.name.split(".").pop()?.trim().toLowerCase();
-
-  if (directExtension && directExtension.length <= 6) {
-    return directExtension;
-  }
-
-  const mimeSubtype = file.type.split("/").pop()?.toLowerCase();
-  if (mimeSubtype && mimeSubtype.length <= 10) {
-    return mimeSubtype === "jpeg" ? "jpg" : mimeSubtype;
-  }
-
-  return "jpg";
 }
