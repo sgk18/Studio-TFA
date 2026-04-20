@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { resolveDisplayPrice } from "@/lib/commerce";
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { formatINR } from "@/lib/currency";
 import { resolveViewerRole } from "@/lib/security/viewerRole";
 import { cn } from "@/lib/utils";
@@ -59,6 +59,30 @@ export async function ProductGrid({
   const normalizedCategoryFilters = uniqueSlugs(selectedCategories);
   const normalizedMaterialFilters = uniqueSlugs(selectedMaterials);
   const normalizedPriceFilters    = uniqueSlugs(selectedPriceRanges);
+
+  const filteredCards = cards.filter((product) => {
+    // 1. Initial category slug match (from URL /collections/[category])
+    if (categorySlug !== "all") {
+      const productSlug = toSlug(product.category);
+      if (productSlug !== categorySlug) return false;
+    }
+
+    // 2. Facet Sidebar: Category Filters
+    if (normalizedCategoryFilters.length > 0) {
+      const productSlug = toSlug(product.category);
+      if (!normalizedCategoryFilters.includes(productSlug)) return false;
+    }
+
+    // 3. Facet Sidebar: Material Filters
+    if (normalizedMaterialFilters.length > 0) {
+      const productSlug = toSlug(product.material);
+      if (!normalizedMaterialFilters.includes(productSlug)) return false;
+    }
+
+    // 4. Facet Sidebar: Price Filters
+    if (normalizedPriceFilters.length > 0) {
+      if (!matchesPriceRanges(product.price, normalizedPriceFilters)) return false;
+    }
 
     return true;
   });

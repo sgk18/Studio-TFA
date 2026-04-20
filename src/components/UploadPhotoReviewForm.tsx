@@ -4,7 +4,7 @@ import { type FormEvent, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { StarRating } from "@/components/StarRating";
-import { submitPhotoReview } from "@/app/product/actions";
+import { submitGalleryReview } from "@/app/product/actions";
 
 interface UploadPhotoReviewFormProps {
   productId: string;
@@ -37,7 +37,7 @@ export function UploadPhotoReviewForm({ productId }: UploadPhotoReviewFormProps)
       formData.set("comment", comment.trim());
       formData.set("photo", photo);
 
-      const result = await submitPhotoReview(formData);
+      const result = await submitGalleryReview(formData);
 
       if (result?.error) {
         toast.error(result.error);

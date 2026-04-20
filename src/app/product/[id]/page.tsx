@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -222,94 +222,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   );
 }
 
-        <section className="mt-20 grid grid-cols-1 gap-8 lg:grid-cols-[1.07fr_0.93fr]">
-          <div className="glass-shell rounded-[1.6rem] p-6 md:p-8">
-            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-muted-foreground">
-                  Community
-                </p>
-                <h2 className="mt-3 font-heading text-4xl tracking-tight md:text-5xl">
-                  Customer Reviews
-                </h2>
-              </div>
-              <Link href="/community" className="action-pill-link px-4 py-2 text-xs">
-                Open Gallery
-              </Link>
-            </div>
-
-            {reviews.length > 0 ? (
-              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                {reviews.map((review) => (
-                  <div key={review.id} className="glass-subpanel rounded-xl p-5 space-y-3">
-                    <div className="flex items-start justify-between gap-4">
-                      <p className="text-sm font-bold text-foreground/90">{review.reviewerName}</p>
-                      <p className="text-[11px] uppercase tracking-[0.14em] text-foreground/45">
-                        {new Date(review.createdAt).toLocaleDateString("en-IN", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </p>
-                    </div>
-                    <StarRating rating={review.rating} size={15} />
-                    {review.title && (
-                      <p className="text-sm font-semibold text-foreground/85">{review.title}</p>
-                    )}
-                    {review.comment ? (
-                      <p className="text-sm leading-relaxed text-foreground/72">{review.comment}</p>
-                    ) : (
-                      <p className="text-sm italic text-foreground/45">
-                        Shared a rating without comment.
-                      </p>
-                    )}
-                    {review.adminReply && (
-                      <div className="rounded-xl border border-primary/15 bg-[rgba(224,174,186,0.1)] px-4 py-3 border-l-2 border-l-primary">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary mb-1.5">
-                          Response from Sherlin ✦
-                        </p>
-                        <p className="text-sm text-foreground/80 leading-relaxed">{review.adminReply}</p>
-                        {review.adminReplyAt && (
-                          <p className="text-[10px] text-foreground/40 mt-1">
-                            Replied{" "}
-                            {new Date(review.adminReplyAt).toLocaleDateString("en-IN", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
-                          </p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm italic text-foreground/48">
-                No reviews yet. Be the first to share your experience.
-              </p>
-            )}
-          </div>
-
-          <div>
-            {user ? (
-              <UploadPhotoReviewForm productId={id} />
-            ) : (
-              <div className="glass-shell rounded-[1.4rem] p-7 text-center">
-                <p className="text-sm text-foreground/65">
-                  Sign in to upload your photo review and share how this piece lives in your space.
-                </p>
-                <Link href="/login" className="action-pill-link mt-5 px-4 py-2 text-xs">
-                  Sign In To Review
-                </Link>
-              </div>
-            )}
-          </div>
-        </section>
-      </div>
-    </article>
-  );
-}
 
 function toReviewCard(value: unknown): ReviewCard | null {
   if (!isRecord(value)) return null;

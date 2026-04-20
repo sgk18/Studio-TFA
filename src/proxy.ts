@@ -60,6 +60,25 @@ export async function proxy(request: NextRequest) {
     error: userError,
   } = await supabase.auth.getUser();
 
+  // ─────────────────────────────────────
+  // 1. IP Whitelisting Check (for production safety)
+  // ─────────────────────────────────────
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    const allowedIpsStr = process.env.AUTHORIZED_ADMIN_IPS || "";
+    const isProduction = process.env.NODE_ENV === "production";
+
+    if (allowedIpsStr && isProduction) {
+      const allowedIps = allowedIpsStr.split(",").map((ip) => ip.trim());
+      const clientIp = request.headers.get("x-forwarded-for") || request.ip || "";
+      const ipToCheck = clientIp.split(",")[0]?.trim();
+
+      if (ipToCheck && !allowedIps.includes(ipToCheck)) {
+        console.warn(`Admin access denied for IP: ${ipToCheck}`);
+        return redirectToAccessDenied(request, "IP unauthorized.");
+      }
+    }
+  }
+
   if (userError || !user) {
     return redirectToLogin(request);
   }

@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useMemo, useState, useTransition } from "react";
+import { useActionState, useMemo, useState, useTransition, useEffect } from "react";
 import { Gift, ShieldCheck, TicketPercent, Truck } from "lucide-react";
 import {
   confirmRazorpayPaymentAction,
   initialCheckoutActionState,
   prepareCheckoutAction,
 } from "@/actions/checkout";
+import { validateCouponAction, validateGiftCardAction } from "@/actions/discounts";
 import {
   FREE_SHIPPING_THRESHOLD_INR,
   PREMIUM_GIFTING_FEE_INR,
@@ -24,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import Image from "next/image";
 
 declare global {
   interface Window {
@@ -120,8 +122,12 @@ export function CheckoutForm({
   const clearCart = useCartStore((state) => state.clearCart);
   const coupon = useCartStore((state) => state.coupon);
   const isGift = useCartStore((state) => state.isGift);
+  const giftCard = useCartStore((state) => state.giftCard);
   const toggleGift = useCartStore((state) => state.toggleGift);
   const getDiscountAmount = useCartStore((state) => state.getDiscountAmount);
+  const getGiftCardAmount = useCartStore((state) => state.getGiftCardAmount);
+  const applyGiftCard = useCartStore((state) => state.applyGiftCard);
+  const removeGiftCard = useCartStore((state) => state.removeGiftCard);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [shippingMethod, setShippingMethod] = useState("std");
@@ -131,9 +137,17 @@ export function CheckoutForm({
     initialCheckoutActionState
   );
 
-  const [callbackMessage, setCallbackMessage] = useState<string>("");
   const [callbackError, setCallbackError] = useState<string>("");
   const [isLaunchingPayment, startLaunchingPayment] = useTransition();
+
+  const [giftCardCode, setGiftCardCode] = useState("");
+  const [isValidatingGC, setIsValidatingGC] = useState(false);
+  const [gcError, setGcError] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const subtotal = useMemo(
     () =>
@@ -149,6 +163,7 @@ export function CheckoutForm({
   const meetsWholesaleMinimum = !isWholesale || totalItems >= WHOLESALE_MIN_CART_ITEMS;
   
   const discountAmount = getDiscountAmount();
+  const giftCardAmount = getGiftCardAmount();
   const freeShippingActive = subtotal >= FREE_SHIPPING_THRESHOLD_INR;
   const shippingCharge = shippingMethod === "exp" ? 150 : (freeShippingActive ? 0 : STANDARD_SHIPPING_FEE_INR);
   const giftingFee = isGift ? PREMIUM_GIFTING_FEE_INR : 0;
@@ -156,7 +171,7 @@ export function CheckoutForm({
   // Automatic Discount Label (Client Side)
   const automaticDiscount = (!isWholesale && subtotal >= 5000) ? Math.round(subtotal * 0.1) : 0;
   
-  const estimatedTotal = Math.max(0, subtotal - discountAmount - automaticDiscount + shippingCharge + giftingFee);
+  const estimatedTotal = Math.max(0, subtotal - discountAmount - giftCardAmount - automaticDiscount + shippingCharge + giftingFee);
   const isAuthenticated = Boolean(user);
 
   const cartPayload = useMemo(
@@ -175,6 +190,23 @@ export function CheckoutForm({
     state.status === "success" &&
     Boolean(state.orderId) &&
     Boolean(state.razorpayPayload?.razorpayOrderId);
+
+  const handleApplyGiftCard = async () => {
+    if (!giftCardCode.trim()) return;
+    setIsValidatingGC(true);
+    setGcError("");
+    try {
+      const result = await validateGiftCardAction({ code: giftCardCode });
+      if (result.valid) {
+        applyGiftCard({ code: result.code, remainingValue: result.remainingValue });
+        setGiftCardCode("");
+      } else {
+        setGcError(result.error);
+      }
+    } finally {
+      setIsValidatingGC(false);
+    }
+  };
 
   const launchRazorpayCheckout = () => {
     if (!canLaunchPayment) return;
@@ -226,6 +258,15 @@ export function CheckoutForm({
     });
   };
 
+  if (!mounted) {
+    return (
+      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+        <div className="glass-shell h-[640px] animate-pulse rounded-2xl" />
+        <div className="glass-shell h-[500px] animate-pulse rounded-2xl" />
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <Card className="mx-auto max-w-3xl">
@@ -254,6 +295,7 @@ export function CheckoutForm({
         <input type="hidden" name="cart_payload" value={cartPayload} />
         <input type="hidden" name="premium_gifting" value={isGift ? "true" : "false"} />
         <input type="hidden" name="promo_code" value={coupon?.code || ""} />
+        <input type="hidden" name="gift_card_code" value={giftCard?.code || ""} />
         <input type="hidden" name="shipping_method" value={shippingMethod} />
 
         <div className="space-y-6">
@@ -482,6 +524,16 @@ export function CheckoutForm({
                   <span>{shippingCharge === 0 ? "FREE" : formatINR(shippingCharge)}</span>
                 </div>
 
+                {giftCard && (
+                  <div className="flex justify-between text-sm text-primary font-bold">
+                    <span className="flex items-center gap-1.5"><Gift className="h-4 w-4" /> Gift Card ({giftCard.code})</span>
+                    <div className="flex items-center gap-2">
+                       <span>−{formatINR(giftCardAmount)}</span>
+                       <button type="button" onClick={removeGiftCard} className="text-[10px] underline">Remove</button>
+                    </div>
+                  </div>
+                )}
+
                 {giftingFee > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="flex items-center gap-1.5"><Gift className="h-4 w-4" /> Gift Wrapping</span>
@@ -500,12 +552,35 @@ export function CheckoutForm({
                   Add {formatINR(FREE_SHIPPING_THRESHOLD_INR - subtotal)} more for **Free Standard Delivery**.
                 </div>
               )}
+
+              {currentStep === 0 && !giftCard && (
+                <div className="pt-4 space-y-2">
+                   <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/50">Redeem Gift Card</Label>
+                   <div className="flex gap-2">
+                      <Input 
+                        value={giftCardCode}
+                        onChange={(e) => setGiftCardCode(e.target.value)}
+                        placeholder="XXXX-XXXX-XXXX"
+                        className="h-10 text-xs bg-card/40 border-primary/10"
+                      />
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        size="sm"
+                        disabled={isValidatingGC}
+                        onClick={handleApplyGiftCard}
+                        className="h-10 text-xs px-4"
+                      >
+                        {isValidatingGC ? "..." : "Redeem"}
+                      </Button>
+                   </div>
+                   {gcError && <p className="text-[10px] text-destructive">{gcError}</p>}
+                </div>
+              )}
             </CardContent>
           </Card>
         </aside>
       </form>
     </div>
   );
-}
-
 }

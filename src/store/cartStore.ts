@@ -30,10 +30,16 @@ export type AppliedCoupon = {
   discountAmount: number;
 };
 
+export type AppliedGiftCard = {
+  code: string;
+  remainingValue: number;
+};
+
 type CartStore = {
   items: CartItem[];
   isOpen: boolean;
   coupon: AppliedCoupon | null;
+  giftCard: AppliedGiftCard | null;
   isGift: boolean;
   giftMessage: string;
 
@@ -50,6 +56,10 @@ type CartStore = {
   // Coupon actions
   applyCoupon: (coupon: AppliedCoupon) => void;
   removeCoupon: () => void;
+
+  // Gift Card actions
+  applyGiftCard: (giftCard: AppliedGiftCard) => void;
+  removeGiftCard: () => void;
 
   // Gift actions
   toggleGift: () => void;
@@ -143,6 +153,9 @@ export const useCartStore = create<CartStore>()(
       applyCoupon: (coupon) => set({ coupon }),
       removeCoupon: () => set({ coupon: null }),
 
+      applyGiftCard: (giftCard) => set({ giftCard }),
+      removeGiftCard: () => set({ giftCard: null }),
+
       toggleGift: () => set((state) => ({ isGift: !state.isGift })),
       setGiftMessage: (message) => set({ giftMessage: message }),
 
@@ -151,10 +164,13 @@ export const useCartStore = create<CartStore>()(
 
       getDiscountAmount: () => get().coupon?.discountAmount ?? 0,
 
+      getGiftCardAmount: () => get().giftCard?.remainingValue ?? 0,
+
       getTotal: () => {
         const subtotal = get().getSubtotal();
         const discount = get().getDiscountAmount();
-        return Math.max(0, subtotal - discount);
+        const giftCard = get().getGiftCardAmount();
+        return Math.max(0, subtotal - discount - giftCard);
       },
 
       getCount: () =>
@@ -178,6 +194,7 @@ export const useCartStore = create<CartStore>()(
       partialize: (state) => ({
         items: state.items,
         coupon: state.coupon,
+        giftCard: state.giftCard,
         isGift: state.isGift,
         giftMessage: state.giftMessage,
       }),

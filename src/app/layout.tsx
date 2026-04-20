@@ -12,6 +12,7 @@ import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { createClient } from "@/lib/supabase/server";
 import { resolveViewerRole } from "@/lib/security/viewerRole";
 import { CartSync } from "@/components/CartSync";
+import { siteConfig } from "@/config/site";
 
 const bodoni = Bodoni_Moda({
   variable: "--font-heading",
@@ -26,14 +27,35 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Studio TFA | Headless E-Commerce",
-    template: "%s | Studio TFA",
+    default: siteConfig.seo.defaultTitle,
+    template: siteConfig.seo.titleTemplate,
   },
-  description:
-    "Studio TFA is a headless e-commerce platform built for editorial, brand-led commerce experiences.",
-  authors: [{ name: "Studio TFA" }],
+  description: siteConfig.description,
+  authors: [{ name: siteConfig.name }],
   robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: siteConfig.url,
+    title: siteConfig.seo.defaultTitle,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    images: [{
+      url: siteConfig.ogImage,
+      width: 1200,
+      height: 630,
+      alt: siteConfig.name,
+    }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.seo.defaultTitle,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
+    creator: "@studiotfa",
+  },
 };
 
 
@@ -52,7 +74,7 @@ export default async function RootLayout({
   const isAuthenticated = Boolean(userId);
 
   return (
-    <html lang="en" className={`${bodoni.variable} ${plusJakartaSans.variable} h-full antialiased`}>
+    <html lang="en" className={`${bodoni.variable} ${plusJakartaSans.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="min-h-dvh bg-background font-sans text-foreground">
         <GoogleAnalytics />
         <LenisProvider>

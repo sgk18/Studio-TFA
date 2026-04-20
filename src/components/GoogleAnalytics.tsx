@@ -1,10 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Script from "next/script";
-import { useEffect, useState } from "react";
+import { siteConfig } from "@/config/site";
 
 const CONSENT_KEY = "tfa_cookie_consent";
-const GA_MEASUREMENT_ID = "G-XXXXXXXXXX"; // Placeholder
+const GA_MEASUREMENT_ID = siteConfig.analytics.google;
 
 export function GoogleAnalytics() {
   const [consent, setConsent] = useState<string | null>(null);

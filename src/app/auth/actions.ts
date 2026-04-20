@@ -24,8 +24,40 @@ function hasAcceptedLegal(formData: FormData): boolean {
 async function getSiteUrl(): Promise<string> {
   const headersList = await headers();
   const host = headersList.get("host") || "localhost:3000";
-  const protocol = host.includes("localhost") ? "http" : "https";
+  const protocol = host.includes("localhost") || host.includes("127.0.0.1") ? "http" : "https";
   return `${protocol}://${host}`;
+}
+
+export async function signInWithOtp(formData: FormData) {
+  if (!hasAcceptedLegal(formData)) {
+    redirect(
+      `/login?error=${encodeURIComponent(
+        "Please accept the Terms and Privacy Policy before continuing."
+      )}`
+    );
+  }
+
+  const supabase = await createClient();
+  const email = formData.get("email") as string;
+  const nextPath = getSafeNextPath(formData.get("next"));
+  const siteUrl = await getSiteUrl();
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+    },
+  });
+
+  if (error) {
+    redirect(
+      `/login?error=${encodeURIComponent(error.message)}&redirectedFrom=${encodeURIComponent(
+        nextPath
+      )}`
+    );
+  }
+
+  redirect(`/login?success=check_email&redirectedFrom=${encodeURIComponent(nextPath)}`);
 }
 
 async function startGoogleOAuth(

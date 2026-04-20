@@ -138,11 +138,23 @@ export function CartDrawer({ isWholesale = false }: { isWholesale?: boolean }) {
 
             {items.map((item) => (
               <div key={item.id} className="glass-subpanel rounded-xl p-3 flex gap-4 items-start">
-                <div className="relative w-20 h-20 bg-card/50 rounded-md flex-shrink-0 overflow-hidden">
+                <Link 
+                  href={`/product/${item.id}`} 
+                  onClick={closeCart}
+                  className="relative w-20 h-20 bg-card/50 rounded-md flex-shrink-0 overflow-hidden hover:opacity-80 transition-opacity"
+                >
                   <Image src={item.image_url} alt={item.title} fill className="object-cover" />
-                </div>
+                </Link>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-heading text-lg leading-tight mb-1 truncate">{item.title}</h4>
+                  <Link 
+                    href={`/product/${item.id}`} 
+                    onClick={closeCart}
+                    className="group"
+                  >
+                    <h4 className="font-heading text-lg leading-tight mb-1 truncate group-hover:text-primary transition-colors">
+                      {item.title}
+                    </h4>
+                  </Link>
                   <p className="text-xs text-foreground/50 tracking-widest uppercase mb-3">{item.category}</p>
                   <div className="flex items-center gap-3">
                     <button

@@ -90,43 +90,31 @@ export async function submitAdminReplyAction(payload: {
 
   if (updateError) return { error: updateError.message };
 
-  // Send email notification to reviewer (best-effort, non-blocking)
+  // Send email notification to reviewer via Edge Function (best-effort, asynchronous)
   try {
     const reviewerProfile = Array.isArray(review.profiles)
       ? review.profiles[0]
       : review.profiles;
-    const productInfo = Array.isArray(review.products)
-      ? review.products[0]
-      : review.products;
-
+    
     const reviewerEmail =
       reviewerProfile && typeof reviewerProfile === "object" && "email" in reviewerProfile
         ? String((reviewerProfile as { email: unknown }).email ?? "")
         : "";
-    const reviewerName =
-      reviewerProfile && typeof reviewerProfile === "object" && "full_name" in reviewerProfile
-        ? String((reviewerProfile as { full_name: unknown }).full_name ?? "Valued Customer")
-        : "Valued Customer";
-    const productTitle =
-      productInfo && typeof productInfo === "object" && "title" in productInfo
-        ? String((productInfo as { title: unknown }).title ?? "a Studio TFA product")
-        : "a Studio TFA product";
 
-    if (reviewerEmail && resend) {
-      await resend.emails.send({
-        from: "Studio TFA <hello@studiotfa.com>",
-        to: reviewerEmail,
-        subject: "Sherlin replied to your review ✦",
-        react: ReviewReplyEmail({
-          reviewerName,
-          productTitle,
-          originalComment: review.comment ?? "",
-          adminReply: parsed.data.reply,
-        }),
+    if (reviewerEmail) {
+      // Use the service client to trigger the edge function
+      // This is more robust as it uses our centralized email logic
+      await supabase.functions.invoke("email-service", {
+        body: {
+          trigger: "review_reply",
+          payload: {
+            review_id: parsed.data.reviewId
+          }
+        }
       });
     }
-  } catch {
-    // Email failure should not block the reply from saving
+  } catch (err) {
+    console.error("Failed to trigger review reply email:", err);
   }
 
   revalidatePath("/admin/reviews");
@@ -161,12 +149,13 @@ export async function submitReviewAction(payload: {
 
   if (!user) return { error: "You must be signed in to leave a review." };
 
-  // Verified-buyer check: user must have an order containing this product
+  // Verified-buyer check: user must have a PAID order containing this product
   const { count } = await supabase
     .from("orders")
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id)
-    .contains("line_items", JSON.stringify([{ product_id: parsed.data.productId }]));
+    .eq("status", "paid")
+    .contains("items", JSON.stringify([{ product_id: parsed.data.productId }]));
 
   const isVerified = (count ?? 0) > 0;
 

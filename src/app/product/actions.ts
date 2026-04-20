@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { resolveDisplayPrice } from "@/lib/commerce";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { isValidPageIdParam } from "@/lib/pageValidation";
 import {

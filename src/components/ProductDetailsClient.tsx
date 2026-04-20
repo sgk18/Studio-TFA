@@ -26,6 +26,7 @@ interface ProductDetailsClientProps {
     surcharge_amount: number;
     is_custom_order: boolean;
     images: string[];
+    stock: number;
   };
   isWholesale: boolean;
   displayPrice: number;
@@ -164,27 +165,45 @@ export function ProductDetailsClient({
                     />
                   )}
 
-                  <div className="flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="space-y-0.5">
-                      <p className="text-4xl font-light tracking-tight">{formatINR(totalPrice)}</p>
-                      {currentSurcharge > 0 && (
-                        <p className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
-                          <Sparkles className="h-3 w-3" />
-                          Incl. Personalisation (+{formatINR(currentSurcharge)})
-                        </p>
+                    <div className="flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="space-y-0.5">
+                        <p className="text-4xl font-light tracking-tight">{formatINR(totalPrice)}</p>
+                        {currentSurcharge > 0 && (
+                          <p className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
+                            <Sparkles className="h-3 w-3" />
+                            Incl. Personalisation (+{formatINR(currentSurcharge)})
+                          </p>
+                        )}
+                      </div>
+                      
+                      {product.stock > 0 ? (
+                        <AddToCartButton
+                          product={{
+                            id: product.id,
+                            title: product.title,
+                            price: totalPrice,
+                            image_url: primaryImage,
+                            category: product.category,
+                          }}
+                          customisations={customisations}
+                        />
+                      ) : (
+                        <div className="flex flex-col gap-3 w-full sm:w-auto">
+                          <div className="flex gap-2">
+                             <Input 
+                               placeholder="Email for restock alert" 
+                               className="h-11 rounded-xl text-xs bg-card/40 border-primary/20"
+                             />
+                             <Button disabled className="h-11 rounded-xl px-6 opacity-50 bg-foreground/10 text-foreground cursor-not-allowed">
+                               Notify Me
+                             </Button>
+                          </div>
+                          <p className="text-[10px] font-bold text-destructive uppercase tracking-widest text-center sm:text-right">
+                             Sold Out ✦ 
+                          </p>
+                        </div>
                       )}
                     </div>
-                    <AddToCartButton
-                      product={{
-                        id: product.id,
-                        title: product.title,
-                        price: totalPrice,
-                        image_url: primaryImage,
-                        category: product.category,
-                      }}
-                      customisations={customisations}
-                    />
-                  </div>
                 </div>
               )}
             </div>

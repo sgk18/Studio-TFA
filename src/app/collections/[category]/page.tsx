@@ -1,6 +1,34 @@
 import { FilterSidebar } from "@/components/FilterSidebar";
 import { ActiveFilterPills } from "@/components/ActiveFilterPills";
 import { SortDropdown } from "@/components/SortDropdown";
+import { createClient } from "@/lib/supabase/server";
+import { resolveViewerRole } from "@/lib/security/viewerRole";
+import { 
+  toSlug, 
+  uniqueSlugs, 
+  parseMultiSelectParam, 
+  PRICE_RANGE_FILTERS, 
+  resolveProductCategory, 
+  deriveMaterial, 
+  toNumber,
+  humanizeSlug,
+  isRecord
+} from "@/lib/catalogFilters";
+import { resolveDisplayPrice } from "@/lib/commerce";
+import { Suspense } from "react";
+import { ProductGrid } from "@/components/ProductGrid";
+import { Skeleton } from "@/components/ui/skeleton";
+
+type FacetOption = {
+  slug: string;
+  label: string;
+  count: number;
+};
+
+interface CategoryCollectionsPageProps {
+  params: Promise<{ category: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
 
 export default async function CategoryCollectionsPage({
   params,
@@ -95,7 +123,7 @@ export default async function CategoryCollectionsPage({
   const heading = categorySlug === "all" ? "All Collections" : humanizeSlug(categorySlug);
 
   return (
-    <div className="min-h-screen px-6 pb-24 pt-32 md:px-12">
+    <div className="min-h-screen px-6 pb-24 pt-32 md:px-12" suppressHydrationWarning>
       <div className="container mx-auto max-w-7xl">
         <header className="glass-shell mb-10 rounded-[1.7rem] px-7 py-8 md:px-10 md:py-11">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-primary">Curated Catalog</p>
@@ -135,10 +163,6 @@ export default async function CategoryCollectionsPage({
             </Suspense>
           </section>
         </div>
-      </div>
-    </div>
-  );
-}
       </div>
     </div>
   );

@@ -181,3 +181,52 @@ export async function createGiftCardAction(payload: unknown) {
   revalidatePath("/admin/discounts");
   return { success: true, code };
 }
+// ─── Public: Validate/Redeem a gift card ──────────────────────────────────────
+
+const validateGiftCardSchema = z.object({
+  code: z.string().trim().min(1).max(64).toUpperCase(),
+});
+
+export type GiftCardValidationResult =
+  | {
+      valid: true;
+      remainingValue: number;
+      code: string;
+    }
+  | { valid: false; error: string };
+
+export async function validateGiftCardAction(payload: {
+  code: string;
+}): Promise<GiftCardValidationResult> {
+  const parsed = validateGiftCardSchema.safeParse(payload);
+  if (!parsed.success) {
+    return { valid: false, error: "Invalid gift card code." };
+  }
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("gift_cards")
+    .select("*")
+    .eq("code", parsed.data.code)
+    .eq("is_redeemed", false)
+    .single();
+
+  if (error || !data) {
+    return { valid: false, error: "Gift card not found or already fully redeemed." };
+  }
+
+  if (data.expires_at && new Date(data.expires_at) < new Date()) {
+    return { valid: false, error: "This gift card has expired." };
+  }
+
+  if (data.remaining_value <= 0) {
+    return { valid: false, error: "This gift card has no remaining balance." };
+  }
+
+  return {
+    valid: true,
+    remainingValue: Number(data.remaining_value),
+    code: data.code,
+  };
+}
