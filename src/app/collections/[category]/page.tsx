@@ -1,7 +1,7 @@
 import { FilterSidebar } from "@/components/FilterSidebar";
 import { ActiveFilterPills } from "@/components/ActiveFilterPills";
 import { SortDropdown } from "@/components/SortDropdown";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { resolveViewerRole } from "@/lib/security/viewerRole";
 import { 
   toSlug, 
@@ -53,7 +53,7 @@ export default async function CategoryCollectionsPage({
         ? []
         : [categorySlug];
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const [{ data: facetRows }, viewerRole] = await Promise.all([
     supabase
       .from("products")

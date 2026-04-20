@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/supabase/types";
 import { isWholesaleRole } from "@/lib/commerce";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type ProfileRole = Database["public"]["Tables"]["profiles"]["Row"]["role"];
 type ServerClient = SupabaseClient<Database>;
@@ -32,7 +33,8 @@ export async function resolveRoleForUserId(
     };
   };
 
-  const { data: profile, error } = await profileQueryClient
+  const adminClient = createAdminClient();
+  const { data: profile, error } = await adminClient
     .from("profiles")
     .select("role")
     .eq("id", userId)

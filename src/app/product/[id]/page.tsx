@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -66,10 +67,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   if (!isValidPageIdParam(id)) notFound();
 
   const supabase = await createClient();
+  const adminClient = createAdminClient();
   const [{ data: productRaw }, { data: { user } }, { data: reviewsRaw }] = await Promise.all([
-    supabase.from('products').select('*').eq('id', id).single(),
+    adminClient.from('products').select('*').eq('id', id).single(),
     supabase.auth.getUser(),
-    supabase
+    adminClient
       .from('reviews')
       .select('id, rating, title, comment, admin_reply, admin_reply_at, created_at, profiles(full_name)')
       .eq('product_id', id)
