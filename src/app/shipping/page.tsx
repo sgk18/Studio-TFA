@@ -1,29 +1,48 @@
-import type { Metadata } from "next";
+import { LegalLayout } from "@/components/LegalLayout";
 
-export const metadata: Metadata = {
-  title: "Shipping",
-  description: "Shipping coverage, fulfilment, and dispatch expectations for Studio TFA.",
+export const metadata = {
+  title: "Shipping Policy",
 };
 
 export default function ShippingPage() {
   return (
-    <section className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-14 sm:px-6 lg:px-8">
-      <header className="space-y-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Fulfilment</p>
-        <h1 className="font-heading text-4xl tracking-[0.12em] sm:text-5xl">Shipping</h1>
-        <p className="max-w-2xl text-sm leading-7 text-foreground/75 sm:text-base">
-          Orders are packed and shipped with care once payment and stock are confirmed. Delivery times depend on destination, product type, and carrier performance.
-        </p>
-      </header>
+    <LegalLayout title="Shipping Policy" lastUpdated="April 20, 2026">
+      <section className="space-y-8">
+        <div>
+          <h3>1. Processing Time</h3>
+          <p>
+            All standard orders are processed within 2–3 business days. Bespoke or custom-rendered commissions may take up to 2–3 weeks for production and curing before shipment.
+          </p>
+        </div>
 
-      <div className="glass-shell space-y-5 rounded-[1.75rem] p-6 sm:p-8">
-        <p className="text-sm leading-7 text-foreground/75">
-          Tracking details are shared when available. If an order contains multiple items, items may ship together or separately depending on fulfilment timing.
-        </p>
-        <p className="text-sm leading-7 text-foreground/75">
-          For time-sensitive or custom orders, Studio TFA may contact you to confirm the dispatch window before shipment.
-        </p>
-      </div>
-    </section>
+        <div>
+          <h3>2. Shipping Carriers</h3>
+          <p>
+            We partner with reliable carriers such as BlueDart, Delhivery, and Shiprocket to ensure your pieces reach you safely.
+          </p>
+        </div>
+
+        <div>
+          <h3>3. Estimated Delivery</h3>
+          <p>
+            Domestic shipping within India typically takes 5–7 business days after processing. You will receive a tracking number via email once your order has shipped.
+          </p>
+        </div>
+
+        <div>
+          <h3>4. International Shipping</h3>
+          <p>
+            We are currently expanding our international presence. Please contact us directly for international shipping inquiries and quotes.
+          </p>
+        </div>
+
+        <div>
+          <h3>5. Shipping Damages</h3>
+          <p>
+            While we take utmost care in packaging, if your item arrives damaged, please document the packaging and the product and contact us within 48 hours of delivery.
+          </p>
+        </div>
+      </section>
+    </LegalLayout>
   );
 }

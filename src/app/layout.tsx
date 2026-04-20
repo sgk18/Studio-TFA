@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { LenisProvider } from "@/components/LenisProvider";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { CartDrawer } from "@/components/CartDrawer";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { createClient } from "@/lib/supabase/server";
 import { resolveViewerRole } from "@/lib/security/viewerRole";
 
@@ -52,6 +53,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${bodoni.variable} ${plusJakartaSans.variable} h-full antialiased`}>
       <body className="min-h-dvh bg-background font-sans text-foreground">
+        <GoogleAnalytics />
         <LenisProvider>
           <CategoryThemeProvider>
             <CustomCursor />

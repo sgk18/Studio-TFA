@@ -22,8 +22,8 @@ const footerLinks = [
   {
     heading: "Legal",
     links: [
-      { label: "Terms of Service", href: "/terms-of-service" },
-      { label: "Privacy Policy", href: "/privacy-policy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Privacy Policy", href: "/privacy" },
       { label: "Shipping", href: "/shipping" },
       { label: "Refunds", href: "/refunds" },
     ],

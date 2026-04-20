@@ -1,29 +1,48 @@
-import type { Metadata } from "next";
+import { LegalLayout } from "@/components/LegalLayout";
 
-export const metadata: Metadata = {
-  title: "Refunds",
-  description: "Refund and exchange guidance for Studio TFA orders.",
+export const metadata = {
+  title: "Cancellation & Refund Policy",
 };
 
 export default function RefundsPage() {
   return (
-    <section className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-14 sm:px-6 lg:px-8">
-      <header className="space-y-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Support</p>
-        <h1 className="font-heading text-4xl tracking-[0.12em] sm:text-5xl">Refunds</h1>
-        <p className="max-w-2xl text-sm leading-7 text-foreground/75 sm:text-base">
-          Refund and replacement requests are handled with the same care as the products themselves. Eligibility depends on item condition, timelines, and the nature of the order.
-        </p>
-      </header>
+    <LegalLayout title="Cancellation & Refund Policy" lastUpdated="April 20, 2026">
+      <section className="space-y-8">
+        <div>
+          <h3>1. Return Window</h3>
+          <p>
+            We offer a 7-day return window for standard products from the date of delivery. If 7 days have passed since your delivery, we unfortunately cannot offer you a refund or exchange.
+          </p>
+        </div>
 
-      <div className="glass-shell space-y-5 rounded-[1.75rem] p-6 sm:p-8">
-        <p className="text-sm leading-7 text-foreground/75">
-          Damaged or incorrect items should be reported promptly with clear order details and photos. Custom or made-to-order items may have different eligibility rules.
-        </p>
-        <p className="text-sm leading-7 text-foreground/75">
-          If a refund is approved, the timeline depends on the payment provider and bank processing times.
-        </p>
-      </div>
-    </section>
+        <div>
+          <h3>2. Conditions for Returns</h3>
+          <p>
+            To be eligible for a return, your item must be unused, in the same condition that you received it, and in its original packaging.
+          </p>
+        </div>
+
+        <div>
+          <h3>3. Custom & Bespoke Items</h3>
+          <p>
+            Please note that custom-rendered pieces, personalised products, and bespoke commissions are non-returnable and non-refundable due to the individualised nature of the artwork.
+          </p>
+        </div>
+
+        <div>
+          <h3>4. Refund Process</h3>
+          <p>
+            Once your return is received and inspected, we will notify you of the approval or rejection of your refund. If approved, your refund will be processed, and a credit will automatically be applied to your original method of payment within 7–10 business days.
+          </p>
+        </div>
+
+        <div>
+          <h3>5. Cancellations</h3>
+          <p>
+            Orders can only be cancelled within 12 hours of placement. Once processing has begun or a custom piece has been initiated, we cannot accept cancellations.
+          </p>
+        </div>
+      </section>
+    </LegalLayout>
   );
 }
