@@ -22,6 +22,7 @@ interface ProductGridProps {
   selectedCategories: string[];
   selectedPriceRanges: string[];
   selectedMaterials: string[];
+  sort?: string;
 }
 
 type ProductCard = {
@@ -40,6 +41,7 @@ export async function ProductGrid({
   selectedCategories,
   selectedPriceRanges,
   selectedMaterials,
+  sort = "featured",
 }: ProductGridProps) {
   const supabase = await createClient();
   const [{ data }, viewerRole] = await Promise.all([
@@ -58,24 +60,27 @@ export async function ProductGrid({
   const normalizedMaterialFilters = uniqueSlugs(selectedMaterials);
   const normalizedPriceFilters    = uniqueSlugs(selectedPriceRanges);
 
-  const filteredCards = cards.filter((card) => {
-    const categorySlugForCard = toSlug(card.category);
-    const materialSlugForCard = toSlug(card.material);
-
-    if (normalizedCategoryFilters.length > 0 && !normalizedCategoryFilters.includes(categorySlugForCard)) {
-      return false;
-    }
-    if (normalizedMaterialFilters.length > 0 && !normalizedMaterialFilters.includes(materialSlugForCard)) {
-      return false;
-    }
-    if (!matchesPriceRanges(toNumber(card.price), normalizedPriceFilters)) {
-      return false;
-    }
-
     return true;
   });
 
-  if (filteredCards.length === 0) {
+  // Apply sorting
+  const sortedCards = [...filteredCards].sort((a, b) => {
+    switch (sort) {
+      case "price-asc":
+        return a.price - b.price;
+      case "price-desc":
+        return b.price - a.price;
+      case "newest":
+        // Since we don't have created_at on the card directly, 
+        // we rely on the initial query order which is already DESC created_at.
+        // If sorting by newest, we just keep the order.
+        return 0; 
+      default:
+        return 0;
+    }
+  });
+
+  if (sortedCards.length === 0) {
     return (
       <div className="glass-shell rounded-[1.6rem] p-12 text-center">
         <p className="text-foreground/65 mb-6" style={{ fontSize: "var(--type-lg)" }}>
@@ -99,7 +104,7 @@ export async function ProductGrid({
      * – All others              → standard half-width (col-span-3)
      */
     <div className="grid grid-cols-1 gap-5 md:grid-cols-6 lg:gap-7">
-      {filteredCards.map((product, index) => {
+      {sortedCards.map((product, index) => {
         const isFeature = index % 7 === 0;
         const isAccent  = index % 7 === 3;
 

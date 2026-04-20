@@ -83,15 +83,27 @@ export const useCartStore = create<CartStore>()(
       addItem: (product, quantity = 1) =>
         set((state) => {
           const safeQuantity = normalizeQuantity(quantity);
-          const existing = state.items.find((item) => item.id === product.id);
+          
+          // Find if an item with the same ID and SAME customisations exists
+          const existingIndex = state.items.findIndex((item) => {
+            if (item.id !== product.id) return false;
+            
+            const existingCust = JSON.stringify(item.customisations || {});
+            const newCust = JSON.stringify(product.customisations || {});
+            return existingCust === newCust;
+          });
 
-          if (existing) {
+          if (existingIndex > -1) {
+            const nextItems = [...state.items];
+            const existingItem = nextItems[existingIndex];
+            if (existingItem) {
+              nextItems[existingIndex] = {
+                ...existingItem,
+                quantity: existingItem.quantity + safeQuantity
+              };
+            }
             return {
-              items: state.items.map((item) =>
-                item.id === product.id
-                  ? { ...item, quantity: item.quantity + safeQuantity }
-                  : item
-              ),
+              items: nextItems,
               isOpen: true,
             };
           }

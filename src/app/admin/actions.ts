@@ -33,6 +33,8 @@ const productMutationSchema = z.object({
   description: z.string().trim().min(10).max(5000),
   image_url: z.string().trim().url().nullable(),
   is_active: z.boolean(),
+  is_customisable: z.boolean().default(false),
+  customisable_fields: jsonSchema.nullable().default(null),
   metadata: z.record(z.string(), jsonSchema).default({}),
 });
 
@@ -259,6 +261,8 @@ function toProductInsert(
     price: input.price,
     stock: input.stock,
     is_active: input.is_active,
+    is_customisable: input.is_customisable,
+    customisable_fields: input.customisable_fields,
     metadata: input.metadata,
   };
 }
@@ -274,6 +278,8 @@ function toProductUpdate(
     price: input.price,
     stock: input.stock,
     is_active: input.is_active,
+    is_customisable: input.is_customisable,
+    customisable_fields: input.customisable_fields,
     metadata: input.metadata,
   };
 }
@@ -298,6 +304,8 @@ function normalizeLegacyProductMutation(data: any) {
         ? data.image_url.trim()
         : null,
     is_active: data?.is_active ?? true,
+    is_customisable: Boolean(data?.is_customisable),
+    customisable_fields: data?.customisable_fields ?? null,
     metadata,
   };
 }

@@ -12,6 +12,8 @@ import {
   totalCartQuantity,
   WHOLESALE_DISCOUNT_RATE,
   WHOLESALE_MIN_CART_ITEMS,
+  AUTOMATIC_DISCOUNT_THRESHOLD_INR,
+  AUTOMATIC_DISCOUNT_PERCENT,
 } from "@/lib/commerce";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -319,8 +321,14 @@ export async function prepareCheckoutAction(
   const shippingAmount =
     subtotal >= FREE_SHIPPING_THRESHOLD_INR ? 0 : STANDARD_SHIPPING_FEE_INR;
 
+  // Automatic Discounts
+  let automaticDiscount = 0;
+  if (!isWholesale && subtotal >= AUTOMATIC_DISCOUNT_THRESHOLD_INR) {
+    automaticDiscount = Math.round((subtotal * AUTOMATIC_DISCOUNT_PERCENT) / 100);
+  }
+
   const total = toMoney(
-    subtotal - promoDiscount + shippingAmount + premiumGiftingFee
+    subtotal - promoDiscount - automaticDiscount + shippingAmount + premiumGiftingFee
   );
 
   if (total <= 0) {

@@ -10,7 +10,13 @@ type Product = {
   category: string;
 };
 
-export function AddToCartButton({ product }: { product: Product }) {
+export function AddToCartButton({ 
+  product, 
+  customisations 
+}: { 
+  product: Product, 
+  customisations?: Record<string, string> 
+}) {
   const { addItem } = useCartStore();
 
   return (
@@ -22,6 +28,7 @@ export function AddToCartButton({ product }: { product: Product }) {
           price: Number(product.price),
           image_url: product.image_url,
           category: product.category,
+          customisations,
         })
       }
       className="glass-subpanel border border-primary/70 text-foreground px-14 py-4 rounded-xl text-sm font-bold tracking-widest uppercase hover:bg-primary hover:text-primary-foreground transition-colors duration-300 active:scale-95"

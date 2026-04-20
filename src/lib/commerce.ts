@@ -7,6 +7,9 @@ export const WHOLESALE_ROLE = "wholesale";
 export const WHOLESALE_DISCOUNT_RATE = 0.3;
 export const WHOLESALE_MIN_CART_ITEMS = 20;
 
+export const AUTOMATIC_DISCOUNT_THRESHOLD_INR = 5000;
+export const AUTOMATIC_DISCOUNT_PERCENT = 10;
+
 export function roundMoney(value: number): number {
 	return Math.round(value * 100) / 100;
 }

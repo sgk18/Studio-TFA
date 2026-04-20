@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
+import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -45,6 +46,14 @@ const formSchema = z.object({
   story: z.string().min(10, "Story/Description is required for our narrative style."),
   image_url: z.string().url("Must be a valid URL."),
   is_custom_order: z.boolean(),
+  is_customisable: z.boolean().default(false),
+  customisable_fields: z.array(
+    z.object({
+      name: z.string().min(1, "Name required"),
+      type: z.string().min(1, "Type required"),
+      required: z.boolean().default(false),
+    })
+  ).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -70,10 +79,18 @@ export function ProductFormDialog({
       story: "",
       image_url: "",
       is_custom_order: false,
+      is_customisable: false,
+      customisable_fields: [],
     },
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "customisable_fields",
+  });
+
   const isCustomOrder = form.watch("is_custom_order");
+  const isCustomisable = form.watch("is_customisable");
 
   useEffect(() => {
     if (isCustomOrder) {
@@ -91,6 +108,8 @@ export function ProductFormDialog({
         story: productToEdit.story || "",
         image_url: productToEdit.image_url || "",
         is_custom_order: productToEdit.is_custom_order || false,
+        is_customisable: productToEdit.is_customisable || false,
+        customisable_fields: productToEdit.customisable_fields || [],
       });
     } else if (open) {
       form.reset({
@@ -101,6 +120,8 @@ export function ProductFormDialog({
         story: "",
         image_url: "",
         is_custom_order: false,
+        is_customisable: false,
+        customisable_fields: [],
       });
     }
   }, [productToEdit, open, form]);
@@ -234,6 +255,120 @@ export function ProductFormDialog({
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="is_customisable"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-muted/20">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-xs font-bold text-foreground uppercase tracking-widest">Personalisation Features</FormLabel>
+                    <FormDescription>
+                      Enable customisations such as names or notes for buyers during checkout.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={(val) => {
+                        field.onChange(val);
+                        if (!val) {
+                          form.setValue("customisable_fields", []);
+                        }
+                      }}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {isCustomisable && (
+              <div className="rounded-lg border p-4 shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold uppercase tracking-widest">Storefront Fields</h3>
+                    <p className="text-xs text-muted-foreground">Add fields that allow the buyer to personalise the product.</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => append({ name: "", type: "text", required: false })}
+                  >
+                    <Plus className="mr-2 h-3.5 w-3.5" />
+                    Add Field
+                  </Button>
+                </div>
+                {fields.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4 border border-dashed rounded bg-muted/10">
+                    No customisation fields added.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {fields.map((f, index) => (
+                      <div key={f.id} className="flex items-start gap-3 bg-muted/10 p-3 rounded border">
+                        <FormField
+                          control={form.control}
+                          name={`customisable_fields.${index}.name`}
+                          render={({ field }) => (
+                            <FormItem className="flex-1 space-y-1">
+                              <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Field Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. Name to print" className="h-8 text-xs" {...field} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`customisable_fields.${index}.type`}
+                          render={({ field }) => (
+                            <FormItem className="w-32 space-y-1">
+                              <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Data Type</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="text">Text Entry</SelectItem>
+                                  <SelectItem value="number">Number</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`customisable_fields.${index}.required`}
+                          render={({ field }) => (
+                            <FormItem className="space-y-1 flex flex-col items-center pt-1.5">
+                              <FormLabel className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest leading-none">Req.</FormLabel>
+                              <FormControl>
+                                <div className="h-8 flex items-center">
+                                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                                </div>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="mt-5 h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => remove(index)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             <FormField
               control={form.control}

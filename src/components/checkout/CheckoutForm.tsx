@@ -99,6 +99,16 @@ function fieldError(
   return errors?.[key] || null;
 }
 
+import { Stepper } from "@/components/ui/stepper";
+import { ShippingMethodSelector } from "./ShippingMethodSelector";
+
+const CHECKOUT_STEPS = [
+  { id: "cart", title: "Review", description: "Cart & Gifting" },
+  { id: "shipping", title: "Shipping", description: "Where to send" },
+  { id: "method", title: "Delivery", description: "How to ship" },
+  { id: "payment", title: "Payment", description: "Secure checkout" },
+] as const;
+
 export function CheckoutForm({
   user,
   isWholesale,
@@ -112,13 +122,42 @@ export function CheckoutForm({
   const isGift = useCartStore((state) => state.isGift);
   const toggleGift = useCartStore((state) => state.toggleGift);
   const getDiscountAmount = useCartStore((state) => state.getDiscountAmount);
+
+  const [currentStep, setCurrentStep] = useState(0);
+  const [shippingMethod, setShippingMethod] = useState("std");
+
   const [state, formAction, isPending] = useActionState(
     prepareCheckoutAction,
     initialCheckoutActionState
   );
+
   const [callbackMessage, setCallbackMessage] = useState<string>("");
   const [callbackError, setCallbackError] = useState<string>("");
   const [isLaunchingPayment, startLaunchingPayment] = useTransition();
+
+  const subtotal = useMemo(
+    () =>
+      items.reduce(
+        (sum, item) =>
+          sum + resolveDisplayPrice(item.price, isWholesale) * item.quantity,
+        0
+      ),
+    [isWholesale, items]
+  );
+
+  const totalItems = useMemo(() => totalCartQuantity(items), [items]);
+  const meetsWholesaleMinimum = !isWholesale || totalItems >= WHOLESALE_MIN_CART_ITEMS;
+  
+  const discountAmount = getDiscountAmount();
+  const freeShippingActive = subtotal >= FREE_SHIPPING_THRESHOLD_INR;
+  const shippingCharge = shippingMethod === "exp" ? 150 : (freeShippingActive ? 0 : STANDARD_SHIPPING_FEE_INR);
+  const giftingFee = isGift ? PREMIUM_GIFTING_FEE_INR : 0;
+  
+  // Automatic Discount Label (Client Side)
+  const automaticDiscount = (!isWholesale && subtotal >= 5000) ? Math.round(subtotal * 0.1) : 0;
+  
+  const estimatedTotal = Math.max(0, subtotal - discountAmount - automaticDiscount + shippingCharge + giftingFee);
+  const isAuthenticated = Boolean(user);
 
   const cartPayload = useMemo(
     () =>
@@ -132,78 +171,38 @@ export function CheckoutForm({
     [items]
   );
 
-  const subtotal = useMemo(
-    () =>
-      items.reduce(
-        (sum, item) =>
-          sum + resolveDisplayPrice(item.price, isWholesale) * item.quantity,
-        0
-      ),
-    [isWholesale, items]
-  );
-
-  const totalItems = useMemo(() => totalCartQuantity(items), [items]);
-  const meetsWholesaleMinimum =
-    !isWholesale || totalItems >= WHOLESALE_MIN_CART_ITEMS;
-  const wholesaleItemsRemaining = Math.max(
-    0,
-    WHOLESALE_MIN_CART_ITEMS - totalItems
-  );
-
-  const shippingEstimate =
-    subtotal >= FREE_SHIPPING_THRESHOLD_INR ? 0 : STANDARD_SHIPPING_FEE_INR;
-  const giftingFee = isGift ? PREMIUM_GIFTING_FEE_INR : 0;
-  const discountAmount = getDiscountAmount();
-  const estimatedTotal = Math.max(0, subtotal - discountAmount + shippingEstimate + giftingFee);
-  const isAuthenticated = Boolean(user);
-
   const canLaunchPayment =
     state.status === "success" &&
     Boolean(state.orderId) &&
-    Boolean(state.razorpayPayload?.razorpayOrderId) &&
-    Boolean(state.razorpayPayload?.keyId);
+    Boolean(state.razorpayPayload?.razorpayOrderId);
 
   const launchRazorpayCheckout = () => {
-    const orderId = state.orderId;
-    const razorpayPayload = state.razorpayPayload;
-
-    if (!canLaunchPayment || !orderId || !razorpayPayload) {
-      setCallbackError("Prepare checkout first to continue with payment.");
-      return;
-    }
-
+    if (!canLaunchPayment) return;
+    
     startLaunchingPayment(async () => {
       setCallbackError("");
       setCallbackMessage("");
 
       try {
         await loadRazorpayScript();
+        if (!window.Razorpay) throw new Error("Razorpay SDK unavailable.");
 
-        if (!window.Razorpay) {
-          setCallbackError("Razorpay SDK is unavailable. Please refresh and try again.");
-          return;
-        }
+        const { razorpayPayload, orderId } = state;
+        if (!razorpayPayload || !orderId) return;
 
-        const razorpay = new window.Razorpay({
+        const rzp = new window.Razorpay({
           key: razorpayPayload.keyId,
           amount: razorpayPayload.amount,
           currency: razorpayPayload.currency,
           order_id: razorpayPayload.razorpayOrderId,
           name: "Studio TFA",
-          description: "Secure checkout",
+          description: "Secure Payment",
           notes: razorpayPayload.notes,
           prefill: {
             name: user?.fullName || undefined,
             email: user?.email || undefined,
           },
-          theme: {
-            color: "#8B263E",
-          },
-          modal: {
-            ondismiss: () => {
-              setCallbackMessage("Payment window closed. You can resume checkout anytime.");
-            },
-          },
+          theme: { color: "#8B263E" },
           handler: async (response) => {
             const result = await confirmRazorpayPaymentAction({
               orderId,
@@ -214,22 +213,15 @@ export function CheckoutForm({
 
             if (result.status === "success") {
               clearCart();
-              setCallbackMessage(result.message);
-              setCallbackError("");
-              return;
+              window.location.href = `/checkout/success?orderId=${orderId}`;
+            } else {
+              setCallbackError(result.message);
             }
-
-            setCallbackError(result.message);
           },
         });
-
-        razorpay.open();
-      } catch (error) {
-        setCallbackError(
-          error instanceof Error
-            ? error.message
-            : "Unable to launch Razorpay checkout."
-        );
+        rzp.open();
+      } catch (err) {
+        setCallbackError(err instanceof Error ? err.message : "Payment error occurred.");
       }
     });
   };
@@ -239,282 +231,281 @@ export function CheckoutForm({
       <Card className="mx-auto max-w-3xl">
         <CardHeader>
           <CardTitle>Checkout is waiting for items</CardTitle>
-          <CardDescription>
-            Your cart is empty right now. Add products to continue with shipping and payment.
-          </CardDescription>
+          <CardDescription>Add products to continue with shipping and payment.</CardDescription>
         </CardHeader>
         <CardFooter>
-          <Link
-            href="/collections"
-            className="inline-flex h-10 items-center justify-center rounded-full border border-primary/35 bg-primary px-5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Browse Collections
-          </Link>
+          <Link href="/collections" className="action-pill-link">Browse Gallery</Link>
         </CardFooter>
       </Card>
     );
   }
 
   return (
-    <form action={formAction} className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-      <input type="hidden" name="checkout_mode" value={isAuthenticated ? "authenticated" : "guest"} />
-      <input type="hidden" name="cart_payload" value={cartPayload} />
-      <input type="hidden" name="premium_gifting" value={isGift ? "true" : "false"} />
-      <input type="hidden" name="promo_code" value={coupon?.code || ""} />
+    <div className="space-y-10">
+      <Stepper 
+        steps={CHECKOUT_STEPS} 
+        activeStep={currentStep} 
+        onStepChange={setCurrentStep}
+        className="max-w-4xl mx-auto"
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-xl">
-            Shipping and checkout
-          </CardTitle>
-          <CardDescription>
-            {isAuthenticated
-              ? "Authenticated checkout is active. Your account details are protected on the server."
-              : "Guest checkout is active. You can continue without creating an account."}
-          </CardDescription>
+      <form action={formAction} className="grid gap-8 lg:grid-cols-[1.6fr_1fr] items-start">
+        <input type="hidden" name="checkout_mode" value={isAuthenticated ? "authenticated" : "guest"} />
+        <input type="hidden" name="cart_payload" value={cartPayload} />
+        <input type="hidden" name="premium_gifting" value={isGift ? "true" : "false"} />
+        <input type="hidden" name="promo_code" value={coupon?.code || ""} />
+        <input type="hidden" name="shipping_method" value={shippingMethod} />
 
-          {isWholesale ? (
-            <p className="rounded-xl border border-primary/35 bg-primary/10 px-3 py-2 text-xs text-primary">
-              Wholesale pricing active: all catalog prices are shown with a 30% discount and checkout requires at least {WHOLESALE_MIN_CART_ITEMS} items.
-            </p>
-          ) : null}
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          <section className="space-y-4">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Contact</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="fullName">Full name</Label>
-                <Input id="fullName" name="fullName" defaultValue={user?.fullName || ""} required />
-                {fieldError(state.fieldErrors, "fullName") ? (
-                  <p className="text-xs text-destructive">{fieldError(state.fieldErrors, "fullName")}</p>
-                ) : null}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  defaultValue={user?.email || ""}
-                  required
-                  readOnly={isAuthenticated}
-                />
-                {fieldError(state.fieldErrors, "email") ? (
-                  <p className="text-xs text-destructive">{fieldError(state.fieldErrors, "email")}</p>
-                ) : null}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" name="phone" type="tel" required />
-                {fieldError(state.fieldErrors, "phone") ? (
-                  <p className="text-xs text-destructive">{fieldError(state.fieldErrors, "phone")}</p>
-                ) : null}
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Shipping details</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="addressLine1">Address line 1</Label>
-                <Input id="addressLine1" name="addressLine1" required />
-                {fieldError(state.fieldErrors, "addressLine1") ? (
-                  <p className="text-xs text-destructive">{fieldError(state.fieldErrors, "addressLine1")}</p>
-                ) : null}
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="addressLine2">Address line 2 (optional)</Label>
-                <Input id="addressLine2" name="addressLine2" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input id="city" name="city" required />
-                {fieldError(state.fieldErrors, "city") ? (
-                  <p className="text-xs text-destructive">{fieldError(state.fieldErrors, "city")}</p>
-                ) : null}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
-                <Input id="state" name="state" required />
-                {fieldError(state.fieldErrors, "state") ? (
-                  <p className="text-xs text-destructive">{fieldError(state.fieldErrors, "state")}</p>
-                ) : null}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="postalCode">Postal code</Label>
-                <Input id="postalCode" name="postalCode" required />
-                {fieldError(state.fieldErrors, "postalCode") ? (
-                  <p className="text-xs text-destructive">{fieldError(state.fieldErrors, "postalCode")}</p>
-                ) : null}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                <Input id="country" name="country" defaultValue="India" required />
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Order options</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2 flex items-center justify-between rounded-2xl border border-border/70 bg-card/65 px-4 py-3">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium flex items-center gap-2">
-                    <Gift className="h-4 w-4 text-primary" />
-                    Premium gifting
-                  </p>
-                  <p className="text-xs text-foreground/65">
-                    Add gift wrap and blessing card for {formatINR(PREMIUM_GIFTING_FEE_INR)}.
-                  </p>
+        <div className="space-y-6">
+          {currentStep === 0 && (
+            <Card className="glass-shell border-none shadow-[0_16px_50px_-12px_rgba(139,38,62,0.12)]">
+              <CardHeader>
+                <CardTitle className="text-xl">Review Cart & Options</CardTitle>
+                <CardDescription>Gifting and premium wrapping options.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between rounded-2xl border border-border/70 bg-card/65 px-5 py-4">
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold flex items-center gap-2">
+                      <Gift className="h-4 w-4 text-primary" />
+                      Premium Gifting
+                    </p>
+                    <p className="text-xs text-foreground/60 leading-relaxed">
+                      Hand-written blessing card & sustainable wrap for {formatINR(PREMIUM_GIFTING_FEE_INR)}.
+                    </p>
+                  </div>
+                  <Switch checked={isGift} onCheckedChange={toggleGift} />
                 </div>
-                <Switch checked={isGift} onCheckedChange={toggleGift} />
-              </div>
+                
+                {isGift && (
+                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/60">Gift Message</Label>
+                    <Textarea 
+                      name="gift_message" 
+                      placeholder="Write your heart here..." 
+                      className="bg-card/40 border-primary/10 rounded-xl"
+                    />
+                  </div>
+                )}
 
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="notes">Delivery notes (optional)</Label>
-                <Textarea id="notes" name="notes" placeholder="Landmark, preferred delivery time, or special instructions" />
-              </div>
-            </div>
-          </section>
-
-          {state.message ? (
-            <p
-              className={
-                state.status === "success"
-                  ? "rounded-xl border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary"
-                  : state.status === "error"
-                    ? "rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-                    : "text-sm text-foreground/70"
-              }
-            >
-              {state.message}
-            </p>
-          ) : null}
-        </CardContent>
-
-        <CardFooter className="justify-end gap-3">
-          {!isAuthenticated ? (
-            <Button variant="outline" render={<Link href="/login" />}>
-              Sign in instead
-            </Button>
-          ) : null}
-          <Button type="submit" disabled={isPending || !meetsWholesaleMinimum}>
-            {isPending
-              ? "Preparing secure totals..."
-              : !meetsWholesaleMinimum
-                ? `Minimum ${WHOLESALE_MIN_CART_ITEMS} items required`
-                : "Prepare Razorpay payload"}
-          </Button>
-        </CardFooter>
-      </Card>
-
-      <Card className="h-max">
-        <CardHeader>
-          <CardTitle className="text-lg">Order summary</CardTitle>
-          <CardDescription>
-            Prices are validated again on the server before payment.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-3">
-            {items.map((item) => (
-              <div key={item.id} className="flex items-start justify-between gap-3 text-sm">
-                <div>
-                  <p className="font-medium leading-5">{item.title}</p>
-                  <p className="text-xs uppercase tracking-[0.14em] text-foreground/55">
-                    Qty {item.quantity}
-                  </p>
+                <div className="pt-4 flex justify-end">
+                  <Button type="button" onClick={() => setCurrentStep(1)} className="px-10 h-12 rounded-full">
+                    Enter Shipping Details →
+                  </Button>
                 </div>
-                <p className="font-semibold">
-                  {formatINR(
-                    resolveDisplayPrice(item.price, isWholesale) * item.quantity
-                  )}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className="rounded-2xl border border-border/70 bg-card/70 p-4 space-y-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span>Subtotal</span>
-              <span>{formatINR(subtotal)}</span>
-            </div>
-            {discountAmount > 0 && (
-              <div className="flex items-center justify-between text-green-600">
-                <span className="flex items-center gap-2">
-                  <TicketPercent className="h-4 w-4" />
-                  Discount {coupon?.code ? `(${coupon.code})` : ""}
-                </span>
-                <span>−{formatINR(discountAmount)}</span>
-              </div>
-            )}
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <Truck className="h-4 w-4 text-primary" />
-                Shipping
-              </span>
-              <span>{shippingEstimate === 0 ? "Free" : formatINR(shippingEstimate)}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Premium gifting</span>
-              <span>{giftingFee > 0 ? formatINR(giftingFee) : "-"}</span>
-            </div>
-            <div className="border-t border-border/60 pt-3 flex items-center justify-between font-semibold">
-              <span>Estimated total</span>
-              <span>{formatINR(estimatedTotal)}</span>
-            </div>
-          </div>
-
-          {subtotal < FREE_SHIPPING_THRESHOLD_INR ? (
-            <p className="text-xs text-foreground/65">
-              Add {formatINR(FREE_SHIPPING_THRESHOLD_INR - subtotal)} more for free shipping.
-            </p>
-          ) : (
-            <p className="text-xs text-primary font-semibold">Free shipping unlocked.</p>
+              </CardContent>
+            </Card>
           )}
 
-          {isWholesale && !meetsWholesaleMinimum ? (
-            <p className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-              Add {wholesaleItemsRemaining} more item{wholesaleItemsRemaining === 1 ? "" : "s"} to meet the wholesale minimum of {WHOLESALE_MIN_CART_ITEMS}.
-            </p>
-          ) : null}
+          {currentStep === 1 && (
+            <Card className="glass-shell border-none shadow-[0_16px_50px_-12px_rgba(139,38,62,0.12)]">
+              <CardHeader>
+                <CardTitle className="text-xl">Shipping Address</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest">Full Name</Label>
+                    <Input name="fullName" defaultValue={user?.fullName} required className="h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest">Email</Label>
+                    <Input name="email" type="email" defaultValue={user?.email} required readOnly={isAuthenticated} className="h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest">Phone</Label>
+                    <Input name="phone" type="tel" required className="h-11 rounded-xl" />
+                  </div>
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest">Address Line 1</Label>
+                    <Input name="addressLine1" required className="h-11 rounded-xl" />
+                  </div>
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest">Address Line 2 (Optional)</Label>
+                    <Input name="addressLine2" className="h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest">City</Label>
+                    <Input name="city" required className="h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest">State</Label>
+                    <Input name="state" required className="h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest">Postal Code</Label>
+                    <Input name="postalCode" required className="h-11 rounded-xl" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-widest">Country</Label>
+                    <Input name="country" defaultValue="India" required className="h-11 rounded-xl" />
+                  </div>
+                </div>
 
-          {state.status === "success" && state.summary && state.razorpayPayload ? (
-            <div className="rounded-2xl border border-primary/40 bg-primary/10 p-4 space-y-2 text-sm">
-              <p className="font-semibold text-primary">Secure checkout payload ready</p>
-              <p>Order: {state.orderId}</p>
-              <p>Final total: {formatINR(state.summary.total)}</p>
-              <p className="flex items-center gap-2 text-xs uppercase tracking-[0.15em] text-primary/90">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Razorpay amount in paise: {state.razorpayPayload.amount}
-              </p>
-              <Button
-                type="button"
-                className="w-full"
-                onClick={launchRazorpayCheckout}
-                disabled={!canLaunchPayment || isLaunchingPayment}
-              >
-                {isLaunchingPayment ? "Opening Razorpay..." : "Pay securely with Razorpay"}
-              </Button>
-            </div>
-          ) : null}
+                <div className="pt-6 flex justify-between">
+                  <Button type="button" variant="ghost" onClick={() => setCurrentStep(0)}>Back</Button>
+                  <Button type="button" onClick={() => setCurrentStep(2)} className="px-10 h-12 rounded-full">
+                    Select Delivery Method →
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {callbackMessage ? (
-            <p className="rounded-xl border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
-              {callbackMessage}
-            </p>
-          ) : null}
+          {currentStep === 2 && (
+            <Card className="glass-shell border-none shadow-[0_16px_50px_-12px_rgba(139,38,62,0.12)]">
+              <CardHeader>
+                <CardTitle className="text-xl">Delivery Method</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-8">
+                <ShippingMethodSelector 
+                  selectedId={shippingMethod} 
+                  onSelect={setShippingMethod}
+                  freeShippingActive={freeShippingActive}
+                />
 
-          {callbackError ? (
-            <p className="rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-              {callbackError}
-            </p>
-          ) : null}
-        </CardContent>
-      </Card>
-    </form>
+                <div className="pt-6 flex justify-between">
+                  <Button type="button" variant="ghost" onClick={() => setCurrentStep(1)}>Back</Button>
+                  <Button type="button" onClick={() => setCurrentStep(3)} className="px-10 h-12 rounded-full">
+                    Review and Pay →
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {currentStep === 3 && (
+            <Card className="glass-shell border-none shadow-[0_16px_50px_-12px_rgba(139,38,62,0.12)]">
+              <CardHeader>
+                <CardTitle className="text-xl">Submit Order</CardTitle>
+                <CardDescription>Finalise your totals and pay securely with Razorpay.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 space-y-4">
+                  <div className="flex items-center gap-3 text-primary">
+                    <ShieldCheck className="h-6 w-6" />
+                    <p className="text-sm font-bold uppercase tracking-widest">PCI Compliant Secure Checkout</p>
+                  </div>
+                  <p className="text-xs text-foreground/60 leading-relaxed">
+                    By clicking "Prepare Payment", we will verify your stock and final totals on our secure server. Your card details are never stored on our servers.
+                  </p>
+                </div>
+
+                {state.message && (
+                  <div className={cn(
+                    "p-4 rounded-xl text-sm border",
+                    state.status === "success" ? "bg-green-50 border-green-200 text-green-800" : "bg-red-50 border-red-200 text-red-800"
+                  )}>
+                    {state.message}
+                  </div>
+                )}
+
+                <div className="pt-6 flex justify-between gap-4">
+                  <Button type="button" variant="ghost" onClick={() => setCurrentStep(2)} disabled={isPending}>Back</Button>
+                  
+                  {state.status === "success" && state.razorpayPayload ? (
+                    <Button 
+                      type="button" 
+                      onClick={launchRazorpayCheckout}
+                      disabled={isLaunchingPayment}
+                      className="flex-1 h-12 rounded-full bg-primary hover:bg-primary/90"
+                    >
+                      {isLaunchingPayment ? "Opening Razorpay..." : "Pay with Razorpay →"}
+                    </Button>
+                  ) : (
+                    <Button 
+                      type="submit" 
+                      disabled={isPending}
+                      className="flex-1 h-12 rounded-full"
+                    >
+                      {isPending ? "Validating Cart..." : "Prepare Payment →"}
+                    </Button>
+                  )}
+                </div>
+
+                {callbackError && <p className="text-xs text-destructive text-center">{callbackError}</p>}
+                {callbackMessage && <p className="text-xs text-primary text-center">{callbackMessage}</p>}
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Sticky Order Summary */}
+        <aside className="lg:sticky lg:top-28 space-y-6">
+          <Card className="glass-shell border-none shadow-[0_16px_40px_-12px_rgba(0,0,0,0.06)]">
+            <CardHeader>
+              <CardTitle className="text-lg">Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="max-h-[300px] overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                {items.map((item) => (
+                  <div key={item.id} className="flex gap-4">
+                    <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg border bg-card/50">
+                      <Image src={item.image_url} alt={item.title} fill className="object-cover" />
+                    </div>
+                    <div className="flex flex-1 flex-col justify-center gap-1">
+                      <p className="text-sm font-bold leading-tight">{item.title}</p>
+                      <p className="text-[10px] uppercase tracking-widest text-foreground/50">Qty {item.quantity}</p>
+                      {item.customisations && (
+                        <div className="text-[9px] uppercase tracking-widest font-bold text-primary/70">
+                          Personalised ✦
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-sm font-bold pt-1">{formatINR(resolveDisplayPrice(item.price, isWholesale) * item.quantity)}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="border-t border-border/60 pt-4 space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-foreground/60">Subtotal</span>
+                  <span>{formatINR(subtotal)}</span>
+                </div>
+
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-sm text-green-600">
+                    <span className="flex items-center gap-1.5"><TicketPercent className="h-4 w-4" /> Promo Discount</span>
+                    <span>−{formatINR(discountAmount)}</span>
+                  </div>
+                )}
+
+                {automaticDiscount > 0 && (
+                  <div className="flex justify-between text-sm text-primary font-bold">
+                    <span className="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4" /> Editorial Value Discount</span>
+                    <span>−{formatINR(automaticDiscount)}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-between text-sm">
+                  <span className="flex items-center gap-1.5"><Truck className="h-4 w-4" /> Shipping</span>
+                  <span>{shippingCharge === 0 ? "FREE" : formatINR(shippingCharge)}</span>
+                </div>
+
+                {giftingFee > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="flex items-center gap-1.5"><Gift className="h-4 w-4" /> Gift Wrapping</span>
+                    <span>{formatINR(giftingFee)}</span>
+                  </div>
+                )}
+
+                <div className="border-t border-border/80 pt-4 flex justify-between items-end">
+                  <span className="text-sm font-bold uppercase tracking-widest">Estimated Total</span>
+                  <span className="font-heading text-3xl tracking-tight">{formatINR(estimatedTotal)}</span>
+                </div>
+              </div>
+
+              {!freeShippingActive && (
+                <div className="rounded-xl bg-primary/5 p-3 text-[11px] text-primary/80 leading-relaxed text-center">
+                  Add {formatINR(FREE_SHIPPING_THRESHOLD_INR - subtotal)} more for **Free Standard Delivery**.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </aside>
+      </form>
+    </div>
   );
+}
+
 }

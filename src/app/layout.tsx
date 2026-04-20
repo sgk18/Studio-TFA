@@ -35,6 +35,11 @@ export const metadata: Metadata = {
 };
 
 
+import { CategoryThemeProvider } from "@/components/CategoryThemeProvider";
+import { CustomCursor } from "@/components/CustomCursor";
+import { Suspense } from "react";
+import Loading from "./loading";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -48,20 +53,25 @@ export default async function RootLayout({
     <html lang="en" className={`${bodoni.variable} ${plusJakartaSans.variable} h-full antialiased`}>
       <body className="min-h-dvh bg-background font-sans text-foreground">
         <LenisProvider>
-          <div className="relative flex min-h-dvh flex-col">
-            <Navbar
-              isWholesale={isWholesale}
-              isAdmin={isAdmin}
-              isAuthenticated={isAuthenticated}
-            />
-            <main className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </div>
-          <CartDrawer isWholesale={isWholesale} />
-          <WhatsAppFloat />
-          <CookieConsentBanner />
+          <CategoryThemeProvider>
+            <CustomCursor />
+            <div className="relative flex min-h-dvh flex-col">
+              <Navbar
+                isWholesale={isWholesale}
+                isAdmin={isAdmin}
+                isAuthenticated={isAuthenticated}
+              />
+              <main className="flex-1">
+                <Suspense fallback={<Loading />}>
+                  {children}
+                </Suspense>
+              </main>
+              <Footer />
+            </div>
+            <CartDrawer isWholesale={isWholesale} />
+            <WhatsAppFloat />
+            <CookieConsentBanner />
+          </CategoryThemeProvider>
         </LenisProvider>
         <Toaster />
       </body>
