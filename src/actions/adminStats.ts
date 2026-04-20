@@ -132,3 +132,45 @@ function processTopProductsChart(orders: any[]) {
     data: sorted.map(s => s[1]),
   };
 }
+
+export async function getInventoryValuationReport() {
+  const { supabase } = await requireAdminAccess({ from: "/admin/reports" });
+  const { data: products } = await supabase
+    .from("products")
+    .select("title, category, price, stock, is_active");
+
+  return products?.map(p => ({
+    "Product Name": p.title,
+    "Category": p.category,
+    "Unit Price (INR)": p.price,
+    "Current Stock": p.stock,
+    "Total Valuation (INR)": Number(p.price) * Number(p.stock),
+    "Status": p.is_active ? "Active" : "Archived"
+  })) || [];
+}
+
+export async function getAllOrdersReport(dateRange: { from: string; to: string }) {
+  const { supabase } = await requireAdminAccess({ from: "/admin/reports" });
+  const { data: orders } = await supabase
+    .from("orders")
+    .select("created_at, id, status, total_amount, payment_status, shipping_address, guest_email")
+    .gte("created_at", dateRange.from)
+    .lte("created_at", dateRange.to)
+    .order("created_at", { ascending: false });
+
+  return orders?.map(o => {
+    const address = o.shipping_address as any;
+    return {
+      "Date": format(new Date(o.created_at), "yyyy-MM-dd HH:mm"),
+      "Order ID": o.id,
+      "Customer Name": address?.full_name || "N/A",
+      "Customer Email": o.guest_email || address?.email || "N/A",
+      "Total Amount": o.total_amount,
+      "Status": o.status,
+      "Payment": o.payment_status,
+      "City": address?.city || "N/A",
+      "State": address?.state || "N/A"
+    };
+  }) || [];
+}
+
