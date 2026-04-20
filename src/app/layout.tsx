@@ -11,6 +11,7 @@ import { CartDrawer } from "@/components/CartDrawer";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { createClient } from "@/lib/supabase/server";
 import { resolveViewerRole } from "@/lib/security/viewerRole";
+import { CartSync } from "@/components/CartSync";
 
 const bodoni = Bodoni_Moda({
   variable: "--font-heading",
@@ -73,6 +74,7 @@ export default async function RootLayout({
             <CartDrawer isWholesale={isWholesale} />
             <WhatsAppFloat />
             <CookieConsentBanner />
+            <CartSync />
           </CategoryThemeProvider>
         </LenisProvider>
         <Toaster />
