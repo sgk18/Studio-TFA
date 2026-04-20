@@ -10,7 +10,7 @@ export type CustomField = {
   id: string;
   label: string;
   name: string;
-  type: "text" | "select" | "color" | "textarea";
+  type: "text" | "select" | "color" | "textarea" | "photo";
   required: boolean;
   options?: string[]; // For select type
   placeholder?: string;
@@ -93,6 +93,7 @@ export function CustomisationFieldBuilder({ value, onChange }: CustomisationFiel
                     <option value="textarea">Long Text</option>
                     <option value="select">Dropdown</option>
                     <option value="color">Color Choice</option>
+                    <option value="photo">Photo Upload</option>
                   </select>
                 </div>
               </div>

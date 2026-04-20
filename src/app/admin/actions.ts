@@ -35,6 +35,8 @@ const productMutationSchema = z.object({
   is_active: z.boolean(),
   is_customisable: z.boolean().default(false),
   customisable_fields: jsonSchema.nullable().default(null),
+  surcharge_amount: z.coerce.number().min(0).default(0),
+  is_custom_order: z.boolean().default(false),
   metadata: z.record(z.string(), jsonSchema).default({}),
 });
 
@@ -112,6 +114,8 @@ export async function createProductWithImageUpload(formData: FormData) {
   const isCustomisable = String(formData.get("isCustomisable") ?? "false") === "true";
   const customisableFieldsRaw = formData.get("customisableFields");
   const customisableFields = customisableFieldsRaw ? JSON.parse(String(customisableFieldsRaw)) : null;
+  const surchargeAmount = Number(formData.get("surchargeAmount") ?? 0);
+  const isCustomOrder = String(formData.get("isCustomOrder") ?? "false") === "true";
 
   const imageFile = formData.get("imageFile");
 
@@ -137,6 +141,8 @@ export async function createProductWithImageUpload(formData: FormData) {
     is_active: isActive,
     is_customisable: isCustomisable,
     customisable_fields: customisableFields,
+    surcharge_amount: surchargeAmount,
+    is_custom_order: isCustomOrder,
     metadata: {},
   });
 
@@ -269,6 +275,8 @@ function toProductInsert(
     is_active: input.is_active,
     is_customisable: input.is_customisable,
     customisable_fields: input.customisable_fields,
+    surcharge_amount: input.surcharge_amount,
+    is_custom_order: input.is_custom_order,
     metadata: input.metadata,
   };
 }
@@ -286,6 +294,8 @@ function toProductUpdate(
     is_active: input.is_active,
     is_customisable: input.is_customisable,
     customisable_fields: input.customisable_fields,
+    surcharge_amount: input.surcharge_amount,
+    is_custom_order: input.is_custom_order,
     metadata: input.metadata,
   };
 }
@@ -312,6 +322,8 @@ function normalizeLegacyProductMutation(data: any) {
     is_active: data?.is_active ?? true,
     is_customisable: Boolean(data?.is_customisable),
     customisable_fields: data?.customisable_fields ?? null,
+    surcharge_amount: Number(data?.surcharge_amount ?? 0),
+    is_custom_order: Boolean(data?.is_custom_order),
     metadata,
   };
 }

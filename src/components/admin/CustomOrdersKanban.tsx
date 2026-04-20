@@ -68,6 +68,7 @@ export type AdminCustomOrderCard = {
   createdAt: string;
   dimensions?: string | null;
   estimatedPrice?: number | null;
+  trackingNumber?: string | null;
 };
 
 export function CustomOrdersKanban({
@@ -103,9 +104,15 @@ export function CustomOrdersKanban({
     setOrders(newOrders);
 
     startTransition(async () => {
+      let trackingNumber = undefined;
+      if (targetStatus === "shipped") {
+        trackingNumber = prompt("Enter Tracking Number (optional):") || undefined;
+      }
+
       const result = await updateCustomOrderStatusAction({
         orderId,
         status: targetStatus,
+        trackingNumber,
       });
 
       if (result.status === "error") {
@@ -256,6 +263,13 @@ export function CustomOrdersKanban({
                       <p className="text-sm font-bold">{selectedOrder.estimatedPrice ? formatINR(selectedOrder.estimatedPrice) : "Pending Appraisal"}</p>
                     </div>
                   </div>
+
+                  {selectedOrder.trackingNumber && (
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-700 mb-1">Tracking Number</p>
+                      <p className="text-sm font-mono font-bold text-emerald-800">{selectedOrder.trackingNumber}</p>
+                    </div>
+                  )}
 
                   <div>
                     <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-foreground/50 mb-3">Colour Palette</h4>

@@ -88,6 +88,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     inspiration: String(product.inspiration || "Truth through beauty."),
     is_customisable: Boolean(product.is_customisable),
     customisable_fields: product.customisable_fields,
+    surcharge_amount: Number(product.surcharge_amount ?? 0),
+    is_custom_order: Boolean(product.is_custom_order),
     images: extractProductGallery(product),
   };
 

@@ -28,6 +28,7 @@ const customOrderStatusSchema = z.enum([
 const statusUpdateSchema = z.object({
   orderId: z.string().trim().min(6).max(128),
   status: customOrderStatusSchema,
+  trackingNumber: z.string().trim().optional(),
 });
 
 type CustomOrderInsert = Database["public"]["Tables"]["custom_orders"]["Insert"];
@@ -167,7 +168,10 @@ export async function updateCustomOrderStatusAction(input: {
 
   const { error } = await supabase
     .from("custom_orders")
-    .update({ status: parsed.data.status })
+    .update({ 
+      status: parsed.data.status,
+      ...(parsed.data.trackingNumber ? { tracking_number: parsed.data.trackingNumber } : {})
+    })
     .eq("id", parsed.data.orderId);
 
   if (error) {

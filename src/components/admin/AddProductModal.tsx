@@ -42,6 +42,8 @@ const formSchema = z.object({
   isActive: z.boolean(),
   isCustomisable: z.boolean(),
   customisableFields: z.any(),
+  surchargeAmount: z.coerce.number().min(0).default(0),
+  isCustomOrder: z.boolean().default(false),
   imageFile: z
     .any()
     .refine((value) => value instanceof File && value.size > 0, {
@@ -70,6 +72,8 @@ export function AddProductModal() {
       isActive: true,
       isCustomisable: false,
       customisableFields: [],
+      surchargeAmount: 0,
+      isCustomOrder: false,
       imageFile: undefined,
     },
   });
@@ -85,6 +89,8 @@ export function AddProductModal() {
       formData.set("isActive", values.isActive ? "true" : "false");
       formData.set("isCustomisable", values.isCustomisable ? "true" : "false");
       formData.set("customisableFields", JSON.stringify(values.customisableFields));
+      formData.set("surchargeAmount", String(values.surchargeAmount));
+      formData.set("isCustomOrder", values.isCustomOrder ? "true" : "false");
       formData.set("imageFile", values.imageFile);
 
       const result = await createProductWithImageUpload(formData);
@@ -198,7 +204,7 @@ export function AddProductModal() {
               )}
             />
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="isActive"
@@ -216,6 +222,29 @@ export function AddProductModal() {
                   <FormItem className="flex items-center justify-between rounded-xl border border-border/70 bg-card/45 px-4 py-2.5">
                     <FormLabel className="font-semibold text-xs">Personalisation</FormLabel>
                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="isCustomOrder"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-xl border border-border/70 bg-card/45 px-4 py-2.5">
+                    <FormLabel className="font-semibold text-xs">Bespoke Commission</FormLabel>
+                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="surchargeAmount"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-[10px] font-bold uppercase tracking-widest opacity-60">Surcharge (INR)</FormLabel>
+                    <FormControl><Input type="number" className="h-9" {...field} /></FormControl>
                   </FormItem>
                 )}
               />
