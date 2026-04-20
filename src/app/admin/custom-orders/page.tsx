@@ -19,6 +19,8 @@ type CustomOrderRow = Pick<
   | "reference_image_url"
   | "status"
   | "created_at"
+  | "dimensions"
+  | "estimated_price"
 >;
 
 export default async function AdminCustomOrdersPage() {
@@ -27,7 +29,7 @@ export default async function AdminCustomOrdersPage() {
   const { data: ordersRaw } = await supabase
     .from("custom_orders")
     .select(
-      "id, full_name, email, vision, color_palette, palette_notes, reference_image_url, status, created_at"
+      "id, full_name, email, vision, color_palette, palette_notes, reference_image_url, status, created_at, dimensions, estimated_price"
     )
     .order("created_at", { ascending: false })
     .limit(260);
@@ -43,6 +45,8 @@ export default async function AdminCustomOrdersPage() {
       referenceImageUrl: order.reference_image_url,
       status: order.status,
       createdAt: order.created_at,
+      dimensions: order.dimensions,
+      estimatedPrice: Number(order.estimated_price || 0),
     })
   );
 

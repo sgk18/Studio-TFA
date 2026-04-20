@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { createProductWithImageUpload } from "@/app/admin/actions";
+import { CustomisationFieldBuilder } from "./CustomisationFieldBuilder";
 
 const MAX_PRODUCT_IMAGE_BYTES = 8 * 1024 * 1024;
 
@@ -37,11 +38,10 @@ const formSchema = z.object({
   category: z.string().trim().min(2, "Category is required."),
   price: z.coerce.number().min(0, "Price cannot be negative."),
   stock: z.coerce.number().int().min(0, "Stock cannot be negative."),
-  description: z
-    .string()
-    .trim()
-    .min(10, "Description must be at least 10 characters."),
+  description: z.string().trim().min(10, "Description must be at least 10 characters."),
   isActive: z.boolean(),
+  isCustomisable: z.boolean(),
+  customisableFields: z.any(),
   imageFile: z
     .any()
     .refine((value) => value instanceof File && value.size > 0, {
@@ -52,15 +52,14 @@ const formSchema = z.object({
     }),
 });
 
-type FormInputValues = z.input<typeof formSchema>;
-type FormValues = z.output<typeof formSchema>;
+type FormValues = z.infer<typeof formSchema>;
 
 export function AddProductModal() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<FormInputValues, unknown, FormValues>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
@@ -69,6 +68,8 @@ export function AddProductModal() {
       stock: 0,
       description: "",
       isActive: true,
+      isCustomisable: false,
+      customisableFields: [],
       imageFile: undefined,
     },
   });
@@ -82,6 +83,8 @@ export function AddProductModal() {
       formData.set("stock", String(values.stock));
       formData.set("description", values.description);
       formData.set("isActive", values.isActive ? "true" : "false");
+      formData.set("isCustomisable", values.isCustomisable ? "true" : "false");
+      formData.set("customisableFields", JSON.stringify(values.customisableFields));
       formData.set("imageFile", values.imageFile);
 
       const result = await createProductWithImageUpload(formData);
@@ -99,25 +102,21 @@ export function AddProductModal() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={<button type="button" className="action-pill-link px-4 py-2 text-xs" />}
-      >
-        <Plus className="h-3.5 w-3.5" />
-        Add Product
+      <DialogTrigger asChild>
+        <button type="button" className="action-pill-link px-4 py-2 text-xs gap-2">
+          <Plus className="h-3.5 w-3.5" />
+          Add Product
+        </button>
       </DialogTrigger>
 
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-heading text-3xl tracking-tight">
-            Add Product
-          </DialogTitle>
-          <DialogDescription>
-            Add a new product to inventory and upload its image directly to Supabase Storage.
-          </DialogDescription>
+          <DialogTitle className="font-heading text-3xl tracking-tight">Add Product</DialogTitle>
+          <DialogDescription>Add a new editorial piece to the gallery catalog.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form className="mt-4 space-y-5" onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="mt-4 space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -125,23 +124,18 @@ export function AddProductModal() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Title</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Product title" {...field} />
-                    </FormControl>
+                    <FormControl><Input placeholder="Product title" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="category"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <FormControl>
-                      <Input placeholder="books, journals, decor..." {...field} />
-                    </FormControl>
+                    <FormControl><Input placeholder="books, decor..." {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -155,41 +149,18 @@ export function AddProductModal() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Price (INR)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        name={field.name}
-                        ref={field.ref}
-                        onBlur={field.onBlur}
-                        value={typeof field.value === "number" ? field.value : 0}
-                        onChange={(event) => field.onChange(event.target.valueAsNumber)}
-                      />
-                    </FormControl>
+                    <FormControl><Input type="number" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="stock"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Stock</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="1"
-                        name={field.name}
-                        ref={field.ref}
-                        onBlur={field.onBlur}
-                        value={typeof field.value === "number" ? field.value : 0}
-                        onChange={(event) => field.onChange(event.target.valueAsNumber)}
-                      />
-                    </FormControl>
+                    <FormLabel>Inventory Stock</FormLabel>
+                    <FormControl><Input type="number" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -201,14 +172,8 @@ export function AddProductModal() {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      rows={4}
-                      placeholder="Share concise narrative and material details."
-                      {...field}
-                    />
-                  </FormControl>
+                  <FormLabel>Description / Story</FormLabel>
+                  <FormControl><Textarea rows={3} {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -224,10 +189,8 @@ export function AddProductModal() {
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={(event) => {
-                        field.onChange(event.target.files?.[0] ?? null);
-                      }}
-                      className="glass-input block w-full rounded-xl border px-4 py-2.5 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3.5 file:py-1.5 file:text-[11px] file:font-bold file:uppercase file:tracking-[0.14em] file:text-primary-foreground"
+                      onChange={(e) => field.onChange(e.target.files?.[0])}
+                      className="glass-input block w-full rounded-xl border px-4 py-2.5 text-sm file:mr-3 file:rounded-full file:border-0 file:bg-primary file:px-3 file:py-1 file:text-[10px] file:font-bold file:uppercase file:text-primary-foreground"
                     />
                   </FormControl>
                   <FormMessage />
@@ -235,29 +198,46 @@ export function AddProductModal() {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="isActive"
-              render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-xl border border-border/70 bg-card/45 px-4 py-3">
-                  <div>
-                    <p className="text-sm font-semibold">Active Product</p>
-                    <p className="text-xs text-muted-foreground">Inactive products stay hidden from storefront listings.</p>
-                  </div>
-                  <FormControl>
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-xl border border-border/70 bg-card/45 px-4 py-2.5">
+                    <FormLabel className="font-semibold text-xs">Active Listing</FormLabel>
+                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="isCustomisable"
+                render={({ field }) => (
+                  <FormItem className="flex items-center justify-between rounded-xl border border-border/70 bg-card/45 px-4 py-2.5">
+                    <FormLabel className="font-semibold text-xs">Personalisation</FormLabel>
+                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {form.watch("isCustomisable") && (
+              <FormField
+                control={form.control}
+                name="customisableFields"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <CustomisationFieldBuilder value={field.value} onChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
 
             <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Creating..." : "Create Product"}
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={isPending}>{isPending ? "Listing..." : "Add to Gallery"}</Button>
             </div>
           </form>
         </Form>
