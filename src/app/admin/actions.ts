@@ -109,6 +109,10 @@ export async function createProductWithImageUpload(formData: FormData) {
   const stock = Number(formData.get("stock") ?? 0);
   const description = String(formData.get("description") ?? "").trim();
   const isActive = String(formData.get("isActive") ?? "true") !== "false";
+  const isCustomisable = String(formData.get("isCustomisable") ?? "false") === "true";
+  const customisableFieldsRaw = formData.get("customisableFields");
+  const customisableFields = customisableFieldsRaw ? JSON.parse(String(customisableFieldsRaw)) : null;
+
   const imageFile = formData.get("imageFile");
 
   if (!(imageFile instanceof File) || imageFile.size === 0) {
@@ -131,6 +135,8 @@ export async function createProductWithImageUpload(formData: FormData) {
     description,
     image_url: null,
     is_active: isActive,
+    is_customisable: isCustomisable,
+    customisable_fields: customisableFields,
     metadata: {},
   });
 

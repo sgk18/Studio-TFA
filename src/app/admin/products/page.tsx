@@ -1,6 +1,8 @@
 import Image from "next/image";
+import { AlertCircle } from "lucide-react";
 
 import { AddProductModal } from "@/components/admin/AddProductModal";
+import { EditProductModal } from "@/components/admin/EditProductModal";
 import { AdminPagination } from "@/components/admin/AdminPagination";
 import {
   Table,
@@ -23,7 +25,7 @@ export const dynamic = "force-dynamic";
 
 type ProductRow = Pick<
   Database["public"]["Tables"]["products"]["Row"],
-  "id" | "title" | "category" | "price" | "stock" | "is_active" | "image_url" | "created_at"
+  "id" | "title" | "category" | "price" | "stock" | "is_active" | "image_url" | "created_at" | "is_customisable" | "customisable_fields" | "description"
 >;
 
 export default async function AdminProductsPage({
@@ -41,7 +43,7 @@ export default async function AdminProductsPage({
 
   const { data: productsRaw, count } = await supabase
     .from("products")
-    .select("id, title, category, price, stock, is_active, image_url, created_at", {
+    .select("id, title, category, price, stock, is_active, image_url, created_at, is_customisable, customisable_fields, description", {
       count: "exact",
     })
     .order("created_at", { ascending: false })
@@ -78,55 +80,81 @@ export default async function AdminProductsPage({
             <TableHead>Stock</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {products.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="h-36 text-center text-muted-foreground">
+              <TableCell colSpan={8} className="h-36 text-center text-muted-foreground">
                 No products found.
               </TableCell>
             </TableRow>
           ) : (
-            products.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell>
-                  <div className="relative h-14 w-12 overflow-hidden rounded-lg border border-border/70 bg-card/45">
-                    {product.image_url ? (
-                      <Image
-                        src={product.image_url}
-                        alt={product.title}
-                        fill
-                        sizes="48px"
-                        className="object-cover"
-                      />
-                    ) : null}
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium">{product.title}</TableCell>
-                <TableCell>{product.category}</TableCell>
-                <TableCell>{formatINR(product.price)}</TableCell>
-                <TableCell>{product.stock}</TableCell>
-                <TableCell>
-                  <span
-                    className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${
-                      product.is_active
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-slate-100 text-slate-700"
-                    }`}
-                  >
-                    {product.is_active ? "Active" : "Inactive"}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  {new Date(product.created_at).toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </TableCell>
-              </TableRow>
-            ))
+            products.map((product) => {
+              const isLowStock = product.stock > 0 && product.stock < 5;
+              const isOutOfStock = product.stock === 0;
+
+              return (
+                <TableRow key={product.id}>
+                  <TableCell>
+                    <div className="relative h-14 w-12 overflow-hidden rounded-lg border border-border/70 bg-card/45">
+                      {product.image_url ? (
+                        <Image
+                          src={product.image_url}
+                          alt={product.title}
+                          fill
+                          sizes="48px"
+                          className="object-cover"
+                        />
+                      ) : null}
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex flex-col">
+                      <span>{product.title}</span>
+                      {product.is_customisable && (
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-primary/70 mt-1">
+                          Personalisation Enabled
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>{product.category}</TableCell>
+                  <TableCell>{formatINR(product.price)}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className={isLowStock ? "text-amber-600 font-bold" : isOutOfStock ? "text-red-500 font-bold" : ""}>
+                        {product.stock}
+                      </span>
+                      {(isLowStock || isOutOfStock) && (
+                        <AlertCircle className={`h-3.5 w-3.5 ${isLowStock ? "text-amber-500" : "text-red-500"}`} />
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${
+                        product.is_active
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-slate-100 text-slate-700"
+                      }`}
+                    >
+                      {product.is_active ? "Active" : "Archived"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-xs text-foreground/60">
+                    {new Date(product.created_at).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <EditProductModal product={product} />
+                  </TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>
