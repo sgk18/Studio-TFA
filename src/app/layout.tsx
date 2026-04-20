@@ -12,6 +12,7 @@ import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { createClient } from "@/lib/supabase/server";
 import { resolveViewerRole } from "@/lib/security/viewerRole";
 import { CartSync } from "@/components/CartSync";
+import { AuthListener } from "@/components/AuthListener";
 import { siteConfig } from "@/config/site";
 
 const bodoni = Bodoni_Moda({
@@ -97,6 +98,7 @@ export default async function RootLayout({
             <WhatsAppFloat />
             <CookieConsentBanner />
             <CartSync />
+            <AuthListener />
           </CategoryThemeProvider>
         </LenisProvider>
         <Toaster />

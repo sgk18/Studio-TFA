@@ -46,6 +46,8 @@ create table if not exists public.profiles (
   phone text,
   default_shipping_address jsonb not null default '{}'::jsonb,
   role text not null default 'customer' check (role in ('customer', 'staff', 'admin', 'wholesale')),
+  is_first_login boolean not null default true,
+  welcome_email_sent boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

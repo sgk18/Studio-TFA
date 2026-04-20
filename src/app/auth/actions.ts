@@ -1,8 +1,9 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { sendWelcomeEmail, sendLoginNotificationEmail } from "@/lib/authEmails";
 
 function getSafeNextPath(value: FormDataEntryValue | null | undefined): string {
   if (typeof value !== "string") return "/";
@@ -99,7 +100,7 @@ export async function signIn(formData: FormData) {
   const password = formData.get("password") as string;
   const nextPath = getSafeNextPath(formData.get("next"));
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     redirect(
@@ -108,6 +109,11 @@ export async function signIn(formData: FormData) {
       )}`
     );
   }
+
+  // Fire-and-forget login notification
+  const siteUrl = await getSiteUrl();
+  const name = signInData?.user?.user_metadata?.full_name as string ?? email;
+  sendLoginNotificationEmail({ name, email, method: "password", siteUrl });
 
   redirect(nextPath);
 }
@@ -141,6 +147,9 @@ export async function signUp(formData: FormData) {
   if (error) {
     redirect(`/register?error=${encodeURIComponent(error.message)}`);
   }
+
+  // Fire-and-forget welcome email
+  sendWelcomeEmail({ name: full_name || email, email, siteUrl });
 
   redirect("/register?success=check_email");
 }

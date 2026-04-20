@@ -85,6 +85,8 @@ export interface Database {
           phone: string | null;
           default_shipping_address: Json;
           role: "customer" | "staff" | "admin" | "wholesale";
+          is_first_login: boolean;
+          welcome_email_sent: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -95,6 +97,8 @@ export interface Database {
           phone?: string | null;
           default_shipping_address?: Json;
           role?: "customer" | "staff" | "admin" | "wholesale";
+          is_first_login?: boolean;
+          welcome_email_sent?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -105,6 +109,8 @@ export interface Database {
           phone?: string | null;
           default_shipping_address?: Json;
           role?: "customer" | "staff" | "admin" | "wholesale";
+          is_first_login?: boolean;
+          welcome_email_sent?: boolean;
           created_at?: string;
           updated_at?: string;
         };
