@@ -12,6 +12,7 @@ import { StarRating } from "@/components/StarRating";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sparkles, Info, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 interface ProductDetailsClientProps {
   product: {
