@@ -13,6 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Sparkles, Info, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface ProductDetailsClientProps {
   product: {
@@ -210,7 +211,7 @@ export function ProductDetailsClient({
             </div>
 
             <div className="pt-6">
-              <Accordion type="single" collapsible className="w-full">
+              <Accordion className="w-full">
                 <AccordionItem value="shipping" className="border-border/50">
                   <AccordionTrigger className="text-[10px] font-bold uppercase tracking-[0.2em] py-5">
                     Studio Logistics & Shipping

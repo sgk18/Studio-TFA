@@ -40,12 +40,15 @@ export async function submitGalleryReview(formData: FormData) {
   }
 
   // 1. Verify Purchase Gate
-  const { data: purchaseCount, error: purchaseError } = await supabase
+  const { data: purchaseCountData, error: purchaseError } = await supabase
     .from("orders")
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id)
     .containedBy("items", JSON.stringify([{ product_id: productId }]))
     .in("payment_status", ["captured", "authorized"]);
+
+  const purchaseCount = purchaseCountData as any;
+
 
   if (purchaseError) {
     return { error: "Verification failed. Please try again." };
@@ -56,8 +59,9 @@ export async function submitGalleryReview(formData: FormData) {
   }
 
   // 2. Insert Review (Draft Status)
-  const { data: insertedReview, error: insertError } = await supabase
+  const { data: insertedReviewRaw, error: insertError } = await supabase
     .from("reviews")
+    // @ts-expect-error Supabase map typing drops to never
     .insert({
       product_id: productId,
       user_id: user.id,
@@ -70,11 +74,14 @@ export async function submitGalleryReview(formData: FormData) {
     .select("id")
     .single();
 
+  const insertedReview = insertedReviewRaw as any;
+
   if (insertError) {
     return { error: insertError.message };
   }
 
   const reviewId = insertedReview.id;
+
 
   // 3. Handle Optional Photo
   if (photo instanceof File && photo.size > 0) {
@@ -123,14 +130,14 @@ export async function checkProductPurchaseAction(productId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return false;
 
-  const { count } = await supabase
+  const { count: purchaseCount } = await supabase
     .from("orders")
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id)
     .containedBy("items", JSON.stringify([{ product_id: productId }]))
     .in("payment_status", ["captured", "authorized"]);
 
-  return (count ?? 0) > 0;
+  return (purchaseCount as any ?? 0) > 0;
 }
 
 // ── INTERNAL HELPERS ─────────────────────────────────────────────────────────
@@ -177,6 +184,7 @@ async function attachPhotoReferenceToReview(
   for (const column of REVIEW_PHOTO_COLUMN_CANDIDATES) {
     const { error } = await supabase
       .from("reviews")
+      // @ts-expect-error Supabase map typing drops to never
       .update({ [column]: publicUrl })
       .eq("id", reviewId);
 

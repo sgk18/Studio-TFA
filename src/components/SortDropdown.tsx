@@ -15,7 +15,8 @@ export const SortDropdown = () => {
   const searchParams = useSearchParams();
   const pathname = usePathname();
 
-  const handleSortChange = (value: string) => {
+  const handleSortChange = (value: string | null) => {
+    if (!value) return;
     const params = new URLSearchParams(searchParams.toString());
     if (value === "featured") {
       params.delete("sort");

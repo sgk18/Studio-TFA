@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from("categories")
     .select("id");
 
-  const categoryRoutes = (categories || []).map((cat) => ({
+  const categoryRoutes = (categories as any[] || []).map((cat) => ({
     url: `${EXTERNAL_DATA_URL}/c/${cat.id}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
@@ -39,7 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .select("id, updated_at")
     .eq("is_archived", false);
 
-  const productRoutes = (products || []).map((prod) => ({
+  const productRoutes = (products as any[] || []).map((prod) => ({
     url: `${EXTERNAL_DATA_URL}/product/${prod.id}`,
     lastModified: prod.updated_at ? new Date(prod.updated_at) : new Date(),
     changeFrequency: "daily" as const,

@@ -68,6 +68,7 @@ type CartStore = {
   // Computed
   getSubtotal: () => number;
   getDiscountAmount: () => number;
+  getGiftCardAmount: () => number;
   getTotal: () => number;
   getCount: () => number;
   getFreeShippingRemaining: (target?: number) => number;
@@ -87,6 +88,7 @@ export const useCartStore = create<CartStore>()(
       items: [],
       isOpen: false,
       coupon: null,
+      giftCard: null,
       isGift: false,
       giftMessage: "",
 

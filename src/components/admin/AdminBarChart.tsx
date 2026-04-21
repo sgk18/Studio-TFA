@@ -40,7 +40,7 @@ export function AdminBarChart({ labels, values }: AdminBarChartProps) {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (context) => `INR ${context.parsed.x.toLocaleString("en-IN")}`,
+          label: (context) => `INR ${(context.parsed.x ?? 0).toLocaleString("en-IN")}`,
         },
       },
     },

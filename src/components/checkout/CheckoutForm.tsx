@@ -19,6 +19,7 @@ import {
 } from "@/lib/commerce";
 import { formatINR } from "@/lib/currency";
 import { useCartStore } from "@/store/cartStore";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -138,6 +139,7 @@ export function CheckoutForm({
   );
 
   const [callbackError, setCallbackError] = useState<string>("");
+  const [callbackMessage, setCallbackMessage] = useState<string>("");
   const [isLaunchingPayment, startLaunchingPayment] = useTransition();
 
   const [giftCardCode, setGiftCardCode] = useState("");

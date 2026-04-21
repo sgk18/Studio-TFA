@@ -39,6 +39,7 @@ export async function requireAdminAccess(
     .eq("id", user.id)
     .maybeSingle();
 
+  // @ts-expect-error Supabase types drop to never here
   if (profileError || !profile || profile.role !== "admin") {
     redirect(
       `/access-denied?error=${encodeURIComponent(

@@ -70,7 +70,7 @@ export function ProductFormDialog({
   const [isPending, setIsPending] = useState(false);
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       title: "",
       category: "",
@@ -157,7 +157,7 @@ export function ProductFormDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-4">
+          <form onSubmit={form.handleSubmit(onSubmit as any)} className="space-y-6 mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}

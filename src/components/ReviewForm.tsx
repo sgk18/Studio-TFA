@@ -2,38 +2,45 @@
 
 import { useState, useTransition } from "react";
 import { StarRating } from "@/components/StarRating";
-import { submitReview } from "@/app/product/actions";
+import { submitGalleryReview } from "@/app/product/actions";
 import { toast } from "sonner";
 
 interface ReviewFormProps {
   productId: string;
-  onReviewSubmitted?: () => void;
+  orderId?: string;
+  onSuccess?: () => void;
 }
 
-export function ReviewForm({ productId, onReviewSubmitted }: ReviewFormProps) {
+export function ReviewForm({ productId, orderId, onSuccess }: ReviewFormProps) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
-      toast.error("Please select a star rating.");
+      toast.error("Please provide a rating.");
       return;
     }
 
     startTransition(async () => {
-      const result = await submitReview({ productId, rating, comment });
-      if (result?.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Review submitted — thank you!");
+      const formData = new FormData();
+      formData.append("productId", productId);
+      formData.append("rating", rating.toString());
+      formData.append("comment", comment);
+      if (orderId) formData.append("orderId", orderId);
+
+      const result = await submitGalleryReview(formData);
+      if (result.success) {
+        toast.success(result.message || "Review submitted! Thank you for your feedback.");
         setRating(0);
         setComment("");
-        onReviewSubmitted?.();
+        onSuccess?.();
+      } else {
+        toast.error(result.error || "Submission failed.");
       }
     });
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className="glass-shell rounded-2xl p-6 space-y-5">

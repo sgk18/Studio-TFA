@@ -303,7 +303,7 @@ type InvoiceLineItem = {
   quantity: number;
   unitPrice: number;
   lineTotal: number;
-  customisations?: Record<string, string>;
+  customisations: Record<string, string> | undefined;
 };
 
 function parseInvoiceLineItems(input: unknown): InvoiceLineItem[] {
@@ -342,7 +342,7 @@ function parseInvoiceLineItems(input: unknown): InvoiceLineItem[] {
         customisations,
       };
     })
-    .filter((item): item is InvoiceLineItem => item !== null);
+    .filter((item): item is InvoiceLineItem => item !== null) as InvoiceLineItem[];
 }
 
 function parseShippingAddress(input: unknown) {

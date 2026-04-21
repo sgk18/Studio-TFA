@@ -73,7 +73,7 @@ export const FilterSidebar = ({
           </button>
         </div>
 
-        <Accordion type="multiple" defaultValue={["category", "price", "material"]} className="w-full">
+        <Accordion multiple defaultValue={["category", "price", "material"]} className="w-full">
           {/* Category Filter */}
           <AccordionItem value="category" className="border-none">
             <AccordionTrigger className="py-3 text-sm font-semibold hover:no-underline">

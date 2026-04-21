@@ -69,7 +69,7 @@ export async function proxy(request: NextRequest) {
 
     if (allowedIpsStr && isProduction) {
       const allowedIps = allowedIpsStr.split(",").map((ip) => ip.trim());
-      const clientIp = request.headers.get("x-forwarded-for") || request.ip || "";
+      const clientIp = request.headers.get("x-forwarded-for") || (request as any).ip || "";
       const ipToCheck = clientIp.split(",")[0]?.trim();
 
       if (ipToCheck && !allowedIps.includes(ipToCheck)) {

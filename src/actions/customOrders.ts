@@ -154,6 +154,7 @@ export async function submitCustomOrderAction(
 export async function updateCustomOrderStatusAction(input: {
   orderId: string;
   status: CustomOrderStatus;
+  trackingNumber?: string;
 }): Promise<{ status: "success" | "error"; message: string }> {
   const parsed = statusUpdateSchema.safeParse(input);
 

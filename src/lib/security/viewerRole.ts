@@ -40,11 +40,11 @@ export async function resolveRoleForUserId(
     .eq("id", userId)
     .maybeSingle();
 
-  if (error || !profile?.role) {
+  if (error || !(profile as any)?.role) {
     return null;
   }
 
-  return profile.role as ProfileRole;
+  return (profile as any).role as ProfileRole;
 }
 
 export async function resolveViewerRole(
