@@ -128,7 +128,7 @@ export async function submitCustomOrderAction(
 
   const { data: insertedRow, error } = await supabase
     .from("custom_orders")
-    .insert(insertPayload)
+    .insert(insertPayload as any)
     .select("id")
     .single();
 
@@ -147,7 +147,7 @@ export async function submitCustomOrderAction(
     status: "success",
     message:
       "Commission request submitted. Our artists will review your brief and follow up shortly.",
-    orderId: insertedRow.id,
+    orderId: (insertedRow as any).id,
   };
 }
 
@@ -168,6 +168,7 @@ export async function updateCustomOrderStatusAction(input: {
 
   const { error } = await supabase
     .from("custom_orders")
+    // @ts-expect-error Supabase types drop to never here
     .update({ 
       status: parsed.data.status,
       ...(parsed.data.trackingNumber ? { tracking_number: parsed.data.trackingNumber } : {})

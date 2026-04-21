@@ -38,7 +38,7 @@ async function DiscountsContent() {
       .limit(100),
   ]);
 
-  const codes = (Array.isArray(codesRaw) ? codesRaw : []).map((c) => ({
+  const codes = (Array.isArray(codesRaw) ? codesRaw : []).map((c: any) => ({
     id: String(c.id),
     code: String(c.code),
     type: c.type as "percent" | "flat",
@@ -51,7 +51,7 @@ async function DiscountsContent() {
     createdAt: String(c.created_at),
   }));
 
-  const giftCards = (Array.isArray(cardsRaw) ? cardsRaw : []).map((g) => ({
+  const giftCards = (Array.isArray(cardsRaw) ? cardsRaw : []).map((g: any) => ({
     id: String(g.id),
     code: String(g.code),
     initialValue: Number(g.initial_value),

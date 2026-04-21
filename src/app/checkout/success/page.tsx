@@ -11,13 +11,15 @@ export const dynamic = "force-dynamic";
 
 async function OrderDetails({ orderId }: { orderId: string }) {
   const supabase = await createClient();
-  const { data: order, error } = await supabase
+  const { data, error } = await supabase
     .from("orders")
     .select("*")
     .eq("id", orderId)
     .single();
 
-  if (error || !order) return notFound();
+  if (error || !data) return notFound();
+  const order = data as any;
+
 
   const scripture = getRandomScripture();
 

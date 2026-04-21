@@ -69,7 +69,7 @@ async function ReviewsContent({
     );
   }
 
-  const reviews: AdminReviewRow[] = (Array.isArray(rawReviews) ? rawReviews : [])
+  const reviews: AdminReviewRow[] = (Array.isArray(rawReviews) ? (rawReviews as any[]) : [])
     .map((row) => {
       if (!isRecord(row)) return null;
 

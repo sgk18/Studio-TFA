@@ -70,7 +70,7 @@ export default async function ProfileInvoicePage({
     notFound();
   }
 
-  const order = orderRaw as ProfileInvoiceRow;
+  const order = orderRaw as any;
   const shippingAddress = parseShippingAddress(order.shipping_address);
   const lineItems = parseInvoiceLineItems(order.line_items);
 

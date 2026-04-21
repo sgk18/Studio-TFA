@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Early exit: already sent
-    if (profile.welcome_email_sent) {
+    if ((profile as any).welcome_email_sent) {
       return NextResponse.json({ success: true, skipped: true });
     }
 

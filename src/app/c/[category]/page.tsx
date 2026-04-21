@@ -43,7 +43,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
     supabase.from("products").select("*").eq("category", theme.name),
     resolveViewerRole(supabase),
   ]);
-  const validatedProducts = sanitizeProductCards(products).map((product) => ({
+  const validatedProducts = sanitizeProductCards(products as any).map((product) => ({
     ...product,
     price: resolveDisplayPrice(Number(product.price) || 0, viewerRole.isWholesale),
   }));

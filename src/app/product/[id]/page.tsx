@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 
   const supabase = await createClient();
-  const { data: product } = await supabase.from('products').select('title, category').eq('id', id).single();
+  const { data: product } = await supabase.from('products').select('title, category').eq('id', id).single() as any;
   return {
     title:
       product && typeof product.title === "string"
@@ -103,7 +103,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const role = user ? await resolveRoleForUserId(supabase, user.id) : null;
   const isWholesale = isWholesaleRole(role);
 
-  const product = productRaw;
+  const product = productRaw as any;
   const productTitle = readFirstString(product, ["title"]) || "Untitled Product";
   const productCategory = resolveProductCategory(product);
   const story =

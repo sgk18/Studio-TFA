@@ -295,16 +295,19 @@ export async function prepareCheckoutAction(
 
     if (!dbPromo) {
       promoError = "Promo code is invalid or inactive.";
-    } else if (dbPromo.expires_at && new Date(dbPromo.expires_at) < new Date()) {
-      promoError = "This promo code has expired.";
-    } else if (dbPromo.max_uses !== null && dbPromo.used_count >= dbPromo.max_uses) {
-      promoError = "This promo code limit has been reached.";
-    } else if (subtotal < dbPromo.min_order) {
-      promoError = `Minimum order of ₹${dbPromo.min_order} required.`;
     } else {
-      promoDiscount = dbPromo.type === "percent"
-        ? Math.round((subtotal * dbPromo.value) / 100)
-        : Math.min(dbPromo.value, subtotal);
+      const dbPromoAny = dbPromo as any;
+      if (dbPromoAny.expires_at && new Date(dbPromoAny.expires_at) < new Date()) {
+        promoError = "This promo code has expired.";
+      } else if (dbPromoAny.max_uses !== null && dbPromoAny.used_count >= dbPromoAny.max_uses) {
+        promoError = "This promo code limit has been reached.";
+      } else if (subtotal < dbPromoAny.min_order) {
+        promoError = `Minimum order of ₹${dbPromoAny.min_order} required.`;
+      } else {
+        promoDiscount = dbPromoAny.type === "percent"
+          ? Math.round((subtotal * dbPromoAny.value) / 100)
+          : Math.min(dbPromoAny.value, subtotal);
+      }
     }
   }
 
@@ -399,7 +402,7 @@ export async function prepareCheckoutAction(
 
   const { data: insertedOrder, error: orderError } = await supabase
     .from("orders")
-    .insert(orderPayload)
+    .insert(orderPayload as any)
     .select("id")
     .single();
 

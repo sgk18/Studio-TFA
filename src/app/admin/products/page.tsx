@@ -49,7 +49,7 @@ export default async function AdminProductsPage({
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  const products = (productsRaw ?? []) as ProductRow[];
+  const products = (productsRaw as any[] ?? []) as ProductRow[];
   const pages = totalPages(count ?? 0, ADMIN_PAGE_SIZE);
 
   return (

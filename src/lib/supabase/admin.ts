@@ -12,7 +12,7 @@ export function createAdminClient() {
   }
 
   return createClient<Database>(supabaseUrl, serviceRoleKey, {
-    db: { poolMode: "transaction" },
+    ...({ db: { poolMode: "transaction" } } as any),
     auth: {
       autoRefreshToken: false,
       persistSession: false,

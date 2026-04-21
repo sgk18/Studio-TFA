@@ -20,7 +20,7 @@ export default async function CollectionsPage() {
     supabase.from("products").select("id, title, slug, price, image_url, category, is_active, is_archived").eq("is_archived", false).eq("is_active", true),
     resolveViewerRole(supabase),
   ]);
-  const validatedProducts = sanitizeProductCards(products).map((product) => ({
+  const validatedProducts = sanitizeProductCards(products as any).map((product) => ({
     ...product,
     price: resolveDisplayPrice(Number(product.price) || 0, viewerRole.isWholesale),
   }));

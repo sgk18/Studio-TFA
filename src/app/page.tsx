@@ -25,7 +25,7 @@ export default async function Home() {
     supabase.from("products").select("id, title, slug, price, image_url, category, is_archived, is_active, is_custom_order").eq("is_archived", false).eq("is_active", true).limit(3),
     resolveViewerRole(supabase),
   ]);
-  const featuredProducts = sanitizeProductCards(products)
+  const featuredProducts = sanitizeProductCards(products as any)
     .slice(0, 3)
     .map((product) => ({
       ...product,

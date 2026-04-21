@@ -44,7 +44,7 @@ export default async function ProfilePage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const profile = (profileRaw ?? null) as ProfileRow | null;
+  const profile = (profileRaw as any ?? null) as ProfileRow | null;
   const defaultShippingAddress =
     profileRaw && typeof profileRaw === "object" && !Array.isArray(profileRaw)
       ? (profileRaw as Record<string, unknown>).default_shipping_address

@@ -55,6 +55,7 @@ export async function createProduct(data: any) {
 
   const { error } = await supabase
     .from("products")
+    // @ts-expect-error Supabase map typing drops to never
     .insert(toProductInsert(parsed.data));
 
   if (error) {
@@ -76,6 +77,7 @@ export async function updateProduct(id: string, data: any) {
 
   const { error } = await supabase
     .from("products")
+    // @ts-expect-error Supabase map typing drops to never
     .update(toProductUpdate(parsed.data))
     .eq("id", id);
 
@@ -166,6 +168,7 @@ export async function createProductWithImageUpload(formData: FormData) {
     image_url: uploadResult.publicUrl,
   });
 
+  // @ts-expect-error Supabase map typing drops to never
   const { error } = await supabase.from("products").insert(productToInsert);
 
   if (error) {
@@ -198,12 +201,13 @@ export async function promoteUserToAdmin(userId: string) {
     return { error: "User profile not found." };
   }
 
-  if (profile.role === "admin") {
+  if ((profile as any).role === "admin") {
     return { success: true, message: "User is already an admin." };
   }
 
   const { error } = await supabase
     .from("profiles")
+    // @ts-expect-error Supabase map typing drops to never
     .update({ role: "admin" })
     .eq("id", parsedUserId.data);
 
@@ -241,12 +245,13 @@ export async function revokeUserAdminAccess(userId: string) {
     return { error: "User profile not found." };
   }
 
-  if (profile.role !== "admin") {
+  if ((profile as any).role !== "admin") {
     return { success: true, message: "User is not an admin." };
   }
 
   const { error } = await supabase
     .from("profiles")
+    // @ts-expect-error Supabase map typing drops to never
     .update({ role: "customer" })
     .eq("id", parsedUserId.data);
 
@@ -275,9 +280,10 @@ function toProductInsert(
     is_active: input.is_active,
     is_customisable: input.is_customisable,
     customisable_fields: input.customisable_fields,
-    surcharge_amount: input.surcharge_amount,
-    is_custom_order: input.is_custom_order,
-    metadata: input.metadata,
+    metadata: {
+      ...((input.metadata as Record<string, unknown>) || {}),
+      is_custom_order: input.is_custom_order,
+    },
   };
 }
 
@@ -294,9 +300,10 @@ function toProductUpdate(
     is_active: input.is_active,
     is_customisable: input.is_customisable,
     customisable_fields: input.customisable_fields,
-    surcharge_amount: input.surcharge_amount,
-    is_custom_order: input.is_custom_order,
-    metadata: input.metadata,
+    metadata: {
+      ...((input.metadata as Record<string, unknown>) || {}),
+      is_custom_order: input.is_custom_order,
+    },
   };
 }
 

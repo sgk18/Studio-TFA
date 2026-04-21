@@ -47,7 +47,7 @@ export default async function AdminOrdersPage({
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  const orders: AdminOrderRow[] = ((ordersRaw ?? []) as OrderRow[]).map((order) => ({
+  const orders: AdminOrderRow[] = ((ordersRaw as any[] ?? []) as OrderRow[]).map((order) => ({
     id: order.id,
     customerEmail: resolveCustomerEmail(order),
     status: order.status,

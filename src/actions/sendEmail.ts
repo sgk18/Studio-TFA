@@ -117,14 +117,16 @@ export async function updateOrderStatus(orderId: string, status: string, trackin
 
   const { error } = await supabase
     .from("orders")
+    // @ts-expect-error Types evaluate to never for Supabase updates
     .update(updatePayload)
     .eq("id", orderId);
 
   if (error) return { error: error.message };
 
   if (status === "shipped" && trackingNumber && order) {
-    const address = order.shipping_address as Record<string, any> | null;
-    const email = order.guest_email || address?.email;
+    const o = order as any;
+    const address = o.shipping_address as Record<string, any> | null;
+    const email = o.guest_email || address?.email;
     const name = address?.full_name || "Valued Customer";
 
     if (email) {

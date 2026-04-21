@@ -44,7 +44,7 @@ export default async function AdminReturnsPage({
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  const returns = (returnsRaw ?? []) as ReturnRow[];
+  const returns = (returnsRaw as any[] ?? []) as ReturnRow[];
   const pages = totalPages(count ?? 0, ADMIN_PAGE_SIZE);
 
   return (

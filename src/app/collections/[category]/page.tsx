@@ -59,7 +59,7 @@ export default async function CategoryCollectionsPage({
   const [{ data: facetRows }, viewerRole] = await Promise.all([
     supabase
       .from("products")
-      .select("id, category, material, story, price"),
+      .select("id, category, story, price"),
     resolveViewerRole(supabase),
   ]);
 
@@ -69,7 +69,7 @@ export default async function CategoryCollectionsPage({
     PRICE_RANGE_FILTERS.map((range) => [range.id, 0])
   );
 
-  for (const item of Array.isArray(facetRows) ? facetRows : []) {
+  for (const item of Array.isArray(facetRows) ? (facetRows as any[]) : []) {
     if (!isRecord(item)) continue;
 
     const categoryLabel = resolveProductCategory(item);

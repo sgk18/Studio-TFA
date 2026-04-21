@@ -19,8 +19,6 @@ type CustomOrderRow = Pick<
   | "reference_image_url"
   | "status"
   | "created_at"
-  | "dimensions"
-  | "estimated_price"
 >;
 
 export default async function AdminCustomOrdersPage() {
@@ -29,12 +27,12 @@ export default async function AdminCustomOrdersPage() {
   const { data: ordersRaw } = await supabase
     .from("custom_orders")
     .select(
-      "id, full_name, email, vision, color_palette, palette_notes, reference_image_url, status, created_at, dimensions, estimated_price"
+      "id, full_name, email, vision, color_palette, palette_notes, reference_image_url, status, created_at"
     )
     .order("created_at", { ascending: false })
     .limit(260);
 
-  const initialOrders: AdminCustomOrderCard[] = ((ordersRaw ?? []) as CustomOrderRow[]).map(
+  const initialOrders: AdminCustomOrderCard[] = ((ordersRaw as any[] ?? []) as CustomOrderRow[]).map(
     (order) => ({
       id: order.id,
       fullName: order.full_name,
@@ -45,8 +43,6 @@ export default async function AdminCustomOrdersPage() {
       referenceImageUrl: order.reference_image_url,
       status: order.status,
       createdAt: order.created_at,
-      dimensions: order.dimensions,
-      estimatedPrice: Number(order.estimated_price || 0),
     })
   );
 

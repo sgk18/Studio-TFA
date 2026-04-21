@@ -45,32 +45,33 @@ export async function validateCouponAction(payload: {
     return { valid: false, error: "Coupon code not found or inactive." };
   }
 
-  if (data.expires_at && new Date(data.expires_at) < new Date()) {
+  const discount = data as any;
+  if (discount.expires_at && new Date(discount.expires_at) < new Date()) {
     return { valid: false, error: "This coupon has expired." };
   }
 
-  if (data.max_uses !== null && data.used_count >= data.max_uses) {
+  if (discount.max_uses !== null && discount.used_count >= discount.max_uses) {
     return { valid: false, error: "This coupon has reached its usage limit." };
   }
 
-  if (parsed.data.subtotal < data.min_order) {
+  if (parsed.data.subtotal < discount.min_order) {
     return {
       valid: false,
-      error: `Minimum order of ₹${data.min_order} required for this coupon.`,
+      error: `Minimum order of ₹${discount.min_order} required for this coupon.`,
     };
   }
 
   const discountAmount =
-    data.type === "percent"
-      ? Math.round((parsed.data.subtotal * data.value) / 100)
-      : Math.min(data.value, parsed.data.subtotal);
+    discount.type === "percent"
+      ? Math.round((parsed.data.subtotal * discount.value) / 100)
+      : Math.min(discount.value, parsed.data.subtotal);
 
   return {
     valid: true,
     discountAmount,
-    type: data.type as "percent" | "flat",
-    value: data.value,
-    code: data.code,
+    type: discount.type as "percent" | "flat",
+    value: discount.value,
+    code: discount.code,
   };
 }
 
@@ -102,7 +103,7 @@ export async function createDiscountCodeAction(payload: unknown) {
     max_uses: parsed.data.maxUses,
     expires_at: parsed.data.expiresAt,
     is_active: parsed.data.isActive,
-  });
+  } as any);
 
   if (error) {
     if (error.code === "23505") return { error: "That code already exists." };
@@ -120,6 +121,7 @@ export async function toggleDiscountCodeAction(id: string, isActive: boolean) {
 
   const { error } = await supabase
     .from("discount_codes")
+    // @ts-expect-error Supabase map typing drops to never
     .update({ is_active: isActive })
     .eq("id", id);
 
@@ -129,15 +131,12 @@ export async function toggleDiscountCodeAction(id: string, isActive: boolean) {
   return { success: true };
 }
 
-// ─── Admin: Delete a discount code ───────────────────────────────────────────
-
 export async function deleteDiscountCodeAction(id: string) {
   const { supabase } = await requireAdminAccess({ from: "/admin/discounts" });
 
   const { error } = await supabase.from("discount_codes").delete().eq("id", id);
 
   if (error) return { error: error.message };
-
   revalidatePath("/admin/discounts");
   return { success: true };
 }
@@ -174,7 +173,7 @@ export async function createGiftCardAction(payload: unknown) {
     recipient_email: parsed.data.recipientEmail,
     expires_at: parsed.data.expiresAt,
     is_redeemed: false,
-  });
+  } as any);
 
   if (error) return { error: error.message };
 
@@ -216,17 +215,18 @@ export async function validateGiftCardAction(payload: {
     return { valid: false, error: "Gift card not found or already fully redeemed." };
   }
 
-  if (data.expires_at && new Date(data.expires_at) < new Date()) {
+  const card = data as any;
+  if (card.expires_at && new Date(card.expires_at) < new Date()) {
     return { valid: false, error: "This gift card has expired." };
   }
 
-  if (data.remaining_value <= 0) {
+  if (card.remaining_value <= 0) {
     return { valid: false, error: "This gift card has no remaining balance." };
   }
 
   return {
     valid: true,
-    remainingValue: Number(data.remaining_value),
-    code: data.code,
+    remainingValue: Number(card.remaining_value),
+    code: card.code,
   };
 }

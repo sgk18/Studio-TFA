@@ -39,8 +39,8 @@ export async function getDashboardStatsAction(dateRange?: { from: string; to: st
       .eq("status", "pending")
   ]);
 
-  const todayRevenue = (todayOrders ?? []).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
-  const monthRevenue = (monthOrders ?? []).reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
+  const todayRevenue = (todayOrders ?? []).reduce((sum, o) => sum + Number((o as any).total_amount || 0), 0);
+  const monthRevenue = (monthOrders ?? []).reduce((sum, o) => sum + Number((o as any).total_amount || 0), 0);
 
   // 2. Chart Data: Monthly Revenue (Last 12 Months)
   const twelveMonthsAgo = startOfMonth(subMonths(now, 11)).toISOString();
@@ -139,7 +139,7 @@ export async function getInventoryValuationReport() {
     .from("products")
     .select("title, category, price, stock, is_active");
 
-  return products?.map(p => ({
+  return products?.map((p: any) => ({
     "Product Name": p.title,
     "Category": p.category,
     "Unit Price (INR)": p.price,
@@ -158,7 +158,7 @@ export async function getAllOrdersReport(dateRange: { from: string; to: string }
     .lte("created_at", dateRange.to)
     .order("created_at", { ascending: false });
 
-  return orders?.map(o => {
+  return orders?.map((o: any) => {
     const address = o.shipping_address as any;
     return {
       "Date": format(new Date(o.created_at), "yyyy-MM-dd HH:mm"),

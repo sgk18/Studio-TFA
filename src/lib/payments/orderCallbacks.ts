@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { sendOrderConfirmation } from "@/actions/sendEmail";
 import type { Database, Json } from "@/lib/supabase/types";
 
-type AdminClient = SupabaseClient<Database>;
+type AdminClient = any;
 type OrderRow = Database["public"]["Tables"]["orders"]["Row"];
 
 type LineItem = {

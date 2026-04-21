@@ -48,7 +48,7 @@ export default async function WholesalePage() {
     .order("created_at", { ascending: false })
     .limit(12);
 
-  const products = ((data ?? []) as WholesaleProduct[]).map((product) => ({
+  const products = ((data as any[] ?? []) as WholesaleProduct[]).map((product) => ({
     ...product,
     wholesalePrice: resolveDisplayPrice(Number(product.price) || 0, true),
   }));

@@ -50,7 +50,7 @@ export default async function AdminUsersPage({
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  const users: AdminUserRow[] = ((profilesRaw ?? []) as ProfileRow[]).map((profile) => ({
+  const users: AdminUserRow[] = ((profilesRaw as any[] ?? []) as ProfileRow[]).map((profile) => ({
     id: profile.id,
     email: profile.email,
     fullName: profile.full_name,
