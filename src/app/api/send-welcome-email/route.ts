@@ -33,6 +33,12 @@ export async function POST(req: NextRequest) {
 
     // Security: verify this userId actually exists in profiles
     const supabase = createAdminClient();
+    
+    if (!supabase) {
+      console.warn("[api/send-welcome-email] Admin client not available.");
+      return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+    }
+
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("id, welcome_email_sent, is_first_login")
