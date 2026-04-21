@@ -44,6 +44,17 @@ export async function ProductGrid({
   sort = "featured",
 }: ProductGridProps) {
   const supabase = createAdminClient();
+
+  if (!supabase) {
+    return (
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="glass-shell h-[400px] animate-pulse rounded-[1.4rem]" />
+        ))}
+      </div>
+    );
+  }
+
   const [{ data }, viewerRole] = await Promise.all([
     supabase
       .from("products")

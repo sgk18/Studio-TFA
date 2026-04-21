@@ -20,20 +20,9 @@ export async function resolveRoleForUserId(
   supabase: ServerClient,
   userId: string
 ): Promise<ProfileRole | null> {
-  const profileQueryClient = supabase as unknown as {
-    from: (table: "profiles") => {
-      select: (columns: "role") => {
-        eq: (column: "id", value: string) => {
-          maybeSingle: () => Promise<{
-            data: { role: ProfileRole | null } | null;
-            error: { message?: string } | null;
-          }>;
-        };
-      };
-    };
-  };
-
   const adminClient = createAdminClient();
+  if (!adminClient) return null;
+
   const { data: profile, error } = await adminClient
     .from("profiles")
     .select("role")

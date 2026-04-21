@@ -11,7 +11,8 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error("Missing Supabase server environment variables.");
+    // Return null instead of throwing to prevent build-time crashes when secrets are missing
+    return null as any;
   }
 
   return createServerClient<Database>(supabaseUrl, supabaseKey, {

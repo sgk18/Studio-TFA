@@ -33,6 +33,8 @@ export const revalidate = 3600; // 60 minutes — ISR
 export async function generateStaticParams() {
   const { createAdminClient } = await import("@/lib/supabase/admin");
   const supabase = createAdminClient();
+  if (!supabase) return [];
+
   const { data } = await supabase
     .from("products")
     .select("id")
@@ -64,6 +66,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   }
 
   const supabase = await createClient();
+  if (!supabase) return { title: "Product | Studio TFA" };
+
   const { data: product } = await supabase.from('products').select('title, category').eq('id', id).single() as any;
   return {
     title:
@@ -85,6 +89,18 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
   const supabase = await createClient();
   const adminClient = createAdminClient();
+
+  if (!supabase || !adminClient) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <p className="text-sm italic text-foreground/45">Preparing product details...</p>
+        </div>
+      );
+    }
+    notFound();
+  }
+
   const [{ data: productRaw }, { data: { user } }, { data: reviewsRaw }] = await Promise.all([
     adminClient.from('products').select('*').eq('id', id).single(),
     supabase.auth.getUser(),

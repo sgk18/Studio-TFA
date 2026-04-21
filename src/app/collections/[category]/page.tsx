@@ -56,6 +56,24 @@ export default async function CategoryCollectionsPage({
         : [categorySlug];
 
   const supabase = createAdminClient();
+
+  if (!supabase) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      return (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <p className="text-sm italic text-foreground/45">Preparing collection data...</p>
+        </div>
+      );
+    }
+    // For runtime, we might want a proper error or a public client fallback, 
+    // but for build resiliency, returning a loading state or similar is safer than crashing.
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <p className="text-sm italic text-foreground/45">Unable to load collections at this time.</p>
+      </div>
+    );
+  }
+
   const [{ data: facetRows }, viewerRole] = await Promise.all([
     supabase
       .from("products")
