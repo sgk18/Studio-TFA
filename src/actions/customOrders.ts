@@ -150,11 +150,10 @@ export async function updateCustomOrderStatusAction(input: {
 
   const { error } = await supabase
     .from("custom_orders")
-    // @ts-expect-error Supabase types drop to never here
     .update({ 
       status: parsed.data.status,
       ...(parsed.data.trackingNumber ? { tracking_number: parsed.data.trackingNumber } : {})
-    })
+    } as any)
     .eq("id", parsed.data.orderId);
 
   if (error) {
