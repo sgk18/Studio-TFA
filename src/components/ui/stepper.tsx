@@ -24,7 +24,7 @@ export function Stepper({
   className,
 }: StepperProps) {
   return (
-    <ol className={cn("grid gap-2 md:grid-cols-3", className)}>
+    <ol className={cn("grid gap-2 grid-cols-2 lg:grid-cols-5", className)}>
       {steps.map((step, index) => {
         const isActive = index === activeStep;
         const isComplete = index < activeStep;

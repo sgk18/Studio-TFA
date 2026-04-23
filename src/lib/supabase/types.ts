@@ -25,6 +25,8 @@ export interface Database {
           is_archived: boolean;
           is_customisable: boolean;
           customisable_fields: Json | null;
+          product_type: "standard" | "cap" | "apparel" | "bag" | "journal" | "frame" | "resin" | "badge" | "stationery" | "digital" | null;
+          customisation_surcharge: number;
           tags: string[] | null;
           meta_title: string | null;
           meta_description: string | null;
@@ -47,6 +49,8 @@ export interface Database {
           is_archived?: boolean;
           is_customisable?: boolean;
           customisable_fields?: Json | null;
+          product_type?: "standard" | "cap" | "apparel" | "bag" | "journal" | "frame" | "resin" | "badge" | "stationery" | "digital" | null;
+          customisation_surcharge?: number;
           tags?: string[] | null;
           meta_title?: string | null;
           meta_description?: string | null;
@@ -69,6 +73,8 @@ export interface Database {
           is_archived?: boolean;
           is_customisable?: boolean;
           customisable_fields?: Json | null;
+          product_type?: "standard" | "cap" | "apparel" | "bag" | "journal" | "frame" | "resin" | "badge" | "stationery" | "digital" | null;
+          customisation_surcharge?: number;
           tags?: string[] | null;
           meta_title?: string | null;
           meta_description?: string | null;
@@ -292,6 +298,8 @@ export interface Database {
           vision: string;
           color_palette: string[];
           palette_notes: string | null;
+          dimensions: Json | null;
+          reference_images: Json | null;
           reference_image_path: string | null;
           reference_image_url: string | null;
           status: "todo" | "in_progress" | "review" | "shipped";
@@ -306,6 +314,8 @@ export interface Database {
           vision: string;
           color_palette?: string[];
           palette_notes?: string | null;
+          dimensions?: Json | null;
+          reference_images?: Json | null;
           reference_image_path?: string | null;
           reference_image_url?: string | null;
           status?: "todo" | "in_progress" | "review" | "shipped";
@@ -320,6 +330,8 @@ export interface Database {
           vision?: string;
           color_palette?: string[];
           palette_notes?: string | null;
+          dimensions?: Json | null;
+          reference_images?: Json | null;
           reference_image_path?: string | null;
           reference_image_url?: string | null;
           status?: "todo" | "in_progress" | "review" | "shipped";

@@ -35,7 +35,10 @@ const productMutationSchema = z.object({
   is_active: z.boolean(),
   is_customisable: z.boolean().default(false),
   customisable_fields: jsonSchema.nullable().default(null),
-  surcharge_amount: z.coerce.number().min(0).default(0),
+  product_type: z.enum([
+    "standard", "cap", "apparel", "bag", "journal", "frame", "resin", "badge", "stationery", "digital"
+  ]).nullable().default("standard"),
+  customisation_surcharge: z.coerce.number().min(0).default(0),
   is_custom_order: z.boolean().default(false),
   metadata: z.record(z.string(), jsonSchema).default({}),
 });
@@ -143,7 +146,8 @@ export async function createProductWithImageUpload(formData: FormData) {
     is_active: isActive,
     is_customisable: isCustomisable,
     customisable_fields: customisableFields,
-    surcharge_amount: surchargeAmount,
+    product_type: (formData.get("productType") as any) || "standard",
+    customisation_surcharge: Number(formData.get("customisationSurcharge") ?? 0),
     is_custom_order: isCustomOrder,
     metadata: {},
   });
@@ -280,6 +284,8 @@ function toProductInsert(
     is_active: input.is_active,
     is_customisable: input.is_customisable,
     customisable_fields: input.customisable_fields,
+    product_type: input.product_type,
+    customisation_surcharge: input.customisation_surcharge,
     metadata: {
       ...((input.metadata as Record<string, unknown>) || {}),
       is_custom_order: input.is_custom_order,
@@ -300,6 +306,8 @@ function toProductUpdate(
     is_active: input.is_active,
     is_customisable: input.is_customisable,
     customisable_fields: input.customisable_fields,
+    product_type: input.product_type,
+    customisation_surcharge: input.customisation_surcharge,
     metadata: {
       ...((input.metadata as Record<string, unknown>) || {}),
       is_custom_order: input.is_custom_order,
@@ -329,7 +337,8 @@ function normalizeLegacyProductMutation(data: any) {
     is_active: data?.is_active ?? true,
     is_customisable: Boolean(data?.is_customisable),
     customisable_fields: data?.customisable_fields ?? null,
-    surcharge_amount: Number(data?.surcharge_amount ?? 0),
+    product_type: data?.product_type || "standard",
+    customisation_surcharge: Number(data?.customisation_surcharge ?? 0),
     is_custom_order: Boolean(data?.is_custom_order),
     metadata,
   };

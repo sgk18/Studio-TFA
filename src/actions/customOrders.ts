@@ -16,6 +16,7 @@ const commissionSubmissionSchema = z.object({
   vision: z.string().trim().min(20).max(3000),
   colorPalette: z.array(z.string().trim().min(2).max(64)).min(1).max(8),
   paletteNotes: z.string().trim().max(1000).optional(),
+  dimensions: z.string().optional(),
 });
 
 const customOrderStatusSchema = z.enum([
@@ -57,6 +58,7 @@ export async function submitCustomOrderAction(
     vision: String(formData.get("vision") ?? ""),
     colorPalette,
     paletteNotes: String(formData.get("paletteNotes") ?? "").trim() || undefined,
+    dimensions: String(formData.get("dimensions") ?? "{}"),
   });
 
   if (!parsed.success) {
@@ -67,51 +69,28 @@ export async function submitCustomOrderAction(
     };
   }
 
-  const referenceFile = formData.get("referenceFile");
-
-  if (referenceFile instanceof File && referenceFile.size > 0) {
-    if (!referenceFile.type.startsWith("image/")) {
-      return {
-        status: "error",
-        message: "Reference upload must be an image file.",
-        fieldErrors: { referenceFile: "Upload a PNG, JPG, WEBP, or HEIC image." },
-      };
-    }
-
-    if (referenceFile.size > MAX_REFERENCE_IMAGE_BYTES) {
-      return {
-        status: "error",
-        message: "Reference image is too large.",
-        fieldErrors: { referenceFile: "Image must be 10MB or less." },
-      };
-    }
-  }
+  const referenceFiles = formData.getAll("referenceFiles").filter((f): f is File => f instanceof File && f.size > 0);
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  let referenceImagePath: string | null = null;
-  let referenceImageUrl: string | null = null;
+  const uploadedImages: { path: string; url: string }[] = [];
 
-  if (referenceFile instanceof File && referenceFile.size > 0) {
+  for (const file of referenceFiles) {
+    if (file.size > MAX_REFERENCE_IMAGE_BYTES) continue;
+    
     const uploadResult = await uploadCommissionReferenceImage({
       supabase,
-      file: referenceFile,
+      file,
       fullName: parsed.data.fullName,
       userId: user?.id ?? null,
     });
 
-    if ("error" in uploadResult) {
-      return {
-        status: "error",
-        message: uploadResult.error,
-      };
+    if ("path" in uploadResult) {
+      uploadedImages.push({ path: uploadResult.path, url: uploadResult.publicUrl });
     }
-
-    referenceImagePath = uploadResult.path;
-    referenceImageUrl = uploadResult.publicUrl;
   }
 
   const insertPayload: CustomOrderInsert = {
@@ -121,8 +100,10 @@ export async function submitCustomOrderAction(
     vision: parsed.data.vision,
     color_palette: parsed.data.colorPalette,
     palette_notes: parsed.data.paletteNotes ?? null,
-    reference_image_path: referenceImagePath,
-    reference_image_url: referenceImageUrl,
+    dimensions: parsed.data.dimensions ? JSON.parse(parsed.data.dimensions) : null,
+    reference_images: uploadedImages.map(img => img.url),
+    reference_image_path: uploadedImages[0]?.path ?? null,
+    reference_image_url: uploadedImages[0]?.url ?? null,
     status: "todo",
   };
 
@@ -200,7 +181,7 @@ async function uploadCommissionReferenceImage(options: {
 }): Promise<{ path: string; publicUrl: string } | { error: string }> {
   const ext = extensionForFile(options.file);
   const customerSegment = sanitizeStorageSegment(options.userId ?? options.fullName) || "guest";
-  const objectPath = `${customerSegment}/${Date.now()}-reference.${ext}`;
+  const objectPath = `${customerSegment}/${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`;
 
   let latestError = "Unable to upload the reference image right now.";
 

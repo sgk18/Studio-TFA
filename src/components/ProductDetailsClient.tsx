@@ -4,13 +4,13 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatINR } from "@/lib/currency";
-import { CustomisationPanel, type CustomisationField } from "@/components/CustomisationPanel";
+import { CustomisationPanel } from "@/components/CustomisationPanel";
 import { AddToCartButton } from "@/components/AddToCartButton";
-import { CommissionStepper } from "@/components/CommissionStepper";
+import { CommissionStepperForm } from "@/components/artists-corner/CommissionStepperForm";
 import { ScrollReveal } from "@/components/ScrollReveal";
 import { StarRating } from "@/components/StarRating";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Sparkles, Info, ShieldCheck } from "lucide-react";
+import { Sparkles, Info, ShieldCheck, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,8 @@ interface ProductDetailsClientProps {
     inspiration: string;
     is_customisable: boolean;
     customisable_fields: any;
-    surcharge_amount: number;
+    product_type: string;
+    customisation_surcharge: number;
     is_custom_order: boolean;
     images: string[];
     stock: number;
@@ -46,13 +47,33 @@ export function ProductDetailsClient({
   const [customisations, setCustomisations] = useState<Record<string, any>>({});
   const primaryImage = product.images[0];
 
-  const customFields: CustomisationField[] = product.is_customisable && Array.isArray(product.customisable_fields)
-    ? product.customisable_fields
-    : [];
-
   const hasPersonalisation = Object.values(customisations).some(v => v && (typeof v !== 'string' || v.trim() !== ''));
-  const currentSurcharge = hasPersonalisation ? product.surcharge_amount : 0;
+  const currentSurcharge = hasPersonalisation ? (product.customisation_surcharge || 0) : 0;
   const totalPrice = displayPrice + currentSurcharge;
+
+  // Custom Preview Position Mapping
+  const getPreviewStyles = () => {
+    const base = "absolute transition-all duration-700 backdrop-blur-[2px] pointer-events-none flex items-center justify-center text-center";
+    
+    switch (product.product_type) {
+      case "cap":
+        return cn(base, "top-[40%] left-1/2 -translate-x-1/2 w-[30%] h-[20%] text-[0.6rem]");
+      case "apparel":
+        if (customisations.print_position === "Back") return cn(base, "top-[35%] left-1/2 -translate-x-1/2 w-[40%] h-[30%]");
+        if (customisations.print_position === "Sleeve") return cn(base, "top-[45%] left-[25%] w-[15%] h-[15%] -rotate-12");
+        return cn(base, "top-[40%] left-1/2 -translate-x-1/2 w-[25%] h-[20%]"); // Default/Chest
+      case "bag":
+        return cn(base, "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50%] h-[40%]");
+      case "badge":
+        return cn(base, "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full w-[60%] h-[60%]");
+      case "journal":
+      case "frame":
+      case "stationery":
+        return cn(base, "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[60%]");
+      default:
+        return cn(base, "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[50%]");
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
@@ -69,37 +90,67 @@ export function ProductDetailsClient({
               />
               
               {/* Live Preview Overlays */}
-              {product.is_customisable && (
-                <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-12 overflow-hidden">
+              {product.is_customisable && product.product_type !== 'resin' && (
+                <div className="absolute inset-0 pointer-events-none">
                   <AnimatePresence>
-                    {(customisations.badge_text || customisations.inscription) && (
+                    {(customisations.badge_text || customisations.name_text || customisations.monogram) && (
                       <motion.div 
-                        initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        className={cn(
-                          "mt-auto mb-16 px-8 py-4 text-center transition-all duration-700 shadow-2xl backdrop-blur-md",
-                          customisations.badge_style === "Floral" ? "font-serif italic text-primary bg-white/85 rounded-full border border-primary/20" :
-                          customisations.badge_style === "Scripture" ? "font-heading uppercase tracking-[0.3em] text-[#4A4A4A] bg-[#F5F5F0]/95 border border-primary/30" :
-                          customisations.badge_style === "Minimal" ? "font-sans text-xs tracking-widest text-[#262626] bg-white/60 border border-black/10" :
-                          "font-sans font-bold text-white bg-primary/95 rounded-xl border border-white/20"
-                        )}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className={getPreviewStyles()}
                         style={{ 
-                          color: customisations.colour_accent || undefined,
+                          color: customisations.colour_accent || '#262626',
+                          fontFamily: customisations.badge_style === 'Scripture' ? 'var(--font-heading)' : 'inherit',
+                          letterSpacing: customisations.badge_style === 'Scripture' ? '0.2em' : 'normal',
+                          textTransform: (customisations.badge_style === 'Scripture' || customisations.monogram) ? 'uppercase' : 'none'
                         }}
                       >
-                        <p className="max-w-[200px] break-words">
-                          {customisations.badge_text || customisations.inscription}
-                        </p>
+                        <div className={cn(
+                          "p-2 break-words max-w-full font-medium leading-tight",
+                          customisations.badge_style === 'Classic' && "font-serif italic",
+                          customisations.badge_style === 'Minimal' && "text-[0.8em] tracking-[0.3em] font-light"
+                        )}>
+                          {customisations.monogram || customisations.name_text || customisations.badge_text}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {customisations.photo_url && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 0.85 }}
+                        exit={{ opacity: 0 }}
+                        className="absolute inset-0 z-0 pointer-events-none"
+                      >
+                         <div className={cn(
+                           "absolute mix-blend-multiply opacity-60 grayscale",
+                           getPreviewStyles()
+                         )}>
+                            <Image 
+                              src={customisations.photo_url} 
+                              alt="Upload Preview" 
+                              fill 
+                              className="object-contain p-4"
+                            />
+                         </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
                   
-                  {/* Visual indication that this is a preview */}
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
                     <Sparkles className="h-2.5 w-2.5 text-primary animate-pulse" />
                     <span className="text-[8px] font-bold uppercase tracking-widest text-white/70">Studio Preview ✦</span>
                   </div>
+                </div>
+              )}
+
+              {product.product_type === 'resin' && hasPersonalisation && (
+                <div className="absolute inset-0 bg-primary/5 backdrop-blur-[1px] flex items-center justify-center pointer-events-none p-8">
+                   <div className="bg-white/90 p-4 rounded-xl shadow-xl border border-primary/20 text-center">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">Custom Resin Direction</p>
+                      <p className="text-xs italic text-foreground/70">Our artists will incorporate your selections into the pour.</p>
+                   </div>
                 </div>
               )}
             </div>
@@ -125,9 +176,14 @@ export function ProductDetailsClient({
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-primary">{product.category}</p>
-                {product.is_custom_order && (
+                {product.is_custom_order ? (
                   <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest">
                     Bespoke Series
+                  </span>
+                ) : product.is_customisable && (
+                  <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest flex items-center gap-1">
+                    <Sparkles className="h-2.5 w-2.5" />
+                    Customisable
                   </span>
                 )}
               </div>
@@ -154,58 +210,59 @@ export function ProductDetailsClient({
               </p>
             </div>
 
-            {/* Customiser or Commission Flow */}
             <div className="pt-4">
               {product.is_custom_order ? (
-                <CommissionStepper productId={product.id} productTitle={product.title} />
+                <CommissionStepperForm prefill={{ fullName: "", email: "", isAuthenticated: false }} />
               ) : (
                 <div className="space-y-8">
                   {product.is_customisable && (
                     <CustomisationPanel 
-                      fields={customFields} 
+                      productType={product.product_type}
+                      enabledFields={product.customisable_fields || {}}
+                      surcharge={product.customisation_surcharge || 0}
                       onChange={setCustomisations} 
                     />
                   )}
 
-                    <div className="flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
-                      <div className="space-y-0.5">
-                        <p className="text-4xl font-light tracking-tight">{formatINR(totalPrice)}</p>
-                        {currentSurcharge > 0 && (
-                          <p className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
-                            <Sparkles className="h-3 w-3" />
-                            Incl. Personalisation (+{formatINR(currentSurcharge)})
-                          </p>
-                        )}
-                      </div>
-                      
-                      {product.stock > 0 ? (
-                        <AddToCartButton
-                          product={{
-                            id: product.id,
-                            title: product.title,
-                            price: totalPrice,
-                            image_url: primaryImage,
-                            category: product.category,
-                          }}
-                          customisations={customisations}
-                        />
-                      ) : (
-                        <div className="flex flex-col gap-3 w-full sm:w-auto">
-                          <div className="flex gap-2">
-                             <Input 
-                               placeholder="Email for restock alert" 
-                               className="h-11 rounded-xl text-xs bg-card/40 border-primary/20"
-                             />
-                             <Button disabled className="h-11 rounded-xl px-6 opacity-50 bg-foreground/10 text-foreground cursor-not-allowed">
-                               Notify Me
-                             </Button>
-                          </div>
-                          <p className="text-[10px] font-bold text-destructive uppercase tracking-widest text-center sm:text-right">
-                             Sold Out ✦ 
-                          </p>
-                        </div>
+                  <div className="flex flex-col gap-6 border-t border-border pt-8 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="space-y-0.5">
+                      <p className="text-4xl font-light tracking-tight">{formatINR(totalPrice)}</p>
+                      {currentSurcharge > 0 && (
+                        <p className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1.5">
+                          <Sparkles className="h-3 w-3" />
+                          Incl. Personalisation (+{formatINR(currentSurcharge)})
+                        </p>
                       )}
                     </div>
+                    
+                    {product.stock > 0 ? (
+                      <AddToCartButton
+                        product={{
+                          id: product.id,
+                          title: product.title,
+                          price: totalPrice,
+                          image_url: primaryImage,
+                          category: product.category,
+                        }}
+                        customisations={customisations}
+                      />
+                    ) : (
+                      <div className="flex flex-col gap-3 w-full sm:w-auto">
+                        <div className="flex gap-2">
+                           <Input 
+                             placeholder="Email for restock alert" 
+                             className="h-11 rounded-xl text-xs bg-card/40 border-primary/20"
+                           />
+                           <Button disabled className="h-11 rounded-xl px-6 opacity-50 bg-foreground/10 text-foreground cursor-not-allowed">
+                             Notify Me
+                           </Button>
+                        </div>
+                        <p className="text-[10px] font-bold text-destructive uppercase tracking-widest text-center sm:text-right">
+                           Sold Out ✦ 
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

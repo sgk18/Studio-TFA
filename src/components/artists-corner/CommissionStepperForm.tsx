@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { LoaderCircle, Palette, Sparkles, UploadCloud } from "lucide-react";
+import { LoaderCircle, Palette, Sparkles, UploadCloud, Ruler, Image as ImageIcon, CheckCircle2, ChevronRight, X } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 import { submitCustomOrderAction } from "@/actions/customOrders";
 import { Button } from "@/components/ui/button";
@@ -11,24 +12,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Stepper } from "@/components/ui/stepper";
 import { Textarea } from "@/components/ui/textarea";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
-  {
-    id: "vision",
-    title: "Vision",
-    description: "Share the story and direction.",
-  },
-  {
-    id: "palette",
-    title: "Color Palette",
-    description: "Choose your emotional tone.",
-  },
-  {
-    id: "references",
-    title: "Reference Upload",
-    description: "Attach inspiration images.",
-  },
+  { id: "vision", title: "Vision", description: "Share the story." },
+  { id: "palette", title: "Palette", description: "Choose tones." },
+  { id: "dimensions", title: "Dimensions", description: "Size & Frame." },
+  { id: "references", title: "References", description: "Multi-upload." },
+  { id: "summary", title: "Summary", description: "Review & Submit." },
 ] as const;
 
 const COLOR_SWATCHES = [
@@ -42,10 +40,6 @@ const COLOR_SWATCHES = [
   { label: "Clay Bloom", hex: "#C08A7A" },
 ] as const;
 
-type StepField = "fullName" | "email" | "vision" | "colorPalette" | "referenceFile";
-
-type FieldErrors = Partial<Record<StepField, string>>;
-
 export type CommissionPrefill = {
   fullName: string;
   email: string;
@@ -57,15 +51,11 @@ export function CommissionStepperForm({ prefill }: { prefill: CommissionPrefill 
   const [fullName, setFullName] = useState(prefill.fullName);
   const [email, setEmail] = useState(prefill.email);
   const [vision, setVision] = useState("");
-  const [paletteNotes, setPaletteNotes] = useState("");
   const [selectedPalette, setSelectedPalette] = useState<string[]>([]);
-  const [referenceFile, setReferenceFile] = useState<File | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [submissionMessage, setSubmissionMessage] = useState<string>("");
-  const [submittedOrderId, setSubmittedOrderId] = useState<string | null>(null);
+  const [dimensions, setDimensions] = useState({ width: "12", height: "18", unit: "inches", framing: "No Frame" });
+  const [referenceFiles, setReferenceFiles] = useState<File[]>([]);
   const [isPending, startTransition] = useTransition();
 
-  const canMoveBack = currentStep > 0;
   const atFinalStep = currentStep === STEPS.length - 1;
 
   const referenceFileLabel = useMemo(() => {
