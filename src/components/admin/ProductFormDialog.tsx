@@ -85,11 +85,6 @@ export function ProductFormDialog({
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "customisable_fields",
-  });
-
   const isCustomOrder = form.watch("is_custom_order");
   const isCustomisable = form.watch("is_customisable");
 
@@ -325,7 +320,7 @@ export function ProductFormDialog({
                       onCheckedChange={(val) => {
                         field.onChange(val);
                         if (!val) {
-                          form.setValue("customisable_fields", []);
+                          form.setValue("customisable_fields", {});
                         }
                       }}
                     />

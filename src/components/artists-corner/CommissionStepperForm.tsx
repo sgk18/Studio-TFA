@@ -55,8 +55,15 @@ export function CommissionStepperForm({ prefill }: { prefill: CommissionPrefill 
   const [dimensions, setDimensions] = useState({ width: "12", height: "18", unit: "inches", framing: "No Frame" });
   const [referenceFiles, setReferenceFiles] = useState<File[]>([]);
   const [isPending, startTransition] = useTransition();
+  const [paletteNotes, setPaletteNotes] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string | undefined>>({});
+  const [submissionMessage, setSubmissionMessage] = useState("");
+  const [submittedOrderId, setSubmittedOrderId] = useState<string | null>(null);
 
   const atFinalStep = currentStep === STEPS.length - 1;
+  const canMoveBack = currentStep > 0;
+
+  const referenceFile = referenceFiles[0] || null;
 
   const referenceFileLabel = useMemo(() => {
     if (!referenceFile) {
@@ -175,7 +182,7 @@ export function CommissionStepperForm({ prefill }: { prefill: CommissionPrefill 
       setVision("");
       setSelectedPalette([]);
       setPaletteNotes("");
-      setReferenceFile(null);
+      setReferenceFiles([]);
       setCurrentStep(0);
     });
   };
@@ -325,7 +332,7 @@ export function CommissionStepperForm({ prefill }: { prefill: CommissionPrefill 
                 accept="image/png,image/jpeg,image/webp,image/heic"
                 onChange={(event) => {
                   const file = event.target.files?.[0] ?? null;
-                  setReferenceFile(file);
+                  setReferenceFiles(file ? [file] : []);
                   setFieldErrors((current) => ({ ...current, referenceFile: undefined }));
                 }}
               />
@@ -442,3 +449,5 @@ function validateForStep(
 
   return nextErrors;
 }
+
+type FieldErrors = Record<string, string | undefined>;
