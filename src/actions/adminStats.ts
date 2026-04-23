@@ -39,8 +39,8 @@ export async function getDashboardStatsAction(dateRange?: { from: string; to: st
       .eq("status", "pending")
   ]);
 
-  const todayRevenue = (todayOrders ?? []).reduce((sum, o) => sum + Number((o as any).total_amount || 0), 0);
-  const monthRevenue = (monthOrders ?? []).reduce((sum, o) => sum + Number((o as any).total_amount || 0), 0);
+  const todayRevenue = (todayOrders ?? []).reduce((sum: number, o) => sum + Number((o as any).total_amount || 0), 0);
+  const monthRevenue = (monthOrders ?? []).reduce((sum: number, o) => sum + Number((o as any).total_amount || 0), 0);
 
   // 2. Chart Data: Monthly Revenue (Last 12 Months)
   const twelveMonthsAgo = startOfMonth(subMonths(now, 11)).toISOString();
