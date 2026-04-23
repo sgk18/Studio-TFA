@@ -61,7 +61,6 @@ export async function submitGalleryReview(formData: FormData) {
   // 2. Insert Review (Draft Status)
   const { data: insertedReviewRaw, error: insertError } = await supabase
     .from("reviews")
-    // @ts-expect-error Supabase map typing drops to never
     .insert({
       product_id: productId,
       user_id: user.id,
@@ -70,7 +69,7 @@ export async function submitGalleryReview(formData: FormData) {
       comment: comment || null,
       is_approved: false,
       is_verified: true,
-    })
+    } as any)
     .select("id")
     .single();
 
@@ -184,8 +183,7 @@ async function attachPhotoReferenceToReview(
   for (const column of REVIEW_PHOTO_COLUMN_CANDIDATES) {
     const { error } = await supabase
       .from("reviews")
-      // @ts-expect-error Supabase map typing drops to never
-      .update({ [column]: publicUrl })
+      .update({ [column]: publicUrl } as any)
       .eq("id", reviewId);
 
     if (!error) return;

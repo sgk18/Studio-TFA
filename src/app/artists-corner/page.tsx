@@ -71,7 +71,7 @@ async function ArtistsCornerExperience() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {bespokeProducts?.map((product) => (
+          {(bespokeProducts as any[] || []).map((product: any) => (
             <Link key={product.id} href={`/product/${product.id}`} className="group glass-shell rounded-[1.8rem] p-4 border border-primary/10 hover:border-primary/30 transition-all">
                <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-card/40 mb-4">
                   {product.images?.[0] && (

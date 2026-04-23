@@ -117,8 +117,7 @@ export async function updateOrderStatus(orderId: string, status: string, trackin
 
   const { error } = await supabase
     .from("orders")
-    // @ts-expect-error Types evaluate to never for Supabase updates
-    .update(updatePayload)
+    .update(updatePayload as any)
     .eq("id", orderId);
 
   if (error) return { error: error.message };

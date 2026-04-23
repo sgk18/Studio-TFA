@@ -19,8 +19,7 @@ export async function approveReviewAction(reviewId: string) {
 
   const { error } = await supabase
     .from("reviews")
-    // @ts-expect-error Supabase types map to never
-    .update({ is_approved: true })
+    .update({ is_approved: true } as any)
     .eq("id", parsed.data);
 
   if (error) return { error: error.message };
@@ -40,8 +39,7 @@ export async function rejectReviewAction(reviewId: string) {
 
   const { error } = await supabase
     .from("reviews")
-    // @ts-expect-error Supabase types map to never
-    .update({ is_approved: false })
+    .update({ is_approved: false } as any)
     .eq("id", parsed.data);
 
   if (error) return { error: error.message };
@@ -84,11 +82,10 @@ export async function submitAdminReplyAction(payload: {
 
   const { error: updateError } = await supabase
     .from("reviews")
-    // @ts-expect-error Supabase types map to never
     .update({
       admin_reply: parsed.data.reply,
       admin_reply_at: new Date().toISOString(),
-    })
+    } as any)
     .eq("id", parsed.data.reviewId);
 
   if (updateError) return { error: updateError.message };

@@ -42,7 +42,7 @@ export async function generateStaticParams() {
     .eq("is_active", true)
     .order("created_at", { ascending: false })
     .limit(50);
-  return (data ?? []).map(({ id }) => ({ id }));
+  return (data ?? []).map(({ id }: { id: string }) => ({ id }));
 }
 
 type ReviewCard = {
@@ -150,6 +150,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     inspiration,
     is_customisable: Boolean(product.is_customisable),
     customisable_fields: product.customisable_fields,
+    product_type: String(product.product_type || "standard"),
+    customisation_surcharge: Number(product.customisation_surcharge || 0),
     surcharge_amount: Number(product.surcharge_amount || 0),
     is_custom_order: Boolean(product.is_custom_order),
     stock: Number(product.stock || 0),

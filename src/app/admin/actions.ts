@@ -57,9 +57,7 @@ export async function createProduct(data: any) {
   }
 
   const { error } = await supabase
-    .from("products")
-    // @ts-expect-error Supabase map typing drops to never
-    .insert(toProductInsert(parsed.data));
+    .insert(toProductInsert(parsed.data) as any);
 
   if (error) {
     throw new Error(error.message);
@@ -79,9 +77,7 @@ export async function updateProduct(id: string, data: any) {
   }
 
   const { error } = await supabase
-    .from("products")
-    // @ts-expect-error Supabase map typing drops to never
-    .update(toProductUpdate(parsed.data))
+    .update(toProductUpdate(parsed.data) as any)
     .eq("id", id);
 
   if (error) {
@@ -172,8 +168,7 @@ export async function createProductWithImageUpload(formData: FormData) {
     image_url: uploadResult.publicUrl,
   });
 
-  // @ts-expect-error Supabase map typing drops to never
-  const { error } = await supabase.from("products").insert(productToInsert);
+  const { error } = await supabase.from("products").insert(productToInsert as any);
 
   if (error) {
     return { error: error.message };
@@ -210,9 +205,7 @@ export async function promoteUserToAdmin(userId: string) {
   }
 
   const { error } = await supabase
-    .from("profiles")
-    // @ts-expect-error Supabase map typing drops to never
-    .update({ role: "admin" })
+    .update({ role: "admin" } as any)
     .eq("id", parsedUserId.data);
 
   if (error) {
@@ -254,9 +247,7 @@ export async function revokeUserAdminAccess(userId: string) {
   }
 
   const { error } = await supabase
-    .from("profiles")
-    // @ts-expect-error Supabase map typing drops to never
-    .update({ role: "customer" })
+    .update({ role: "customer" } as any)
     .eq("id", parsedUserId.data);
 
   if (error) {

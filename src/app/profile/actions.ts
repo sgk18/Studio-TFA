@@ -87,8 +87,7 @@ export async function updateDisplayNameAction(
 
   const { error } = await context.supabase
     .from("profiles")
-    // @ts-expect-error Supabase map typing drops to never
-    .update({ full_name: parsed.data.displayName })
+    .update({ full_name: parsed.data.displayName } as any)
     .eq("id", context.userId);
 
   if (error) {
@@ -138,8 +137,7 @@ export async function updateDefaultShippingAddressAction(
 
   const { error } = await context.supabase
     .from("profiles")
-    // @ts-expect-error Supabase map typing drops to never
-    .update({ default_shipping_address: normalizedAddress as Json })
+    .update({ default_shipping_address: normalizedAddress as Json } as any)
     .eq("id", context.userId);
 
   if (error) {
