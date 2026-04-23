@@ -81,6 +81,7 @@ serve(async (req) => {
       }
 
       case "admin_commission_alert": {
+        const adminEmail = Deno.env.get("MASTER_ADMIN_EMAIL") || "admin@studiotfa.com";
         const html = getAdminCommissionTemplate({
           customerName: record.full_name,
           vision: record.vision,
@@ -90,7 +91,7 @@ serve(async (req) => {
 
         emailPayload = {
           from: "Studio TFA System <system@studiotfa.com>",
-          to: "admin@studiotfa.com", // Replace with actual business email
+          to: adminEmail,
           subject: `New custom commission request from ${record.full_name}`,
           html,
         };

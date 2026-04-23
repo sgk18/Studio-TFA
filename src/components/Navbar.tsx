@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CircleUserRound } from "lucide-react";
+import { CircleUserRound, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 
+import { createClient } from "@/lib/supabase/client";
 import { GlobalCommandPalette } from "@/components/GlobalCommandPalette";
 import { CartButton } from "./CartButton";
 import PillNav from "./PillNav";
@@ -34,7 +36,14 @@ export function Navbar({
   isAdmin?: boolean;
   isAuthenticated?: boolean;
 }) {
+  const router = useRouter();
   const pathname = usePathname();
+  const supabase = createClient();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.refresh();
+  };
   const authNavItems = isAuthenticated
     ? [{ label: "Profile", href: "/profile" }]
     : [
@@ -50,7 +59,12 @@ export function Navbar({
       : { label: "Login", href: "/login" },
   ];
 
-  const quickNavItems = [...utilityNavItems, ...adminNavItems, ...authNavItems];
+  const quickNavItems = [
+    ...utilityNavItems,
+    ...adminNavItems,
+    ...authNavItems,
+    ...(isAuthenticated ? [{ label: "Logout", href: "#", onClick: handleLogout }] : []),
+  ];
 
   const isActiveHref = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
@@ -106,13 +120,22 @@ export function Navbar({
           ) : null}
 
           {isAuthenticated ? (
-            <Link
-              href="/profile"
-              aria-label="Profile"
-              className="hidden sm:inline-flex items-center justify-center rounded-full border border-border/70 bg-card/55 p-2.5 text-foreground transition-colors hover:border-primary hover:text-primary"
-            >
-              <CircleUserRound className="h-4 w-4" />
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/profile"
+                aria-label="Profile"
+                className="hidden sm:inline-flex items-center justify-center rounded-full border border-border/70 bg-card/55 p-2.5 text-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                <CircleUserRound className="h-4 w-4" />
+              </Link>
+              <button
+                onClick={handleLogout}
+                aria-label="Logout"
+                className="hidden sm:inline-flex items-center justify-center rounded-full border border-border/70 bg-card/55 p-2.5 text-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
           ) : (
             <Link
               href="/login"
@@ -128,17 +151,36 @@ export function Navbar({
 
       {/* Quick links strip for full page coverage */}
       <div className="flex items-center gap-6 overflow-x-auto border-t border-border/30 bg-background/50 px-6 py-3 backdrop-blur-md hide-scrollbar">
-        {quickNavItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.18em] transition-colors ${
-              isActiveHref(item.href) ? "text-primary" : "text-foreground/75"
-            }`}
-          >
-            {item.label}
-          </Link>
-        ))}
+        {quickNavItems.map((item) => {
+          const isButton = "onClick" in item;
+          const content = (
+            <span
+              className={`whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.18em] transition-colors ${
+                !isButton && isActiveHref(item.href) ? "text-primary" : "text-foreground/75 hover:text-primary"
+              }`}
+            >
+              {item.label}
+            </span>
+          );
+
+          if (isButton) {
+            return (
+              <button
+                key={item.label}
+                onClick={item.onClick}
+                className="appearance-none bg-transparent border-0 p-0 cursor-pointer"
+              >
+                {content}
+              </button>
+            );
+          }
+
+          return (
+            <Link key={item.href} href={item.href}>
+              {content}
+            </Link>
+          );
+        })}
       </div>
     </header>
   );
