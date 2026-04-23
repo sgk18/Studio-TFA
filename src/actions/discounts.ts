@@ -121,8 +121,7 @@ export async function toggleDiscountCodeAction(id: string, isActive: boolean) {
 
   const { error } = await supabase
     .from("discount_codes")
-    // @ts-expect-error Supabase map typing drops to never
-    .update({ is_active: isActive })
+    .update({ is_active: isActive } as any)
     .eq("id", id);
 
   if (error) return { error: error.message };
