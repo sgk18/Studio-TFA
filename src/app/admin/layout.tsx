@@ -7,15 +7,16 @@ import { signOut } from "@/app/auth/actions";
 export const dynamic = "force-dynamic"; // Admin is always real-time, never cached
 
 const adminNavItems = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/products", label: "Products" },
-  { href: "/admin/orders", label: "Orders" },
-  { href: "/admin/reviews", label: "Reviews" },
-  { href: "/admin/discounts", label: "Discounts" },
-  { href: "/admin/newsletters", label: "Newsletters" },
-  { href: "/admin/custom-orders", label: "Custom Orders" },
-  { href: "/admin/returns", label: "Returns" },
-  { href: "/admin/users", label: "Users" },
+  { href: "/admin", label: "Dashboard", roles: ["admin", "staff", "wholesale"] },
+  { href: "/admin/products", label: "Products", roles: ["admin", "staff"] },
+  { href: "/admin/orders", label: "Orders", roles: ["admin", "staff"] },
+  { href: "/admin/reviews", label: "Reviews", roles: ["admin", "staff"] },
+  { href: "/admin/discounts", label: "Discounts", roles: ["admin", "staff", "wholesale"] },
+  { href: "/admin/newsletters", label: "Newsletters", roles: ["admin", "staff"] },
+  { href: "/admin/custom-orders", label: "Custom Orders", roles: ["admin", "staff"] },
+  { href: "/admin/returns", label: "Returns", roles: ["admin", "staff"] },
+  { href: "/admin/users", label: "Users", roles: ["admin"] },
+  { href: "/admin/access", label: "Access", roles: ["admin"] },
 ];
 
 export default async function AdminLayout({
@@ -23,7 +24,11 @@ export default async function AdminLayout({
 }: {
   children: ReactNode;
 }) {
-  await requireAdminAccess({ from: "/admin" });
+  const { profile } = await requireAdminAccess({ from: "/admin" });
+
+  const filteredNavItems = adminNavItems.filter((item) =>
+    item.roles.includes(profile.role)
+  );
 
   return (
     <div className="min-h-screen px-6 pb-14 pt-26 md:px-10">
@@ -37,10 +42,18 @@ export default async function AdminLayout({
               <h1 className="mt-2 font-heading text-3xl tracking-tight md:text-4xl">
                 Studio TFA Admin
               </h1>
+              <div className="mt-1 flex items-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-foreground/40">
+                  Access Level:
+                </span>
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-primary">
+                  {profile.role}
+                </span>
+              </div>
             </div>
 
             <nav className="flex flex-wrap items-center gap-2">
-              {adminNavItems.map((item) => (
+              {filteredNavItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}

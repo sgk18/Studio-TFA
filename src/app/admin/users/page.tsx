@@ -23,7 +23,10 @@ export default async function AdminUsersPage({
 }) {
   const [{ page: pageParam }, { supabase }] = await Promise.all([
     searchParams,
-    requireAdminAccess({ from: "/admin/users" }),
+    requireAdminAccess({ 
+      from: "/admin/users",
+      allowedRoles: ["admin"]
+    }),
   ]);
 
   const requestedPage = parsePageParam(pageParam);

@@ -6,10 +6,11 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/types";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
-type ProfileRow = Database["public"]["Tables"]["profiles"]["Row"];
+export type ProfileRole = Database["public"]["Tables"]["profiles"]["Row"]["role"];
 
 type RequireAdminAccessOptions = {
   from?: string;
+  allowedRoles?: ProfileRole[];
 };
 
 export type AdminAccessContext = {
@@ -18,6 +19,9 @@ export type AdminAccessContext = {
   profile: Pick<ProfileRow, "id" | "email" | "full_name" | "role">;
 };
 
+/**
+ * Ensures the user is authenticated and has an authorized role (admin, staff, or wholesale by default).
+ */
 export async function requireAdminAccess(
   options?: RequireAdminAccessOptions
 ): Promise<AdminAccessContext> {
@@ -39,10 +43,13 @@ export async function requireAdminAccess(
     .eq("id", user.id)
     .maybeSingle();
 
-  if (profileError || !profile || (profile as any).role !== "admin") {
+  // Default allowed roles for general admin dashboard access
+  const allowed = options?.allowedRoles ?? ["admin", "staff", "wholesale"];
+
+  if (profileError || !profile || !allowed.includes((profile as any).role)) {
     redirect(
       `/access-denied?error=${encodeURIComponent(
-        "Admin role required."
+        "You do not have the required permissions to access this area."
       )}&from=${encodeURIComponent(requestedPath)}`
     );
   }

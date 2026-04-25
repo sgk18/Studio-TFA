@@ -178,34 +178,31 @@ export async function createProductWithImageUpload(formData: FormData) {
   return { success: true };
 }
 
-export async function promoteUserToAdmin(userId: string) {
+export async function updateUserRole(userId: string, newRole: string) {
   const parsedUserId = z.string().trim().min(1).max(128).safeParse(userId);
   if (!parsedUserId.success) {
     return { error: "Invalid user identifier." };
   }
 
-  const { supabase } = await requireAdminAccess({ from: "/admin/users" });
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .eq("id", parsedUserId.data)
-    .maybeSingle();
-
-  if (profileError) {
-    return { error: profileError.message };
+  const roleSchema = z.enum(["customer", "staff", "admin", "wholesale"]);
+  const parsedRole = roleSchema.safeParse(newRole);
+  if (!parsedRole.success) {
+    return { error: "Invalid role specified." };
   }
 
-  if (!profile) {
-    return { error: "User profile not found." };
-  }
+  // Only admins can change roles
+  const { supabase, userId: actingAdminId } = await requireAdminAccess({
+    from: "/admin/users",
+    allowedRoles: ["admin"],
+  });
 
-  if ((profile as any).role === "admin") {
-    return { success: true, message: "User is already an admin." };
+  if (parsedUserId.data === actingAdminId && parsedRole.data !== "admin") {
+    return { error: "You cannot demote yourself from the admin role." };
   }
 
   const { error } = await supabase
-    .update({ role: "admin" } as any)
+    .from("profiles")
+    .update({ role: parsedRole.data } as any)
     .eq("id", parsedUserId.data);
 
   if (error) {
@@ -213,49 +210,7 @@ export async function promoteUserToAdmin(userId: string) {
   }
 
   revalidatePath("/admin/users");
-  return { success: true, message: "User promoted to admin." };
-}
-
-export async function revokeUserAdminAccess(userId: string) {
-  const parsedUserId = z.string().trim().min(1).max(128).safeParse(userId);
-  if (!parsedUserId.success) {
-    return { error: "Invalid user identifier." };
-  }
-
-  const { supabase, userId: actingAdminId } = await requireAdminAccess({ from: "/admin/users" });
-
-  if (parsedUserId.data === actingAdminId) {
-    return { error: "You cannot revoke your own admin access." };
-  }
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("id, role")
-    .eq("id", parsedUserId.data)
-    .maybeSingle();
-
-  if (profileError) {
-    return { error: profileError.message };
-  }
-
-  if (!profile) {
-    return { error: "User profile not found." };
-  }
-
-  if ((profile as any).role !== "admin") {
-    return { success: true, message: "User is not an admin." };
-  }
-
-  const { error } = await supabase
-    .update({ role: "customer" } as any)
-    .eq("id", parsedUserId.data);
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  revalidatePath("/admin/users");
-  return { success: true, message: "Admin access revoked." };
+  return { success: true, message: `User role updated to ${parsedRole.data}.` };
 }
 
 function toProductInsert(
