@@ -94,8 +94,6 @@ Core Supabase variables:
 Application and auth variables:
 
 - `NEXT_PUBLIC_SITE_URL`
-- `MASTER_ADMIN_EMAIL`
-- `MASTER_ADMIN_ALLOWED_IPS`
 
 Email variables:
 
@@ -113,6 +111,7 @@ Payments variables:
 - The app is built around the Next.js App Router and uses server actions for mutations.
 - Supabase is used for authentication, storage, and database reads and writes.
 - Admin and role-aware areas rely on server-side authorization checks.
+- Admin access is role-based (`profiles.role = 'admin'`) and does not require IP allowlists.
 - Public webhooks live under `src/app/api` where needed.
 - The design language is editorial, minimal, and brand-led rather than a generic SaaS layout.
 - Global styling and brand tokens live in `src/app/globals.css`.

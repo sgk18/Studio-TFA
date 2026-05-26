@@ -1,20 +1,14 @@
 import "server-only";
 
-import { headers } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
-import {
-  evaluateMasterAdminAccess,
-  getClientIpFromHeaderGetter,
-  getMasterAdminErrorMessage,
-  type MasterAdminAccessDecision,
-} from "@/lib/security/masterAdmin";
-import {
-  readAdminAccessSettings,
-  recordDeniedAdminAccess,
-} from "@/lib/security/adminAccessStore";
+import { requireAdminAccess } from "@/lib/security/adminRole";
+
+type RoleBasedDecision =
+  | { allowed: true; reason: "allowed" }
+  | { allowed: false; reason: "not-admin" };
 
 export type MasterAdminAccessResult = {
-  decision: MasterAdminAccessDecision;
+  decision: RoleBasedDecision;
   message: string;
   supabase: Awaited<ReturnType<typeof createClient>>;
   clientIp: string;
@@ -27,53 +21,31 @@ export async function verifyMasterAdminAccess(options?: {
   logDeniedAttempt?: boolean;
 }): Promise<MasterAdminAccessResult> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  const headerStore = await headers();
-  const clientIp = getClientIpFromHeaderGetter((headerName) =>
-    headerStore.get(headerName)
-  );
-
-  let effectiveAllowedIpsRaw = process.env.MASTER_ADMIN_ALLOWED_IPS ?? null;
-  let allowlistSource: "database" | "environment" = "environment";
-  let allowlistErrorMessage: string | null = null;
-
-  const settings = await readAdminAccessSettings(
-    supabase,
-    process.env.MASTER_ADMIN_ALLOWED_IPS ?? null
-  );
-  effectiveAllowedIpsRaw = settings.allowedIpsRaw;
-  allowlistSource = settings.source;
-  allowlistErrorMessage = settings.errorMessage;
-
-  const decision = evaluateMasterAdminAccess({
-    userEmail: user?.email,
-    clientIp,
-    masterAdminEmail: process.env.MASTER_ADMIN_EMAIL,
-    allowedIpsRaw: effectiveAllowedIpsRaw,
-    environment: process.env.NODE_ENV,
-  });
-
-  if (!decision.allowed && options?.logDeniedAttempt !== false) {
-    await recordDeniedAdminAccess(supabase, {
-      attemptedEmail: user?.email ?? null,
-      ipAddress: clientIp || null,
-      path: options?.path ?? null,
-      reason: decision.reason,
-      userAgent: headerStore.get("user-agent"),
+  try {
+    await requireAdminAccess({
+      from: options?.path ?? "/admin",
+      allowedRoles: ["admin"],
     });
-  }
 
-  return {
-    decision,
-    message: getMasterAdminErrorMessage(decision.reason),
-    supabase,
-    clientIp,
-    allowlistSource,
-    allowlistErrorMessage,
-  };
+    return {
+      decision: { allowed: true, reason: "allowed" },
+      message: "Access granted.",
+      supabase,
+      clientIp: "",
+      allowlistSource: "environment",
+      allowlistErrorMessage: null,
+    };
+  } catch {
+    return {
+      decision: { allowed: false, reason: "not-admin" },
+      message: "Admin role required.",
+      supabase,
+      clientIp: "",
+      allowlistSource: "environment",
+      allowlistErrorMessage: null,
+    };
+  }
 }
 
 export async function requireMasterAdminAccess(options?: {

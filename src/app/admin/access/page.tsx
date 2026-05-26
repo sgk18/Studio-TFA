@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Download, Lock, RefreshCw, Save, ShieldAlert } from "lucide-react";
+import { Download, Lock, RefreshCw } from "lucide-react";
 
 import {
   Card,
@@ -21,12 +21,10 @@ import {
 } from "@/components/ui/table";
 import {
   fetchDeniedAdminAccessLogs,
-  readAdminAccessSettings,
 } from "@/lib/security/adminAccessStore";
-import { parseAllowedIps } from "@/lib/security/masterAdmin";
 import { verifyMasterAdminAccess } from "@/lib/security/masterAdminServer";
 import { pickAllowedStatus, safeDecodeQueryParam } from "@/lib/pageValidation";
-import { clearAccessAuditLogs, saveAdminAllowlist } from "./actions";
+import { clearAccessAuditLogs } from "./actions";
 
 export const metadata = {
   title: "Access Control | Studio TFA Admin",
@@ -63,12 +61,7 @@ export default async function AdminAccessPage({
     );
   }
 
-  const [settings, logs] = await Promise.all([
-    readAdminAccessSettings(access.supabase, process.env.MASTER_ADMIN_ALLOWED_IPS ?? null),
-    fetchDeniedAdminAccessLogs(access.supabase, 50),
-  ]);
-
-  const currentRules = parseAllowedIps(settings.allowedIpsRaw).join("\n");
+  const logs = await fetchDeniedAdminAccessLogs(access.supabase, 50);
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-6">
@@ -102,12 +95,6 @@ export default async function AdminAccessPage({
           </div>
         </div>
 
-        {statusState === "saved" && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-800">
-            Allowlist saved successfully.
-          </div>
-        )}
-
         {statusState === "cleared" && (
           <div className="rounded-xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-800">
             Access audit logs cleared.
@@ -120,77 +107,17 @@ export default async function AdminAccessPage({
           </div>
         )}
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          <Card className="xl:col-span-2 border-white/45">
-            <CardHeader>
-              <CardTitle className="font-heading text-2xl tracking-tight">Master Admin IP Allowlist</CardTitle>
-              <CardDescription>
-                Enter one rule per line. Supports exact IP, wildcard (e.g. 192.168.1.*), CIDR (e.g. 203.0.113.0/24), or *.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <form action={saveAdminAllowlist} className="space-y-4">
-                <Textarea
-                  name="allowed_ips"
-                  className="h-56 font-mono text-xs"
-                  defaultValue={currentRules}
-                  placeholder="127.0.0.1&#10;203.0.113.0/24"
-                />
-                <Button type="submit" className="uppercase tracking-widest text-xs font-bold">
-                  <Save className="w-4 h-4 mr-2" />
-                  Save Allowlist
-                </Button>
-              </form>
-
-              <div className="rounded-xl border border-white/45 bg-white/30 p-3 text-xs text-muted-foreground leading-relaxed">
-                <p>
-                  Active source: <strong>{settings.source}</strong>
-                </p>
-                <p>Detected IP for your current session: {access.clientIp || "Unavailable"}</p>
-                {settings.updatedAt && <p>Last updated: {formatDate(settings.updatedAt)}</p>}
-                {settings.errorMessage && (
-                  <p className="text-amber-700 mt-2">
-                    {settings.errorMessage}
-                  </p>
-                )}
-                {access.allowlistErrorMessage && access.allowlistErrorMessage !== settings.errorMessage && (
-                  <p className="text-amber-700 mt-2">
-                    {access.allowlistErrorMessage}
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-white/45">
-            <CardHeader>
-              <CardTitle className="font-heading text-2xl tracking-tight">Policy Summary</CardTitle>
-              <CardDescription>Current effective admin access policy (IP-based).</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex items-center justify-between py-2 border-b border-white/30">
-                <span className="text-muted-foreground">Access mode</span>
-                <span className="font-semibold truncate max-w-[60%] text-right">
-                  IP only (no login)
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-white/30">
-                <span className="text-muted-foreground">Allowlist source</span>
-                <span className="font-semibold capitalize">{settings.source}</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-white/30">
-                <span className="text-muted-foreground">Total active rules</span>
-                <span className="font-semibold">{parseAllowedIps(settings.allowedIpsRaw).length}</span>
-              </div>
-              <div className="flex items-start gap-2 rounded-lg border border-white/35 bg-white/30 p-3 text-xs text-muted-foreground">
-                <ShieldAlert className="w-4 h-4 mt-0.5 shrink-0" />
-                <p>
-                  If database tables are missing, the app falls back to MASTER_ADMIN_ALLOWED_IPS from environment values.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card className="border-white/45">
+          <CardHeader>
+            <CardTitle className="font-heading text-2xl tracking-tight">Access Policy</CardTitle>
+            <CardDescription>
+              Admin access is role-based only. No IP allowlist is used.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Users with role <strong>admin</strong> can access protected admin routes.
+          </CardContent>
+        </Card>
 
         <Card className="border-white/45">
           <CardHeader>

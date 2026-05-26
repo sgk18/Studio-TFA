@@ -20,7 +20,6 @@ export async function GET(req: Request) {
       console.info("[api/admin/is-admin] no user (unauthenticated)", {
         headers: {
           ua: req.headers.get("user-agent"),
-          xff: req.headers.get("x-forwarded-for"),
         },
       });
 
@@ -53,7 +52,6 @@ export async function GET(req: Request) {
       isAdmin,
       headers: {
         ua: req.headers.get("user-agent"),
-        xff: req.headers.get("x-forwarded-for"),
         host: req.headers.get("host"),
       },
     });
