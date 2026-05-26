@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { CircleUserRound, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -61,10 +62,36 @@ export function Navbar({
 
   const quickNavItems = [
     ...utilityNavItems,
-    ...adminNavItems,
+    // Admin quick link handled client-side to avoid showing it erroneously
     ...authNavItems,
     ...(isAuthenticated ? [{ label: "Logout", href: "#", onClick: handleLogout }] : []),
   ];
+
+  // Client-side admin check: fetch /api/admin/is-admin and only show admin if verified
+  const [isAdminClient, setIsAdminClient] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/admin/is-admin");
+        if (!mounted) return;
+        if (!res.ok) {
+          setIsAdminClient(false);
+          return;
+        }
+        const json = await res.json();
+        setIsAdminClient(Boolean(json?.isAdmin));
+      } catch (err) {
+        console.warn("[Navbar] admin check failed:", err);
+        if (mounted) setIsAdminClient(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const isActiveHref = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
@@ -139,29 +166,9 @@ export function Navbar({
           <CartButton className="group relative flex items-center justify-center rounded-full p-2 text-foreground transition-colors hover:text-primary" />
 
           {/* Admin placed after cart so it sits to the right of the cart button */}
-          {isAdmin ? (
+          {isAdminClient ? (
             <button
-              onClick={async () => {
-                try {
-                  const res = await fetch("/api/admin/is-admin");
-                  const json = await res.json();
-                  if (json?.isAdmin) {
-                    // navigate to admin
-                    window.location.href = "/admin";
-                  } else {
-                    // show a small toast if available, fallback to alert
-                    try {
-                      const { toast } = await import("sonner");
-                      toast.error("Access denied: admin role required.");
-                    } catch {
-                      alert("Access denied: admin role required.");
-                    }
-                  }
-                } catch (err) {
-                  console.warn("admin check failed", err);
-                  alert("Unable to verify admin status. Please try again.");
-                }
-              }}
+              onClick={() => (window.location.href = "/admin")}
               className="hidden sm:inline-flex shrink-0 items-center justify-center rounded-full border border-primary/65 bg-primary/12 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground ml-3"
             >
               Admin
@@ -171,7 +178,7 @@ export function Navbar({
       </div>
 
       {/* Quick links strip for full page coverage */}
-      <div className="flex items-center gap-6 overflow-x-auto border-t border-border/30 bg-background/50 px-6 py-3 backdrop-blur-md hide-scrollbar">
+        <div className="flex items-center gap-6 overflow-x-auto border-t border-border/30 bg-background/50 px-6 py-3 backdrop-blur-md hide-scrollbar">
         {quickNavItems.map((item) => {
           const isButton = "onClick" in item;
           const content = (
@@ -202,6 +209,12 @@ export function Navbar({
             </Link>
           );
         })}
+        {/* Admin quick link — only show when client confirms admin role */}
+        {isAdminClient ? (
+          <Link href="/admin" className="ml-6 whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/75 hover:text-primary">
+            ADMIN
+          </Link>
+        ) : null}
       </div>
     </header>
   );
