@@ -89,7 +89,7 @@ export function Navbar({
           Studio TFA
         </Link>
 
-        <div className="hidden min-w-0 flex-1 md:flex md:pr-8">
+        <div className="hidden min-w-0 flex-1 md:flex md:pr-8 overflow-hidden">
           <PillNav
             logo="/studio-tfa-mark.svg"
             logoAlt="Studio TFA Logo"
@@ -107,17 +107,8 @@ export function Navbar({
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-3 md:gap-5 flex-shrink-0">
+        <div className="flex items-center gap-3 md:gap-6 flex-shrink-0">
           <GlobalCommandPalette isWholesale={isWholesale} />
-
-          {isAdmin ? (
-            <Link
-              href="/admin"
-              className="hidden sm:inline-flex items-center justify-center rounded-full border border-primary/65 bg-primary/12 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
-            >
-              Admin
-            </Link>
-          ) : null}
 
           {isAuthenticated ? (
             <div className="flex items-center gap-2">
@@ -146,6 +137,16 @@ export function Navbar({
           )}
 
           <CartButton className="group relative flex items-center justify-center rounded-full p-2 text-foreground transition-colors hover:text-primary" />
+
+          {/* Admin placed after cart so it sits to the right of the cart button */}
+          {isAdmin ? (
+            <Link
+              href="/admin"
+              className="hidden sm:inline-flex items-center justify-center rounded-full border border-primary/65 bg-primary/12 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground ml-2"
+            >
+              Admin
+            </Link>
+          ) : null}
         </div>
       </div>
 
