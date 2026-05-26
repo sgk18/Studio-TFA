@@ -55,6 +55,13 @@ export async function resolveViewerRole(
 
   const role = await resolveRoleForUserId(supabase, user.id);
 
+  // Log resolved role for debugging and auditing
+  try {
+    console.info("[resolveViewerRole]", { userId: user.id, role });
+  } catch {
+    // swallow logging errors
+  }
+
   return {
     userId: user.id,
     role,

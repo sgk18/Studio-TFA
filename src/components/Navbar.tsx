@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { CircleUserRound, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -62,36 +62,10 @@ export function Navbar({
 
   const quickNavItems = [
     ...utilityNavItems,
-    // Admin quick link handled client-side to avoid showing it erroneously
+    ...adminNavItems,
     ...authNavItems,
     ...(isAuthenticated ? [{ label: "Logout", href: "#", onClick: handleLogout }] : []),
   ];
-
-  // Client-side admin check: fetch /api/admin/is-admin and only show admin if verified
-  const [isAdminClient, setIsAdminClient] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const res = await fetch("/api/admin/is-admin");
-        if (!mounted) return;
-        if (!res.ok) {
-          setIsAdminClient(false);
-          return;
-        }
-        const json = await res.json();
-        setIsAdminClient(Boolean(json?.isAdmin));
-      } catch (err) {
-        console.warn("[Navbar] admin check failed:", err);
-        if (mounted) setIsAdminClient(false);
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   const isActiveHref = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
@@ -166,13 +140,13 @@ export function Navbar({
           <CartButton className="group relative flex items-center justify-center rounded-full p-2 text-foreground transition-colors hover:text-primary" />
 
           {/* Admin placed after cart so it sits to the right of the cart button */}
-          {isAdminClient ? (
-            <button
-              onClick={() => (window.location.href = "/admin")}
+          {isAdmin ? (
+            <Link
+              href="/admin"
               className="hidden sm:inline-flex shrink-0 items-center justify-center rounded-full border border-primary/65 bg-primary/12 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground ml-3"
             >
               Admin
-            </button>
+            </Link>
           ) : null}
         </div>
       </div>
@@ -209,8 +183,8 @@ export function Navbar({
             </Link>
           );
         })}
-        {/* Admin quick link — only show when client confirms admin role */}
-        {isAdminClient ? (
+        {/* Admin quick link */}
+        {isAdmin ? (
           <Link href="/admin" className="ml-6 whitespace-nowrap text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/75 hover:text-primary">
             ADMIN
           </Link>
