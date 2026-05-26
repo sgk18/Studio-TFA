@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NoteNova PRD - Advanced</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f7f4ef;
+  color: #222;
+  line-height: 1.65;
+  padding: 24px 16px 56px;
+}
+
+/* Sidebar */
+.sidebar {
+  width: min(100%, 920px);
+  background: linear-gradient(180deg, #111 0%, #171717 100%);
+  color: #fff;
+  height: auto;
+  position: sticky;
+  top: 16px;
+  overflow-y: auto;
+  padding: 22px 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 24px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+}
+
+.sidebar h2 {
+  font-size: 18px;
+  margin: 0 0 20px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.sidebar a {
+  display: block;
+  color: #ccc;
+  text-decoration: none;
+  margin: 8px 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 8px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sidebar a:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+/* Main Content */
+.main {
+  margin: 0;
+  padding: 0;
+  max-width: 1160px;
+  width: min(100%, 1160px);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 22px;
+  align-items: start;
+}
+
+/* Sections */
+.section {
+  margin: 0;
+  padding: 26px 26px 28px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 22px;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.05);
+  break-inside: avoid;
+}
+
+.section:first-child {
+  margin-top: 0;
+}
+
+.main > .section-divider {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.section h1 {
+  border-bottom: 3px solid #000;
+  padding-bottom: 10px;
+  margin-top: 0;
+  text-align: left;
+}
+
+.section h2 {
+  border-left: 5px solid #000;
+  padding-left: 10px;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.box {
+  background: #f5f5f5;
+  padding: 22px 24px;
+  border-radius: 14px;
+  margin-top: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Module Card */
+.module {
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-top: 0;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.04);
+  width: 100%;
+}
+
+.module h3 {
+  margin: 0 0 10px;
+  text-align: left;
+}
+
+.module h4 {
+  margin: 18px 0 8px;
+  text-align: left;
+}
+
+.module p,
+.box p {
+  margin: 0 0 10px;
+  max-width: 72ch;
+  text-align: left;
+}
+
+.module ul,
+.box ul {
+  margin: 10px 0 0;
+  padding-left: 22px;
+  text-align: left;
+}
+
+.module li,
+.box li {
+  margin: 6px 0;
+}
+
+.section-divider {
+  border: 0;
+  height: 1px;
+  margin: 34px 0;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.18), transparent);
+}
+
+/* Print */
+@media print {
+  .sidebar {
+    display: none;
+  }
+  .main {
+    margin: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  body {
+    padding: 12px;
+  }
+
+  .sidebar,
+  .main {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .sidebar {
+    position: static;
+    top: auto;
+  }
+
+  .main {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .section {
+    padding: 20px 18px 22px;
+    border-radius: 18px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>NoteNova PRD</h2>
+  <a href="#overview">Overview</a>
+  <a href="#users">Users</a>
+  <a href="#modules">Modules</a>
+  <a href="#knowledge">Knowledge System</a>
+</div>
+
+<div class="main">
+
+<div id="overview" class="section">
+<h1>NoteNova — Product Requirements</h1>
+
+<div class="box">
+<p><strong>Type:</strong> Academic Platform</p>
+<p><strong>Architecture:</strong> Modular + AI-driven</p>
+<p><strong>Goal:</strong> Unified academic system</p>
+</div>
+</div>
+
+<hr class="section-divider" />
+
+<div id="users" class="section">
+<h2>User Personas & Scenarios</h2>
+
+<div class="module">
+<h3>Student Persona</h3>
+<ul>
+<li>Searches for notes before exams</li>
+<li>Uploads own notes</li>
+<li>Uses AI to generate summaries</li>
+<li>Collaborates in group projects</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Low internet → offline mode</li>
+<li>Duplicate notes → ranking system</li>
+<li>Poor quality content → rating filter</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Faculty Persona</h3>
+<ul>
+<li>Uploads lecture material</li>
+<li>Creates quizzes</li>
+<li>Tracks student performance</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Large class size</li>
+<li>Late submissions</li>
+<li>Multiple course handling</li>
+</ul>
+</div>
+
+</div>
+
+<hr class="section-divider" />
+
+<div id="modules" class="section">
+<h2>Core Module System</h2>
+
+<div class="module">
+<h3>Module Architecture</h3>
+<ul>
+<li>Microfrontend based</li>
+<li>Independent modules</li>
+<li>Unified dashboard</li>
+</ul>
+</div>
+
+</div>
+
+<hr class="section-divider" />
+
+<div id="knowledge" class="section">
+<h2>Knowledge System (Detailed)</h2>
+
+<div class="module">
+<h3>Smart Notes Editor</h3>
+
+<p><strong>Purpose:</strong> Create structured notes</p>
+
+<h4>Features</h4>
+<ul>
+<li>Rich text editing</li>
+<li>Code blocks</li>
+<li>Media embedding</li>
+</ul>
+
+<h4>User Flow</h4>
+<ul>
+<li>User opens editor</li>
+<li>Writes notes</li>
+<li>Saves → stored in DB</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Autosave failure</li>
+<li>Large content lag</li>
+<li>Mobile editing issues</li>
+</ul>
+</div>
+
+<hr class="section-divider" />
+
+<div class="module">
+<h3>Resource Upload System</h3>
+
+<h4>Features</h4>
+<ul>
+<li>Upload PDF, PPT, DOC</li>
+<li>Metadata tagging</li>
+<li>Preview files</li>
+</ul>
+
+<h4>User Flow</h4>
+<ul>
+<li>Select file</li>
+<li>Add details</li>
+<li>Upload → stored</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>File too large</li>
+<li>Unsupported format</li>
+<li>Upload failure</li>
+</ul>
+
+</div>
+
+<hr class="section-divider" />
+
+<div class="module">
+<h3>Resource Discovery</h3>
+
+<h4>Features</h4>
+<ul>
+<li>Search engine</li>
+<li>Filters</li>
+<li>Sorting</li>
+</ul>
+
+<h4>User Flow</h4>
+<ul>
+<li>User searches "Data Structures"</li>
+<li>Applies filters</li>
+<li>Selects best result</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>No results</li>
+<li>Duplicate entries</li>
+<li>Irrelevant ranking</li>
+</ul>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- AI SYSTEM -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="ai">AI Learning System (Detailed)</h2>
+
+<div class="module">
+<h3>AI Document Processing</h3>
+
+<p><strong>Purpose:</strong> Convert uploaded content into structured knowledge</p>
+
+<hr>
+<ul>
+<li>Text extraction from PDFs</li>
+<li>Chunking large documents</li>
+<li>Semantic indexing</li>
+</ul>
+
+<h4>User Flow</h4>
+<ul>
+<li>User uploads file</li>
+<li>System parses content</li>
+<li>Chunks stored in vector DB</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Scanned PDFs (no text)</li>
+<li>Corrupted files</li>
+<li>Very large documents</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>AI Summary Generator</h3>
+
+<h4>Features</h4>
+<ul>
+<li>Short summaries</li>
+<li>Key points extraction</li>
+<li>Section-wise breakdown</li>
+</ul>
+
+<h4>User Flow</h4>
+<ul>
+<li>User clicks "Generate Summary"</li>
+<li>AI processes content</li>
+<li>Displays structured output</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<hr>
+<li>Low-quality input</li>
+<li>Mixed languages</li>
+<li>Technical diagrams</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Flashcards + MCQ Generator</h3>
+
+<h4>Features</h4>
+<ul>
+<li>Auto Q&A creation</li>
+<li>Difficulty levels</li>
+<hr>
+</ul>
+
+<h4>User Flow</h4>
+<ul>
+<li>User selects document</li>
+<li>Clicks generate</li>
+<li>Receives flashcards</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Repetitive questions</li>
+<li>Incorrect context</li>
+<li>Very short documents</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Doubt Solver (AI Chat)</h3>
+
+<h4>Features</h4>
+<ul>
+<li>Context-aware answers</li>
+<li>Subject-specific responses</li>
+<li>Follow-up questions</li>
+</ul>
+
+<h4>User Flow</h4>
+<ul>
+<li>User asks question</li>
+<hr>
+<li>AI responds</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Ambiguous questions</li>
+<li>No relevant data</li>
+<li>Wrong interpretation</li>
+</ul>
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- GAMIFICATION -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="gamification">Gamification System</h2>
+
+<div class="module">
+<h3>Points Engine</h3>
+
+<h4>Features</h4>
+<ul>
+<li>Points for uploads</li>
+<hr>
+<li>Activity-based rewards</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Spam uploads</li>
+<li>Fake activity</li>
+<li>Duplicate rewards</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Leaderboard</h3>
+
+<h4>Features</h4>
+<ul>
+<li>Top contributors</li>
+<li>Weekly ranking</li>
+<li>Department ranking</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Ties in scores</li>
+<li>Inactive users ranking</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Badge System</h3>
+
+<ul>
+<li>Milestone achievements</li>
+<li>Skill-based badges</li>
+<li>Contribution badges</li>
+</ul>
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- LMS -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="lms">Learning Management System</h2>
+
+<div class="module">
+<h3>Course Management</h3>
+
+<ul>
+<li>Create courses</li>
+<li>Assign faculty</li>
+<li>Enroll students</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Course duplication</li>
+<li>Enrollment errors</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Assignment System</h3>
+
+<ul>
+<li>Create assignments</li>
+<li>Submission tracking</li>
+<li>Deadline management</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Late submission</li>
+<li>File corruption</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Grading System</h3>
+
+<ul>
+<li>Manual grading</li>
+<li>Auto grading</li>
+<li>Grade analytics</li>
+</ul>
+
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- COLLABORATION -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="collab">Collaboration System</h2>
+
+<div class="module">
+<h3>Group Workspaces</h3>
+
+<ul>
+<li>Create groups</li>
+<li>Share resources</li>
+<li>Assign roles</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Inactive members</li>
+<li>Permission conflicts</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Real-Time Editing</h3>
+
+<ul>
+<li>Multi-user editing</li>
+<li>Live updates</li>
+<li>Conflict resolution</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Simultaneous edits</li>
+<li>Network lag</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Discussion Threads</h3>
+
+<ul>
+<li>Topic-based discussions</li>
+<li>Replies and mentions</li>
+<li>Thread moderation</li>
+</ul>
+
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- CLASSROOM -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="classroom">Classroom Engagement</h2>
+
+<div class="module">
+<h3>Live Quiz System</h3>
+
+<ul>
+<li>Real-time questions</li>
+<li>Instant scoring</li>
+<li>Leaderboard display</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Network delay</li>
+<li>Duplicate submissions</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Polling System</h3>
+
+<ul>
+<li>Quick polls</li>
+<li>Anonymous voting</li>
+<li>Live results</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Participation Tracker</h3>
+
+<ul>
+<li>Track student activity</li>
+<li>Engagement score</li>
+<li>Session logs</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Passive users</li>
+<li>Fake participation</li>
+</ul>
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- SECURITY SYSTEM -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="security">Security & Access Control</h2>
+
+<div class="module">
+<h3>Authentication System</h3>
+
+<ul>
+<li>Secure login (email/password)</li>
+<li>Token-based session management</li>
+<li>Multi-device login support</li>
+</ul>
+
+<h4>User Flow</h4>
+<ul>
+<li>User logs in</li>
+<li>Token generated</li>
+<li>Session maintained</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Session expiration</li>
+<li>Multiple login conflicts</li>
+<li>Token tampering</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Role-Based Access Control</h3>
+
+<ul>
+<li>Student / Faculty / Admin roles</li>
+<li>Permission-based access</li>
+<li>Restricted actions</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Privilege escalation</li>
+<li>Unauthorized access attempts</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Institution-Level Isolation</h3>
+
+<ul>
+<li>Separate data per institution</li>
+<li>Access restricted by organization</li>
+<li>Scoped resource visibility</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Cross-institution data leakage</li>
+<li>Incorrect user mapping</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Secure File Access</h3>
+
+<ul>
+<li>Protected file URLs</li>
+<li>Access validation before download</li>
+<li>Temporary access tokens</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Link sharing outside platform</li>
+<li>Unauthorized downloads</li>
+</ul>
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- ANALYTICS -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="analytics">Analytics & Insights System</h2>
+
+<div class="module">
+<h3>Student Analytics</h3>
+
+<ul>
+<li>Performance tracking</li>
+<li>Study patterns</li>
+<li>Content usage</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Incomplete data</li>
+<li>Inactive students</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Faculty Dashboard</h3>
+
+<ul>
+<li>Class performance overview</li>
+<li>Engagement metrics</li>
+<li>Assignment analytics</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Institution Reports</h3>
+
+<ul>
+<li>Department-level insights</li>
+<li>Platform usage stats</li>
+<li>Trend analysis</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Large dataset handling</li>
+<li>Delayed data sync</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Predictive Insights</h3>
+
+<ul>
+<li>Performance prediction</li>
+<li>Risk identification</li>
+<li>Learning pattern detection</li>
+</ul>
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- CORE PLATFORM -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="core">Platform Core Systems</h2>
+
+<div class="module">
+<h3>User Profile System</h3>
+
+<ul>
+<li>Academic identity</li>
+<li>Department + semester tracking</li>
+<li>User history</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Incorrect profile data</li>
+<li>Profile updates conflict</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Notification System</h3>
+
+<ul>
+<li>Real-time alerts</li>
+<li>Email + in-app notifications</li>
+<li>Event-based triggers</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Notification overload</li>
+<li>Missed alerts</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Offline Sync Engine</h3>
+
+<ul>
+<li>Cache data locally</li>
+<li>Sync when online</li>
+<li>Conflict resolution</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Data conflicts</li>
+<li>Outdated content</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Background Job System</h3>
+
+<ul>
+<li>AI processing jobs</li>
+<li>File processing</li>
+<li>Async tasks</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Job failure</li>
+<li>Queue overload</li>
+</ul>
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- MULTI-TENANT -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="multitenant">Multi-Tenant Architecture</h2>
+
+<div class="module">
+<h3>Tenant Isolation</h3>
+
+<ul>
+<li>Separate institution environments</li>
+<li>Scoped databases</li>
+<li>Access boundaries</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Role Hierarchy</h3>
+
+<ul>
+<li>Admin</li>
+<li>Faculty</li>
+<li>Student</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Data Partitioning</h3>
+
+<ul>
+<li>Logical separation</li>
+<li>Query filtering</li>
+<li>Access validation</li>
+</ul>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Incorrect tenant mapping</li>
+<li>Shared data bugs</li>
+</ul>
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- PERFORMANCE -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="performance">Performance & Scaling</h2>
+
+<div class="module">
+<h3>High Concurrency Handling</h3>
+
+<ul>
+<li>Support 10K+ users</li>
+<li>Load balancing</li>
+<li>Horizontal scaling</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>File Processing Optimization</h3>
+
+<ul>
+<li>Chunk large files</li>
+<li>Async processing</li>
+<li>Compression</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Real-Time Systems</h3>
+
+<ul>
+<li>Live updates</li>
+<li>WebSocket communication</li>
+<li>Low latency</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Caching Strategy</h3>
+
+<ul>
+<li>Redis caching</li>
+<li>Query optimization</li>
+<li>Frequent data caching</li>
+</ul>
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- ADVANCED EDGE CASES -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="edgecases">Advanced System Edge Cases</h2>
+
+<div class="module">
+<h3>System-Level Failures</h3>
+<ul>
+<li>Server downtime</li>
+<li>Database crash</li>
+<li>API failure</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>User Behavior Issues</h3>
+<ul>
+<li>Spam uploads</li>
+<li>Fake accounts</li>
+<li>Abuse of system</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Data Issues</h3>
+<ul>
+<li>Duplicate data</li>
+<li>Missing metadata</li>
+<li>Corrupted files</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Scaling Risks</h3>
+<ul>
+<li>Unexpected traffic spikes</li>
+<li>Resource exhaustion</li>
+<li>Latency increase</li>
+</ul>
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- UI ENHANCEMENT -->
+<!-- ========================= -->
+
+<style>
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Collapsible */
+.collapsible {
+  cursor: pointer;
+  padding: 10px;
+  background: #eee;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.content {
+  display: none;
+  padding: 10px;
+  border-left: 3px solid #000;
+}
+
+/* Sticky header */
+.header {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  padding: 10px;
+  border-bottom: 2px solid #000;
+  z-index: 100;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const coll = document.getElementsByClassName("collapsible");
+  for (let i = 0; i < coll.length; i++) {
+    coll[i].addEventListener("click", function() {
+      this.classList.toggle("active");
+      const content = this.nextElementSibling;
+      content.style.display = content.style.display === "block" ? "none" : "block";
+    });
+  }
+});
+</script>
+
+<!-- ========================= -->
+<!-- SYSTEM WORKFLOWS -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="flows">System Workflows</h2>
+
+<div class="module">
+<h3>End-to-End Resource Flow</h3>
+
+<div class="collapsible">View Flow</div>
+<div class="content">
+<ul>
+<li>User uploads resource</li>
+<li>System validates file</li>
+<li>Metadata stored</li>
+<li>AI processes content</li>
+<li>Indexed for search</li>
+<li>Available to users</li>
+</ul>
+</div>
+
+<h4>Edge Cases</h4>
+<ul>
+<li>Upload interruption</li>
+<li>AI processing failure</li>
+<li>Metadata mismatch</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>AI Processing Flow</h3>
+
+<div class="collapsible">View Flow</div>
+<div class="content">
+<ul>
+<li>Input content</li>
+<li>Text extraction</li>
+<li>Chunking</li>
+<li>Embedding</li>
+<li>Vector storage</li>
+<li>Query processing</li>
+</ul>
+</div>
+
+</div>
+
+<div class="module">
+<h3>User Engagement Flow</h3>
+
+<div class="collapsible">View Flow</div>
+<div class="content">
+<ul>
+<li>User logs in</li>
+<li>Searches content</li>
+<li>Interacts with AI</li>
+<li>Earns points</li>
+<li>Returns to platform</li>
+</ul>
+</div>
+
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- USER JOURNEYS -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="journeys">User Journeys</h2>
+
+<div class="module">
+<h3>Student Journey</h3>
+
+<ul>
+<li>Login → Dashboard</li>
+<li>Search for notes</li>
+<li>Use AI tools</li>
+<li>Upload content</li>
+<li>Earn rewards</li>
+</ul>
+
+<h4>Failure Cases</h4>
+<ul>
+<li>No relevant results</li>
+<li>Low-quality AI output</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Faculty Journey</h3>
+
+<ul>
+<li>Create course</li>
+<li>Upload material</li>
+<li>Generate quiz</li>
+<li>Monitor performance</li>
+</ul>
+
+</div>
+
+<div class="module">
+<h3>Admin Journey</h3>
+
+<ul>
+<li>View analytics</li>
+<li>Monitor usage</li>
+<li>Manage users</li>
+</ul>
+
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- TESTING -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="testing">Testing & Validation</h2>
+
+<div class="module">
+<h3>Functional Testing</h3>
+
+<ul>
+<li>All modules working</li>
+<li>Correct data flow</li>
+<li>User actions validated</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Performance Testing</h3>
+
+<ul>
+<li>Load testing</li>
+<li>Stress testing</li>
+<li>Latency measurement</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Security Testing</h3>
+
+<ul>
+<li>Authentication checks</li>
+<li>Access control validation</li>
+<li>Data leak prevention</li>
+</ul>
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- SYSTEM STATES -->
+<!-- ========================= -->
+
+<div class="section">
+<h2 id="states">System States</h2>
+
+<div class="module">
+<h3>User States</h3>
+
+<ul>
+<li>Active</li>
+<li>Inactive</li>
+<li>Suspended</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>Content States</h3>
+
+<ul>
+<li>Draft</li>
+<li>Published</li>
+<li>Archived</li>
+</ul>
+</div>
+
+<div class="module">
+<h3>System States</h3>
+
+<ul>
+<li>Operational</li>
+<li>Maintenance</li>
+<li>Failure mode</li>
+</ul>
+</div>
+
+</div>
+
+<!-- ========================= -->
+<!-- FINAL NOTE -->
+<!-- ========================= -->
+
+<div class="section">
+<h2>Final Definition</h2>
+
+<div class="box">
+<p>This platform is a fully modular academic system designed to unify learning, collaboration, AI-driven insights, and institutional knowledge into a single scalable infrastructure.</p>
+</div>
+
+</div>
+
+</body>
+</html>
