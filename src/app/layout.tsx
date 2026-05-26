@@ -61,6 +61,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = "force-dynamic";
+
 
 import { CategoryThemeProvider } from "@/components/CategoryThemeProvider";
 import { CustomCursor } from "@/components/CustomCursor";
