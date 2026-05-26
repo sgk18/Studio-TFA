@@ -89,7 +89,7 @@ export function Navbar({
           Studio TFA
         </Link>
 
-        <div className="hidden min-w-0 flex-1 md:flex md:pr-8 overflow-hidden">
+        <div className="hidden min-w-0 flex-1 md:flex md:pr-8 md:max-w-[calc(100%-360px)] overflow-hidden">
           <PillNav
             logo="/studio-tfa-mark.svg"
             logoAlt="Studio TFA Logo"
@@ -107,7 +107,7 @@ export function Navbar({
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-3 md:gap-6 flex-shrink-0">
+        <div className="flex items-center gap-3 md:gap-8 flex-shrink-0">
           <GlobalCommandPalette isWholesale={isWholesale} />
 
           {isAuthenticated ? (
@@ -140,12 +140,32 @@ export function Navbar({
 
           {/* Admin placed after cart so it sits to the right of the cart button */}
           {isAdmin ? (
-            <Link
-              href="/admin"
-              className="hidden sm:inline-flex items-center justify-center rounded-full border border-primary/65 bg-primary/12 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground ml-2"
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/admin/is-admin");
+                  const json = await res.json();
+                  if (json?.isAdmin) {
+                    // navigate to admin
+                    window.location.href = "/admin";
+                  } else {
+                    // show a small toast if available, fallback to alert
+                    try {
+                      const { toast } = await import("sonner");
+                      toast.error("Access denied: admin role required.");
+                    } catch {
+                      alert("Access denied: admin role required.");
+                    }
+                  }
+                } catch (err) {
+                  console.warn("admin check failed", err);
+                  alert("Unable to verify admin status. Please try again.");
+                }
+              }}
+              className="hidden sm:inline-flex shrink-0 items-center justify-center rounded-full border border-primary/65 bg-primary/12 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground ml-3"
             >
               Admin
-            </Link>
+            </button>
           ) : null}
         </div>
       </div>
