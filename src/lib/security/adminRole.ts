@@ -3,6 +3,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/types";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
@@ -40,7 +41,16 @@ export async function requireAdminAccess(
     redirect(`/login?redirectedFrom=${encodeURIComponent(requestedPath)}`);
   }
 
-  const { data: profile, error: profileError } = await supabase
+  const adminClient = createAdminClient();
+  if (!adminClient) {
+    redirect(
+      `/access-denied?error=${encodeURIComponent(
+        "Admin access is temporarily unavailable."
+      )}&from=${encodeURIComponent(requestedPath)}`
+    );
+  }
+
+  const { data: profile, error: profileError } = await adminClient
     .from("profiles")
     .select("id, email, full_name, role")
     .eq("id", user.id)
