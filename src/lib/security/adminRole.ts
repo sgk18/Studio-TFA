@@ -16,7 +16,10 @@ type RequireAdminAccessOptions = {
 export type AdminAccessContext = {
   supabase: SupabaseServerClient;
   userId: string;
-  profile: Pick<ProfileRow, "id" | "email" | "full_name" | "role">;
+  profile: Pick<
+    Database["public"]["Tables"]["profiles"]["Row"],
+    "id" | "email" | "full_name" | "role"
+  >;
 };
 
 /**

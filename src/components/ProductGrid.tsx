@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { resolveDisplayPrice } from "@/lib/commerce";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { formatINR } from "@/lib/currency";
 import { resolveViewerRole } from "@/lib/security/viewerRole";
 import { cn } from "@/lib/utils";
@@ -43,7 +43,7 @@ export async function ProductGrid({
   selectedMaterials,
   sort = "featured",
 }: ProductGridProps) {
-  const supabase = createAdminClient();
+  const supabase = await createClient();
 
   if (!supabase) {
     return (

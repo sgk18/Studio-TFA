@@ -335,6 +335,7 @@ function extensionForFile(file: File): string {
 }
 
 function revalidateStorefrontAndAdmin() {
+  revalidatePath("/");
   revalidatePath("/admin");
   revalidatePath("/admin/products");
   revalidatePath("/collections");
