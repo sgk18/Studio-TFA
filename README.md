@@ -1,6 +1,6 @@
 # Studio TFA
 
-Studio TFA (The Fearlessly Authentic) is a premium, mission-driven Christian creative studio and headless e-commerce platform built with Next.js, Supabase, and modern React tooling. The site blends editorial storytelling with commerce, allowing visitors to browse products, sign in, manage carts and checkout, submit reviews, and access role-aware admin and wholesale experiences.
+Studio TFA (The Fearlessly Authentic) is a premium, mission-driven Christian creative studio and headless e-commerce platform built with Next.js, Supabase, and modern React tooling. The site blends editorial storytelling with commerce, allowing visitors to browse products, sign in, manage carts and checkout, submit reviews, and access role-aware admin experiences.
 
 ## What This App Includes
 
@@ -8,7 +8,7 @@ Studio TFA (The Fearlessly Authentic) is a premium, mission-driven Christian cre
 - Product browsing, product detail pages, cart, and checkout flows.
 - Authentication with email/password and OAuth callback handling through Supabase.
 - Admin dashboards for products, orders, returns, users, and access controls.
-- Wholesale and artist-facing pages with role-based visibility.
+- Artist-facing pages with role-based visibility.
 - Community, refunds, shipping, privacy policy, terms of service, and about pages.
 - Email support for order confirmations and payment-related notifications.
 - Supabase Storage-backed uploads for product and review photos.
@@ -33,7 +33,6 @@ Studio TFA (The Fearlessly Authentic) is a premium, mission-driven Christian cre
 - `/login`, `/register`, `/auth/callback` - authentication flows
 - `/community` - customer photo review gallery
 - `/artists-corner` - artist-facing content and actions
-- `/wholesale` - wholesale experience
 - `/admin` - admin dashboard
 - `/admin/products`, `/admin/orders`, `/admin/returns`, `/admin/users`, `/admin/access`, `/admin/custom-orders` - admin sub-sections
 - `/about`, `/shipping`, `/refunds`, `/privacy-policy`, `/terms-of-service`, `/access-denied`, `/not-found`

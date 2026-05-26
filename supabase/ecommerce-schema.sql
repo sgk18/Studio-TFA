@@ -45,7 +45,7 @@ create table if not exists public.profiles (
   full_name text,
   phone text,
   default_shipping_address jsonb not null default '{}'::jsonb,
-  role text not null default 'customer' check (role in ('customer', 'staff', 'admin', 'wholesale')),
+  role text not null default 'customer' check (role in ('customer', 'admin')),
   is_first_login boolean not null default true,
   welcome_email_sent boolean not null default false,
   created_at timestamptz not null default now(),
@@ -249,8 +249,8 @@ create policy products_manage_admin
 on public.products
 for all
 to authenticated
-using (public.has_role(array['admin', 'staff']))
-with check (public.has_role(array['admin', 'staff']));
+using (public.has_role(array['admin']))
+with check (public.has_role(array['admin']));
 
 -- profiles policies
 drop policy if exists profiles_select_self on public.profiles;
@@ -258,22 +258,22 @@ create policy profiles_select_self
 on public.profiles
 for select
 to authenticated
-using (id = auth.uid() or public.has_role(array['admin', 'staff']));
+using (id = auth.uid() or public.has_role(array['admin']));
 
 drop policy if exists profiles_update_self on public.profiles;
 create policy profiles_update_self
 on public.profiles
 for update
 to authenticated
-using (id = auth.uid() or public.has_role(array['admin', 'staff']))
-with check (id = auth.uid() or public.has_role(array['admin', 'staff']));
+using (id = auth.uid() or public.has_role(array['admin']))
+with check (id = auth.uid() or public.has_role(array['admin']));
 
 drop policy if exists profiles_insert_self on public.profiles;
 create policy profiles_insert_self
 on public.profiles
 for insert
 to authenticated
-with check (id = auth.uid() or public.has_role(array['admin', 'staff']));
+with check (id = auth.uid() or public.has_role(array['admin']));
 
 drop policy if exists profiles_insert_trigger on public.profiles;
 create policy profiles_insert_trigger
@@ -309,15 +309,15 @@ create policy orders_select_own
 on public.orders
 for select
 to authenticated
-using (user_id = auth.uid() or public.has_role(array['admin', 'staff']));
+using (user_id = auth.uid() or public.has_role(array['admin']));
 
 drop policy if exists orders_update_admin on public.orders;
 create policy orders_update_admin
 on public.orders
 for update
 to authenticated
-using (public.has_role(array['admin', 'staff']))
-with check (public.has_role(array['admin', 'staff']));
+using (public.has_role(array['admin']))
+with check (public.has_role(array['admin']));
 
 -- reviews policies
 drop policy if exists reviews_read_all on public.reviews;
@@ -339,15 +339,15 @@ create policy reviews_update_self
 on public.reviews
 for update
 to authenticated
-using (user_id = auth.uid() or public.has_role(array['admin', 'staff']))
-with check (user_id = auth.uid() or public.has_role(array['admin', 'staff']));
+using (user_id = auth.uid() or public.has_role(array['admin']))
+with check (user_id = auth.uid() or public.has_role(array['admin']));
 
 drop policy if exists reviews_delete_self on public.reviews;
 create policy reviews_delete_self
 on public.reviews
 for delete
 to authenticated
-using (user_id = auth.uid() or public.has_role(array['admin', 'staff']));
+using (user_id = auth.uid() or public.has_role(array['admin']));
 
 -- returns policies
 drop policy if exists returns_insert_own on public.returns;
@@ -355,22 +355,22 @@ create policy returns_insert_own
 on public.returns
 for insert
 to authenticated
-with check (user_id = auth.uid() or public.has_role(array['admin', 'staff']));
+with check (user_id = auth.uid() or public.has_role(array['admin']));
 
 drop policy if exists returns_select_own on public.returns;
 create policy returns_select_own
 on public.returns
 for select
 to authenticated
-using (user_id = auth.uid() or public.has_role(array['admin', 'staff']));
+using (user_id = auth.uid() or public.has_role(array['admin']));
 
 drop policy if exists returns_update_admin on public.returns;
 create policy returns_update_admin
 on public.returns
 for update
 to authenticated
-using (public.has_role(array['admin', 'staff']))
-with check (public.has_role(array['admin', 'staff']));
+using (public.has_role(array['admin']))
+with check (public.has_role(array['admin']));
 
 -- custom orders policies
 drop policy if exists custom_orders_insert_guest on public.custom_orders;
@@ -407,7 +407,7 @@ for select
 to authenticated
 using (
   user_id = auth.uid()
-  or public.has_role(array['admin', 'staff'])
+  or public.has_role(array['admin'])
 );
 
 drop policy if exists custom_orders_update_admin on public.custom_orders;
@@ -415,8 +415,8 @@ create policy custom_orders_update_admin
 on public.custom_orders
 for update
 to authenticated
-using (public.has_role(array['admin', 'staff']))
-with check (public.has_role(array['admin', 'staff']));
+using (public.has_role(array['admin']))
+with check (public.has_role(array['admin']));
 
 -- payment events policies
 drop policy if exists payment_events_read_admin on public.payment_events;
@@ -424,15 +424,15 @@ create policy payment_events_read_admin
 on public.payment_events
 for select
 to authenticated
-using (public.has_role(array['admin', 'staff']));
+using (public.has_role(array['admin']));
 
 drop policy if exists payment_events_write_admin on public.payment_events;
 create policy payment_events_write_admin
 on public.payment_events
 for all
 to authenticated
-using (public.has_role(array['admin', 'staff']))
-with check (public.has_role(array['admin', 'staff']));
+using (public.has_role(array['admin']))
+with check (public.has_role(array['admin']));
 
 -- custom order reference uploads
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -475,11 +475,11 @@ for update
 to authenticated
 using (
   bucket_id = 'custom-order-references'
-  and public.has_role(array['admin', 'staff'])
+  and public.has_role(array['admin'])
 )
 with check (
   bucket_id = 'custom-order-references'
-  and public.has_role(array['admin', 'staff'])
+  and public.has_role(array['admin'])
 );
 
 drop policy if exists custom_order_reference_delete_admin on storage.objects;
@@ -489,5 +489,5 @@ for delete
 to authenticated
 using (
   bucket_id = 'custom-order-references'
-  and public.has_role(array['admin', 'staff'])
+  and public.has_role(array['admin'])
 );

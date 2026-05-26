@@ -90,7 +90,7 @@ export interface Database {
           full_name: string | null;
           phone: string | null;
           default_shipping_address: Json;
-          role: "customer" | "staff" | "admin" | "wholesale";
+          role: "customer" | "admin";
           is_first_login: boolean;
           welcome_email_sent: boolean;
           created_at: string;
@@ -102,7 +102,7 @@ export interface Database {
           full_name?: string | null;
           phone?: string | null;
           default_shipping_address?: Json;
-          role?: "customer" | "staff" | "admin" | "wholesale";
+          role?: "customer" | "admin";
           is_first_login?: boolean;
           welcome_email_sent?: boolean;
           created_at?: string;
@@ -114,7 +114,7 @@ export interface Database {
           full_name?: string | null;
           phone?: string | null;
           default_shipping_address?: Json;
-          role?: "customer" | "staff" | "admin" | "wholesale";
+          role?: "customer" | "admin";
           is_first_login?: boolean;
           welcome_email_sent?: boolean;
           created_at?: string;

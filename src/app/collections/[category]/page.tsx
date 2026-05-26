@@ -112,7 +112,7 @@ export default async function CategoryCollectionsPage({
       });
     }
 
-    const price = resolveDisplayPrice(toNumber(item.price), viewerRole.isWholesale);
+    const price = resolveDisplayPrice(toNumber(item.price));
     for (const range of PRICE_RANGE_FILTERS) {
       const inRange =
         range.max === null

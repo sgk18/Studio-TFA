@@ -75,7 +75,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const supabase = await createClient();
-  const { isWholesale, isAdmin, userId } = await resolveViewerRole(supabase);
+  const { isAdmin, userId } = await resolveViewerRole(supabase);
   const isAuthenticated = Boolean(userId);
 
   return (
@@ -87,7 +87,6 @@ export default async function RootLayout({
             <CustomCursor />
             <div className="relative flex min-h-dvh flex-col">
               <Navbar
-                isWholesale={isWholesale}
                 isAdmin={isAdmin}
                 isAuthenticated={isAuthenticated}
               />
@@ -98,7 +97,7 @@ export default async function RootLayout({
               </main>
               <Footer />
             </div>
-            <CartDrawer isWholesale={isWholesale} />
+            <CartDrawer />
             <WhatsAppFloat />
             <CookieConsentBanner />
             <CartSync />

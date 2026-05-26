@@ -15,12 +15,11 @@ import { formatINR } from "@/lib/currency";
 import {
   FREE_SHIPPING_THRESHOLD_INR,
   resolveDisplayPrice,
-  WHOLESALE_MIN_CART_ITEMS,
 } from "@/lib/commerce";
 import { validateCouponAction } from "@/actions/discounts";
 import { cn } from "@/lib/utils";
 
-export function CartDrawer({ isWholesale = false }: { isWholesale?: boolean }) {
+export function CartDrawer() {
   const {
     items,
     isOpen,
@@ -47,19 +46,13 @@ export function CartDrawer({ isWholesale = false }: { isWholesale?: boolean }) {
 
   const subtotal = mounted
     ? items.reduce(
-        (sum, item) => sum + resolveDisplayPrice(item.price, isWholesale) * item.quantity,
+        (sum, item) => sum + resolveDisplayPrice(item.price) * item.quantity,
         0
       )
     : 0;
   const discountAmount = mounted ? getDiscountAmount() : 0;
   const total = Math.max(0, subtotal - discountAmount);
   const totalItems = mounted ? getCount() : 0;
-  const meetsWholesaleMinimum =
-    !isWholesale || totalItems >= WHOLESALE_MIN_CART_ITEMS;
-  const wholesaleItemsRemaining = Math.max(
-    0,
-    WHOLESALE_MIN_CART_ITEMS - totalItems
-  );
   const freeShippingRemaining = mounted
     ? Math.max(0, FREE_SHIPPING_THRESHOLD_INR - subtotal)
     : FREE_SHIPPING_THRESHOLD_INR;
@@ -108,12 +101,6 @@ export function CartDrawer({ isWholesale = false }: { isWholesale?: boolean }) {
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
-            {isWholesale ? (
-              <div className="rounded-xl border border-primary/35 bg-primary/10 px-4 py-3 text-xs text-primary">
-                Wholesale pricing active. All item prices include a 30% discount.
-              </div>
-            ) : null}
-
             <div className="glass-subpanel rounded-2xl p-4 space-y-2.5">
               <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-foreground/62">
                 <span>Free shipping</span>
@@ -179,7 +166,7 @@ export function CartDrawer({ isWholesale = false }: { isWholesale?: boolean }) {
                 <div className="flex flex-col items-end gap-2">
                   <span className="font-medium">
                     {formatINR(
-                      resolveDisplayPrice(item.price, isWholesale) * item.quantity
+                      resolveDisplayPrice(item.price) * item.quantity
                     )}
                   </span>
                   <button
@@ -286,25 +273,12 @@ export function CartDrawer({ isWholesale = false }: { isWholesale?: boolean }) {
                 Shipping fee waived.
               </p>
             )}
-            {isWholesale && !meetsWholesaleMinimum ? (
-              <p className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                Add {wholesaleItemsRemaining} more item{wholesaleItemsRemaining === 1 ? "" : "s"} to reach the wholesale minimum of {WHOLESALE_MIN_CART_ITEMS}.
-              </p>
-            ) : null}
-
             <Link
               href="/checkout"
               onClick={closeCart}
-              aria-disabled={!meetsWholesaleMinimum}
-              className={`block w-full rounded-lg border border-primary/80 bg-primary text-primary-foreground text-center py-4 text-xs tracking-widest uppercase font-bold transition-colors duration-300 ${
-                meetsWholesaleMinimum
-                  ? "hover:bg-primary/90"
-                  : "pointer-events-none opacity-60"
-              }`}
+              className={`block w-full rounded-lg border border-primary/80 bg-primary text-primary-foreground text-center py-4 text-xs tracking-widest uppercase font-bold transition-colors duration-300 hover:bg-primary/90`}
             >
-              {meetsWholesaleMinimum
-                ? "Proceed to Checkout"
-                : `Minimum ${WHOLESALE_MIN_CART_ITEMS} items required`}
+              Proceed to Checkout
             </Link>
             <button
               onClick={() => clearCart()}

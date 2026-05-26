@@ -64,11 +64,7 @@ const ROUTE_ITEMS = [
   { href: "/about", label: "About Studio TFA", keywords: ["about", "mission"] },
 ] as const;
 
-export function GlobalCommandPalette({
-  isWholesale = false,
-}: {
-  isWholesale?: boolean;
-}) {
+export function GlobalCommandPalette() {
   const pathname = usePathname();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -264,7 +260,7 @@ export function GlobalCommandPalette({
                         </p>
                       </div>
                       <span className="text-xs font-bold uppercase tracking-[0.14em] text-primary">
-                        {formatINR(resolveDisplayPrice(item.price, isWholesale))}
+                        {formatINR(resolveDisplayPrice(item.price))}
                       </span>
                     </CommandItem>
                   ))}

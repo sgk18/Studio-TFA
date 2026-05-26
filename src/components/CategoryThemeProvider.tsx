@@ -40,11 +40,6 @@ export const CategoryThemeProvider = ({ children }: { children: React.ReactNode 
   const theme = useMemo(() => {
     const category = params?.category as string;
     
-    // Check if we are in a sub-section that should trigger a specific theme
-    if (pathname.includes("/wholesale")) {
-      return CATEGORY_THEMES["art"]; // Use crimson/darker for premium wholesale
-    }
-    
     return CATEGORY_THEMES[category] || DEFAULT_THEME;
   }, [params?.category, pathname]);
 

@@ -22,8 +22,7 @@ export default async function CollectionsPage() {
   ]);
   const validatedProducts = sanitizeProductCards(products as any).map((product) => ({
     ...product,
-    price: resolveDisplayPrice(Number(product.price) || 0, viewerRole.isWholesale),
-  }));
+    price: resolveDisplayPrice(Number(product.price) || 0),  }));
   const categoryList = Array.from(
     new Set(
       validatedProducts

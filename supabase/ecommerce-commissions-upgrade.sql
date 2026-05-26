@@ -78,7 +78,7 @@ for select
 to authenticated
 using (
   user_id = auth.uid()
-  or public.has_role(array['admin', 'staff'])
+  or public.has_role(array['admin'])
 );
 
 drop policy if exists custom_orders_update_admin on public.custom_orders;
@@ -86,8 +86,8 @@ create policy custom_orders_update_admin
 on public.custom_orders
 for update
 to authenticated
-using (public.has_role(array['admin', 'staff']))
-with check (public.has_role(array['admin', 'staff']));
+using (public.has_role(array['admin']))
+with check (public.has_role(array['admin']));
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
@@ -129,11 +129,11 @@ for update
 to authenticated
 using (
   bucket_id = 'custom-order-references'
-  and public.has_role(array['admin', 'staff'])
+  and public.has_role(array['admin'])
 )
 with check (
   bucket_id = 'custom-order-references'
-  and public.has_role(array['admin', 'staff'])
+  and public.has_role(array['admin'])
 );
 
 drop policy if exists custom_order_reference_delete_admin on storage.objects;
@@ -143,5 +143,5 @@ for delete
 to authenticated
 using (
   bucket_id = 'custom-order-references'
-  and public.has_role(array['admin', 'staff'])
+  and public.has_role(array['admin'])
 );

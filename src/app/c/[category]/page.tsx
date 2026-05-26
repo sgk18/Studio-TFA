@@ -45,7 +45,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   ]);
   const validatedProducts = sanitizeProductCards(products as any).map((product) => ({
     ...product,
-    price: resolveDisplayPrice(Number(product.price) || 0, viewerRole.isWholesale),
+    price: resolveDisplayPrice(Number(product.price) || 0),
   }));
 
 

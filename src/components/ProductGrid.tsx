@@ -66,7 +66,7 @@ export async function ProductGrid({
   ]);
 
   const cards = (Array.isArray(data) ? data : [])
-    .map((item) => toProductCard(item, viewerRole.isWholesale))
+    .map((item) => toProductCard(item))
     .filter((item): item is ProductCard => item !== null);
 
   const normalizedCategoryFilters = uniqueSlugs(selectedCategories);
@@ -214,7 +214,7 @@ export async function ProductGrid({
   );
 }
 
-function toProductCard(value: unknown, isWholesale: boolean): ProductCard | null {
+function toProductCard(value: unknown): ProductCard | null {
   if (!isRecord(value)) return null;
 
   const id       = readFirstString(value, ["id"]);
@@ -236,7 +236,7 @@ function toProductCard(value: unknown, isWholesale: boolean): ProductCard | null
     title,
     category,
     imageUrl,
-    price: resolveDisplayPrice(basePrice, isWholesale),
+    price: resolveDisplayPrice(basePrice),
     material,
     story,
     isCustomOrder,

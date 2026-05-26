@@ -17,7 +17,6 @@ const primaryNavItems = [
   { label: "Artists Corner", href: "/artists-corner" },
   { label: "Community", href: "/community" },
   { label: "About", href: "/about" },
-  { label: "Wholesale", href: "/wholesale" },
 ];
 
 const utilityNavItems = [
@@ -29,11 +28,9 @@ const utilityNavItems = [
 ];
 
 export function Navbar({
-  isWholesale = false,
   isAdmin = false,
   isAuthenticated = false,
 }: {
-  isWholesale?: boolean;
   isAdmin?: boolean;
   isAuthenticated?: boolean;
 }) {
@@ -109,7 +106,7 @@ export function Navbar({
 
         {/* Right Actions */}
         <div className="flex items-center gap-3 md:gap-8 flex-shrink-0">
-          <GlobalCommandPalette isWholesale={isWholesale} />
+          <GlobalCommandPalette />
 
           {isAuthenticated ? (
             <div className="flex items-center gap-2">

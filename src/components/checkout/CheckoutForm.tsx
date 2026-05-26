@@ -15,7 +15,6 @@ import {
   resolveDisplayPrice,
   STANDARD_SHIPPING_FEE_INR,
   totalCartQuantity,
-  WHOLESALE_MIN_CART_ITEMS,
 } from "@/lib/commerce";
 import { formatINR } from "@/lib/currency";
 import { useCartStore } from "@/store/cartStore";
@@ -114,10 +113,8 @@ const CHECKOUT_STEPS = [
 
 export function CheckoutForm({
   user,
-  isWholesale,
 }: {
-  user: CheckoutSessionUser | null;
-  isWholesale: boolean;
+  user?: CheckoutSessionUser | null;
 }) {
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
@@ -155,14 +152,13 @@ export function CheckoutForm({
     () =>
       items.reduce(
         (sum, item) =>
-          sum + resolveDisplayPrice(item.price, isWholesale) * item.quantity,
+          sum + resolveDisplayPrice(item.price) * item.quantity,
         0
       ),
-    [isWholesale, items]
+    [items]
   );
 
   const totalItems = useMemo(() => totalCartQuantity(items), [items]);
-  const meetsWholesaleMinimum = !isWholesale || totalItems >= WHOLESALE_MIN_CART_ITEMS;
   
   const discountAmount = getDiscountAmount();
   const giftCardAmount = getGiftCardAmount();
@@ -171,7 +167,7 @@ export function CheckoutForm({
   const giftingFee = isGift ? PREMIUM_GIFTING_FEE_INR : 0;
   
   // Automatic Discount Label (Client Side)
-  const automaticDiscount = (!isWholesale && subtotal >= 5000) ? Math.round(subtotal * 0.1) : 0;
+  const automaticDiscount = (subtotal >= 5000) ? Math.round(subtotal * 0.1) : 0;
   
   const estimatedTotal = Math.max(0, subtotal - discountAmount - giftCardAmount - automaticDiscount + shippingCharge + giftingFee);
   const isAuthenticated = Boolean(user);
@@ -496,7 +492,7 @@ export function CheckoutForm({
                         </div>
                       )}
                     </div>
-                    <p className="text-sm font-bold pt-1">{formatINR(resolveDisplayPrice(item.price, isWholesale) * item.quantity)}</p>
+                    <p className="text-sm font-bold pt-1">{formatINR(resolveDisplayPrice(item.price) * item.quantity)}</p>
                   </div>
                 ))}
               </div>

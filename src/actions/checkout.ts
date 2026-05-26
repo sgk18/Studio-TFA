@@ -3,15 +3,11 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import {
-  applyWholesaleDiscount,
   FREE_SHIPPING_THRESHOLD_INR,
-  isWholesaleRole,
   MAX_CART_LINE_QUANTITY,
   PREMIUM_GIFTING_FEE_INR,
   STANDARD_SHIPPING_FEE_INR,
   totalCartQuantity,
-  WHOLESALE_DISCOUNT_RATE,
-  WHOLESALE_MIN_CART_ITEMS,
   AUTOMATIC_DISCOUNT_THRESHOLD_INR,
   AUTOMATIC_DISCOUNT_PERCENT,
 } from "@/lib/commerce";
@@ -154,9 +150,6 @@ export async function prepareCheckoutAction(
 
   const isAuthenticated = Boolean(user);
 
-  const viewerRole = user ? await resolveRoleForUserId(supabase, user.id) : null;
-  const isWholesale = isWholesaleRole(viewerRole);
-
   if (checkoutMode === "authenticated" && !isAuthenticated) {
     return {
       status: "error",
@@ -171,19 +164,6 @@ export async function prepareCheckoutAction(
     return {
       status: "error",
       message: "Cart payload is invalid. Refresh the page and try again.",
-    };
-  }
-
-  const cartQuantity = totalCartQuantity(cartItems);
-  if (isWholesale && cartQuantity < WHOLESALE_MIN_CART_ITEMS) {
-    const message = `Wholesale checkout requires at least ${WHOLESALE_MIN_CART_ITEMS} items in cart.`;
-
-    return {
-      status: "error",
-      message,
-      fieldErrors: {
-        cart: message,
-      },
     };
   }
 
@@ -251,9 +231,7 @@ export async function prepareCheckoutAction(
       }
 
       const baseUnitPrice = Number(product.price);
-      const unitPrice = isWholesale
-        ? applyWholesaleDiscount(baseUnitPrice)
-        : baseUnitPrice;
+      const unitPrice = baseUnitPrice;
       const lineTotal = toMoney(unitPrice * cartItem.quantity);
       subtotal = toMoney(subtotal + lineTotal);
 
@@ -264,8 +242,7 @@ export async function prepareCheckoutAction(
         base_unit_price: baseUnitPrice,
         unit_price: unitPrice,
         line_total: lineTotal,
-        pricing_tier: isWholesale ? "wholesale" : "retail",
-        wholesale_discount_rate: isWholesale ? WHOLESALE_DISCOUNT_RATE : 0,
+        pricing_tier: "retail",
         ...(cartItem.customisations ? { customisations: cartItem.customisations } : {}),
       };
     });
@@ -326,7 +303,7 @@ export async function prepareCheckoutAction(
 
   // Automatic Discounts
   let automaticDiscount = 0;
-  if (!isWholesale && subtotal >= AUTOMATIC_DISCOUNT_THRESHOLD_INR) {
+  if (subtotal >= AUTOMATIC_DISCOUNT_THRESHOLD_INR) {
     automaticDiscount = Math.round((subtotal * AUTOMATIC_DISCOUNT_PERCENT) / 100);
   }
 
@@ -365,7 +342,7 @@ export async function prepareCheckoutAction(
       notes: {
         order_id: orderId,
         checkout_mode: isAuthenticated ? "authenticated" : "guest",
-        pricing_tier: isWholesale ? "wholesale" : "retail",
+        pricing_tier: "retail",
         premium_gifting: premiumGiftingEnabled ? "yes" : "no",
         promo_code: normalizedPromoCode || "none",
       },
@@ -434,7 +411,7 @@ export async function prepareCheckoutAction(
       notes: {
         order_id: insertedOrderId,
         checkout_mode: isAuthenticated ? "authenticated" : "guest",
-        pricing_tier: isWholesale ? "wholesale" : "retail",
+        pricing_tier: "retail",
         premium_gifting: premiumGiftingEnabled ? "yes" : "no",
         promo_code: normalizedPromoCode || "none",
       },

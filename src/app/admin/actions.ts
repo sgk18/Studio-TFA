@@ -184,7 +184,7 @@ export async function updateUserRole(userId: string, newRole: string) {
     return { error: "Invalid user identifier." };
   }
 
-  const roleSchema = z.enum(["customer", "staff", "admin", "wholesale"]);
+  const roleSchema = z.enum(["customer", "admin"]);
   const parsedRole = roleSchema.safeParse(newRole);
   if (!parsedRole.success) {
     return { error: "Invalid role specified." };

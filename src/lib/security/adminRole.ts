@@ -24,7 +24,7 @@ export type AdminAccessContext = {
 };
 
 /**
- * Ensures the user is authenticated and has an authorized role (admin, staff, or wholesale by default).
+ * Ensures the user is authenticated and has an authorized role (admin by default).
  */
 export async function requireAdminAccess(
   options?: RequireAdminAccessOptions
@@ -57,7 +57,7 @@ export async function requireAdminAccess(
     .maybeSingle();
 
   // Default allowed roles for general admin dashboard access
-  const allowed = options?.allowedRoles ?? ["admin", "staff", "wholesale"];
+  const allowed = options?.allowedRoles ?? ["admin"];
 
   if (profileError || !profile || !allowed.includes((profile as any).role)) {
     redirect(

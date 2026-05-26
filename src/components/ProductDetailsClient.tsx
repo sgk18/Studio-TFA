@@ -31,7 +31,6 @@ interface ProductDetailsClientProps {
     images: string[];
     stock: number;
   };
-  isWholesale: boolean;
   displayPrice: number;
   avgRating: number;
   reviewCount: number;
@@ -39,7 +38,6 @@ interface ProductDetailsClientProps {
 
 export function ProductDetailsClient({ 
   product, 
-  isWholesale, 
   displayPrice,
   avgRating,
   reviewCount

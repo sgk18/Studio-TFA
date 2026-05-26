@@ -29,7 +29,7 @@ export default async function Home() {
     .slice(0, 3)
     .map((product) => ({
       ...product,
-      price: resolveDisplayPrice(Number(product.price) || 0, viewerRole.isWholesale),
+      price: resolveDisplayPrice(Number(product.price) || 0),
     }));
   const shopCategories = [
     { label: "Books", href: "/collections/books" },

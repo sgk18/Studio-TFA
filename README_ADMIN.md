@@ -6,7 +6,7 @@ Purpose
 Key pieces
 
 1) Database
-- `public.profiles` holds the user's `role` (one of: `customer`, `staff`, `admin`, `wholesale`).
+- `public.profiles` holds the user's `role` (one of: `customer`, `admin`).
 - The `role` column should only be changed by server-side processes (service_role) — never from client code.
 
 2) Server-side resolution

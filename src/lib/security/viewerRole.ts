@@ -3,7 +3,6 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@/lib/supabase/types";
-import { isWholesaleRole } from "@/lib/commerce";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type ProfileRole = Database["public"]["Tables"]["profiles"]["Row"]["role"];
@@ -12,7 +11,6 @@ type ServerClient = SupabaseClient<Database>;
 export type ViewerRoleContext = {
   userId: string | null;
   role: ProfileRole | null;
-  isWholesale: boolean;
   isAdmin: boolean;
 };
 
@@ -48,7 +46,6 @@ export async function resolveViewerRole(
     return {
       userId: null,
       role: null,
-      isWholesale: false,
       isAdmin: false,
     };
   }
@@ -65,7 +62,6 @@ export async function resolveViewerRole(
   return {
     userId: user.id,
     role,
-    isWholesale: isWholesaleRole(role),
     isAdmin: role === "admin",
   };
 }

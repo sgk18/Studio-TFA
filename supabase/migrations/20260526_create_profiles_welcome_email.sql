@@ -15,15 +15,11 @@ create table public.profiles (
   constraint profiles_email_key unique (email),
   constraint profiles_id_fkey foreign KEY (id) references auth.users (id) on delete CASCADE,
   constraint profiles_role_check check (
-    (
-      role = any (
-        array[
-          'customer'::text,
-          'staff'::text,
-          'admin'::text,
-          'wholesale'::text
-        ]
-      )
+    role = any (
+      array[
+        'customer'::text,
+        'admin'::text
+      ]
     )
   )
 ) TABLESPACE pg_default;

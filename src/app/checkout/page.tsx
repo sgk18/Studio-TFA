@@ -2,8 +2,6 @@ import { Suspense } from "react";
 export const dynamic = "force-dynamic"; // Checkout is always user-specific, never cached
 import type { Metadata } from "next";
 import { CheckoutForm, type CheckoutSessionUser } from "@/components/checkout/CheckoutForm";
-import { isWholesaleRole } from "@/lib/commerce";
-import { resolveRoleForUserId } from "@/lib/security/viewerRole";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -25,8 +23,6 @@ async function CheckoutContent() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const role = user ? await resolveRoleForUserId(supabase, user.id) : null;
-  const isWholesale = isWholesaleRole(role);
 
   const checkoutUser: CheckoutSessionUser | null = user
     ? {
@@ -39,7 +35,7 @@ async function CheckoutContent() {
       }
     : null;
 
-  return <CheckoutForm user={checkoutUser} isWholesale={isWholesale} />;
+  return <CheckoutForm user={checkoutUser} />;
 }
 
 export default function CheckoutPage() {

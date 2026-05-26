@@ -41,12 +41,12 @@ create policy newsletter_subscribers_select_admin
 on public.newsletter_subscribers
 for select
 to authenticated
-using (public.has_role(array['admin', 'staff']));
+using (public.has_role(array['admin']));
 
 drop policy if exists newsletter_subscribers_update_admin on public.newsletter_subscribers;
 create policy newsletter_subscribers_update_admin
 on public.newsletter_subscribers
 for update
 to authenticated
-using (public.has_role(array['admin', 'staff']))
-with check (public.has_role(array['admin', 'staff']));
+using (public.has_role(array['admin']))
+with check (public.has_role(array['admin']));

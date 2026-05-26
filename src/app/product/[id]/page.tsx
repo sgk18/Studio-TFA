@@ -19,7 +19,7 @@ import {
   readFirstString,
   resolveProductCategory,
 } from "@/lib/catalogFilters";
-import { isWholesaleRole, resolveDisplayPrice } from "@/lib/commerce";
+import { resolveDisplayPrice } from "@/lib/commerce";
 import { isValidPageIdParam } from "@/lib/pageValidation";
 import { formatINR } from "@/lib/currency";
 import { resolveRoleForUserId } from "@/lib/security/viewerRole";
@@ -117,7 +117,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   }
 
   const role = user ? await resolveRoleForUserId(supabase, user.id) : null;
-  const isWholesale = isWholesaleRole(role);
 
   const product = productRaw as any;
   const productTitle = readFirstString(product, ["title"]) || "Untitled Product";
@@ -139,7 +138,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
     : 0;
 
-  const displayPrice = resolveDisplayPrice(Number(product.price ?? 0), isWholesale);
+  const displayPrice = resolveDisplayPrice(Number(product.price ?? 0));
 
   const productData = {
     id,
@@ -167,7 +166,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
 
         <ProductDetailsClient 
           product={productData}
-          isWholesale={isWholesale}
           displayPrice={displayPrice}
           avgRating={avgRating}
           reviewCount={reviews.length}

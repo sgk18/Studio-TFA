@@ -45,12 +45,12 @@ create policy payment_events_read_admin
 on public.payment_events
 for select
 to authenticated
-using (public.has_role(array['admin', 'staff']));
+using (public.has_role(array['admin']));
 
 drop policy if exists payment_events_write_admin on public.payment_events;
 create policy payment_events_write_admin
 on public.payment_events
 for all
 to authenticated
-using (public.has_role(array['admin', 'staff']))
-with check (public.has_role(array['admin', 'staff']));
+using (public.has_role(array['admin']))
+with check (public.has_role(array['admin']));
