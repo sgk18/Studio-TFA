@@ -12,7 +12,6 @@ Studio TFA (The Fearlessly Authentic) is a premium, mission-driven Christian cre
 - Community, refunds, shipping, privacy policy, terms of service, and about pages.
 - Email support for order confirmations and payment-related notifications.
 - Supabase Storage-backed uploads for product and review photos.
-
 ## Tech Stack
 
 - Framework: Next.js 16.2.1 with App Router
